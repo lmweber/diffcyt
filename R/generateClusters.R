@@ -73,6 +73,7 @@ generateClusters <- function(d_transf,
   
   message("FlowSOM clustering completed in ", round(runtime[["elapsed"]], 1), " seconds")
   
+  # [to do: move plotting to a separate function]
   if (plot) {
     pdf("plot_MST.pdf", width = 7, height = 7)
     plot(fsom$MST$l, cex = (fsom$MST$size - 7.5) / 3, pch = 19)

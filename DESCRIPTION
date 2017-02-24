@@ -9,6 +9,8 @@ License: MIT + file LICENSE
 Imports:
     flowCore, 
     FlowSOM, 
+    limma, 
+    stats, 
     methods, 
     grDevices
 RoxygenNote: 6.0.1
