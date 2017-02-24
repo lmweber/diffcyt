@@ -14,8 +14,10 @@
 #' 
 #' 
 #' @return d_input Input data, which has been confirmed as being in the correct format 
-#'   (\code{\link[flowCore]{flowSet}} from the \code{\link[flowcore]{flowCore}} package).
+#'   (\code{\link[flowCore]{flowSet}} from the \code{\link[flowCore]{flowCore}} package).
 #' 
+#' 
+#' @importFrom methods is
 #' 
 #' @export
 #'

@@ -49,6 +49,7 @@
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST
+#' @importFrom grDevices pdf dev.off
 #' 
 #' @export
 #' 
@@ -73,7 +74,7 @@ generateClusters <- function(d_transf,
   message("FlowSOM clustering completed in ", round(runtime[["elapsed"]], 1), " seconds")
   
   if (plot) {
-    pdf("plot_MST.pdf", width = 6, height = 6)
+    pdf("plot_MST.pdf", width = 7, height = 7)
     plot(fsom$MST$l, cex = (fsom$MST$size - 7.5) / 3, pch = 19)
     dev.off()
   }

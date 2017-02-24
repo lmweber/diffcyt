@@ -24,6 +24,7 @@
 #' 
 #' 
 #' @importFrom flowCore exprs
+#' @importFrom methods as
 #' 
 #' @export
 #'

@@ -1,0 +1,14 @@
+Package: diffcyt
+Version: 0.1
+Title: Statistical methods for differential discovery in high-dimensional cytometry data
+Description: Statistical methods for differential discovery and analysis in high-dimensional flow cytometry and mass cytometry (CyTOF) data.
+Authors@R: person("Lukas M.", "Weber", email = "lukmweber@gmail.com", role = c("aut", "cre"))
+URL: https://github.com/lmweber/diffcyt
+BugReports: https://github.com/lmweber/diffcyt/issues
+License: MIT + file LICENSE
+Imports:
+    flowCore, 
+    FlowSOM, 
+    methods, 
+    grDevices
+RoxygenNote: 6.0.1
