@@ -87,6 +87,7 @@ generateClusters <- function(d_transf,
   # split cluster labels by sample
   nm <- pData(d_transf)$name
   n_cells_smp <- sapply(as(d_transf, "list"), nrow)
+  names(n_cells_smp) <- gsub("\\.events$", "", names(n_cells_smp))  # to do: find a way to remove this
   stopifnot(all(names(n_cells_smp) == nm))
   
   smp <- rep(nm, n_cells_smp)
