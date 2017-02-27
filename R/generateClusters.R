@@ -45,10 +45,11 @@
 #'   and \code{\link[FlowSOM]{SOM}} for details.)
 #' 
 #' 
-#' @return clus Vector of cluster labels (one label per cell).
+#' @return clus List containing cluster labels for each cell (one list item per sample).
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST
+#' @importFrom flowCore pData
 #' @importFrom grDevices pdf dev.off
 #' 
 #' @export
@@ -80,7 +81,18 @@ generateClusters <- function(d_transf,
     dev.off()
   }
   
-  clus <- fsom$map$mapping[,1]
+  # cluster labels
+  clus_all <- fsom$map$mapping[,1]
+  
+  # split cluster labels by sample
+  nm <- pData(d_transf)$name
+  n_cells_smp <- sapply(as(d_transf, "list"), nrow)
+  stopifnot(all(names(n_cells_smp) == nm))
+  
+  smp <- rep(nm, n_cells_smp)
+  smp <- factor(smp, levels = nm)  # in case levels in non-alphabetical order
+  
+  clus <- split(clus_all, smp)
   
   clus
 }

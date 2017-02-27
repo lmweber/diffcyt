@@ -4,14 +4,12 @@
 \alias{testDA}
 \title{Test clusters for differential abundance}
 \usage{
-testDA(d_transf, clus, group, tbl_prop)
+testDA(d_transf, group, tbl_prop)
 }
 \arguments{
 \item{d_transf}{Transformed input data from the previous steps. This should be in the
 form of a \code{\link[flowCore]{flowSet}} object from the
 \code{\link[flowCore]{flowCore}} package.}
-
-\item{clus}{Cluster labels for individual cells, from \code{\link{generateClusters}}.}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased
 vs. healthy). This is required to fit linear models and calculate statistical tests 

@@ -32,7 +32,7 @@ value = NULL.}
 and \code{\link[FlowSOM]{SOM}} for details.)}
 }
 \value{
-clus Vector of cluster labels (one label per cell).
+clus List containing cluster labels for each cell (one list item per sample).
 }
 \description{
 Generate clusters for 'diffcyt' analysis

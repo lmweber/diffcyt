@@ -18,8 +18,6 @@
 #'   form of a \code{\link[flowCore]{flowSet}} object from the
 #'   \code{\link[flowCore]{flowCore}} package.
 #' 
-#' @param clus Cluster labels for individual cells, from \code{\link{generateClusters}}.
-#' 
 #' @param group Factor containing group membership for each sample (for example, diseased
 #'   vs. healthy). This is required to fit linear models and calculate statistical tests 
 #'   for each cluster. [to do: update this to extract it automatically from the flowSet 
@@ -44,7 +42,7 @@
 #' 
 #' @examples
 #' # need to create a small example data set for examples
-testDA <- function(d_transf, clus, group, tbl_prop) {
+testDA <- function(d_transf, group, tbl_prop) {
   
   stopifnot(is(group, "factor"))
   
