@@ -11,7 +11,8 @@ calculateFreq(d_transf, clus)
 form of a \code{\link[flowCore]{flowSet}} object from the 
 \code{\link[flowCore]{flowCore}} package.}
 
-\item{clus}{Cluster labels for individual cells, from \code{\link{generateClusters}}.}
+\item{clus}{List of cluster labels for individual cells (one list item per sample),
+from \code{\link{generateClusters}}.}
 }
 \value{
 List containing:

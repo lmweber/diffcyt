@@ -14,7 +14,8 @@
 #'   form of a \code{\link[flowCore]{flowSet}} object from the 
 #'   \code{\link[flowCore]{flowCore}} package.
 #' 
-#' @param clus Cluster labels for individual cells, from \code{\link{generateClusters}}.
+#' @param clus List of cluster labels for individual cells (one list item per sample),
+#'   from \code{\link{generateClusters}}.
 #' 
 #' 
 #' @return List containing:
@@ -36,18 +37,20 @@ calculateFreq <- function(d_transf, clus) {
   
   sample_IDs <- rownames(flowCore::phenoData(d_transf))
   
+  clus_all <- do.call("c", clus)
+  
   # number of cells per sample
   n_cells <- sapply(as(d_transf, "list"), nrow)
   
   stopifnot(all(sample_IDs == gsub("\\.[a-z]+$", "", names(n_cells))))  # [to do: generalize to remove regular expression]
   stopifnot(length(sample_IDs) == length(n_cells))
-  stopifnot(length(clus) == sum(n_cells))
+  stopifnot(length(clus_all) == sum(n_cells))
   
   # calculate table of frequencies
   samp <- rep(sample_IDs, n_cells)
-  stopifnot(length(samp) == length(clus))
+  stopifnot(length(samp) == length(clus_all))
   # rows = clusters, columns = samples
-  tbl_freq <- table(cluster = clus, sample = samp)
+  tbl_freq <- table(cluster = clus_all, sample = samp)
   # rearrange columns ('table()' sorts alphabetically; want original order instead)
   tbl_freq <- tbl_freq[, sample_IDs]
   stopifnot(all(colnames(tbl_freq) == sample_IDs))
