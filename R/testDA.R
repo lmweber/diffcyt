@@ -22,8 +22,13 @@
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased
 #'   vs. healthy). This is required to fit linear models and calculate statistical tests 
-#'   for each cluster. [maybe update this to extract it automatically from the flowSet
+#'   for each cluster. [to do: update this to extract it automatically from the flowSet 
 #'   object]
+#' 
+#' @param tbl_prop Table of cluster proportions (rows = clusters, columns = samples).
+#'   Calculated by function \code{\link{calculateFreq}}. [to do: update to save tbl_freq
+#'   and tbl_prop directly in an object, possibly as an additional sheet in a Summarized
+#'   Experiment]
 #' 
 #' 
 #' @return Returns \code{\link[limma]{limma}} fitted model objects for each cluster,
@@ -39,32 +44,11 @@
 #' 
 #' @examples
 #' # need to create a small example data set for examples
-testDA <- function(d_transf, clus, group) {
+testDA <- function(d_transf, clus, group, tbl_prop) {
   
   stopifnot(is(group, "factor"))
   
   sample_IDs <- rownames(flowCore::phenoData(d_transf))
-  
-  # number of cells per sample
-  n_cells <- sapply(as(d_transf, "list"), nrow)
-  
-  stopifnot(all(sample_IDs == gsub("\\.[a-z]+$", "", names(n_cells))))  # [to do: generalize to remove regular expression]
-  stopifnot(length(sample_IDs) == length(n_cells))
-  stopifnot(length(clus) == sum(n_cells))
-  
-  # calculate table of abundances
-  samp <- rep(sample_IDs, n_cells)
-  stopifnot(length(samp) == length(clus))
-  # rows = clusters, columns = samples
-  tbl_abun <- table(cluster = clus, sample = samp)
-  # rearrange columns ('table()' sorts alphabetically; want original order instead)
-  tbl_abun <- tbl_abun[, sample_IDs]
-  stopifnot(all(colnames(tbl_abun) == sample_IDs))
-  
-  # table of proportions
-  tbl_prop <- t(t(tbl_abun) / colSums(tbl_abun))  # transpose because vector wraps by column
-  stopifnot(all(colSums(tbl_prop) == 1))
-  
   
   # model matrix for limma
   mm <- model.matrix(~ group)
@@ -73,7 +57,7 @@ testDA <- function(d_transf, clus, group) {
   f1 <- limma::lmFit(sqrt(tbl_prop), design = mm)
   
   # add proportions (expressed as percentages) to fitted model object
-  p <- matrix(100 * as.numeric(tbl_prop), ncol = length(sample_IDs))  # needs to be basic matrix
+  p <- matrix(100 * as.numeric(tbl_prop), ncol = length(sample_IDs))  # needs to be simple matrix
   colnames(p) <- colnames(tbl_prop)
   rownames(p) <- rownames(tbl_prop)
   f1$genes <- p

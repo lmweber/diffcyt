@@ -4,7 +4,7 @@
 \alias{testDA}
 \title{Test clusters for differential abundance}
 \usage{
-testDA(d_transf, clus, group)
+testDA(d_transf, clus, group, tbl_prop)
 }
 \arguments{
 \item{d_transf}{Transformed input data from the previous steps. This should be in the
@@ -15,8 +15,13 @@ form of a \code{\link[flowCore]{flowSet}} object from the
 
 \item{group}{Factor containing group membership for each sample (for example, diseased
 vs. healthy). This is required to fit linear models and calculate statistical tests 
-for each cluster. [maybe update this to extract it automatically from the flowSet
+for each cluster. [to do: update this to extract it automatically from the flowSet 
 object]}
+
+\item{tbl_prop}{Table of cluster proportions (rows = clusters, columns = samples).
+Calculated by function \code{\link{calculateFreq}}. [to do: update to save tbl_freq
+and tbl_prop directly in an object, possibly as an additional sheet in a Summarized
+Experiment]}
 }
 \value{
 Returns \code{\link[limma]{limma}} fitted model objects for each cluster,

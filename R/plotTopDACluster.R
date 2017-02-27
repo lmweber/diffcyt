@@ -28,7 +28,7 @@ plotTopDACluster <- function(f1, filename = "./plot_top_DA_cluster.pdf") {
   # [to do: remove hard-coded parameters and make more generalizable]
   pdf(filename, width = 7, height = 7)
   plot(NA, type = "n", 
-       xlim = c(0, 16), ylim = c(0, 1.15), xlab = "sample", ylab = "sqrt(prop)", 
+       xlim = c(0, 16), ylim = c(0, 1.5), xlab = "sample", ylab = "sqrt(prop)", 
        main = "Top 6 differentially abundant clusters (limma)")
   for (i in 1:6) {
     lines(1:8,  topTable(f1, coef = 2, number = 6)[i, 1:8],  type = "l", col = "red")
