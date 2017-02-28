@@ -91,11 +91,12 @@ generateClusters <- function(d_transf,
   stopifnot(all(names(n_cells_smp) == nm))
   
   smp <- rep(nm, n_cells_smp)
-  smp <- factor(smp, levels = nm)  # in case levels in non-alphabetical order
+  #smp <- factor(smp, levels = nm)  # in case levels in non-alphabetical order
   
   clus <- split(clus_all, smp)
   
-  clus
+  # [to do: output in SummarizedExperiment instead]
+  clus_out <- data.frame(clus = clus_all, smp = smp)
 }
 
 

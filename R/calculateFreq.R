@@ -37,7 +37,8 @@ calculateFreq <- function(d_transf, clus) {
   
   sample_IDs <- rownames(flowCore::phenoData(d_transf))
   
-  clus_all <- do.call("c", clus)
+  #clus_all <- do.call("c", clus)
+  clus_all <- clus$clus
   
   # number of cells per sample
   n_cells <- sapply(as(d_transf, "list"), nrow)
@@ -59,7 +60,7 @@ calculateFreq <- function(d_transf, clus) {
   tbl_prop <- t(t(tbl_freq) / colSums(tbl_freq))  # transpose because vector wraps by column
   stopifnot(all(colSums(tbl_prop) == 1))
   
-  list(tbl_freq = tbl_freq, tbl_prop = tbl_prop)
+  list(tbl_freq = tbl_freq, tbl_prop = tbl_prop)  # [to do: try to create a SummarizedExperiment containing this]
 }
 
 
