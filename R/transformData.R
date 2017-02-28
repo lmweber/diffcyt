@@ -33,6 +33,7 @@
 #'
 #' @examples
 #' library(flowCore)
+#' library(limma)
 #' 
 #' # filenames
 #' files <- list.files(system.file("extdata", package = "diffcyt"), 

@@ -64,6 +64,7 @@ ensure that subtle differential expression signals in small subsets are not miss
 }
 \examples{
 library(flowCore)
+library(limma)
 
 # filenames
 files <- list.files(system.file("extdata", package = "diffcyt"), 

@@ -38,6 +38,7 @@
 #' 
 #' @examples
 #' library(flowCore)
+#' library(limma)
 #' 
 #' # filenames
 #' files <- list.files(system.file("extdata", package = "diffcyt"), 
@@ -73,9 +74,10 @@
 #' # calculate cluster medians and frequencies
 #' d_clus <- calcMediansAndFreq(d_se)
 #' 
-#' # statistical tests for differential abundance of clusters
+#' # (1) test for differentially abundant (DA) clusters
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))  # re-level factor to use "ref" as base level
 #' res_DA <- testDA(d_clus, group)
+#' topTable(res_DA, number = 6)
 testDA <- function(d_clus, group) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
@@ -89,7 +91,7 @@ testDA <- function(d_clus, group) {
   # model matrix for limma
   mm <- model.matrix(~ group)
   
-  # fit linear models (limma)
+  # fit linear models using limma
   fit <- lmFit(sqrt_prop, design = mm)
   
   # include proportions (expressed as percentages) in fitted model object

@@ -43,6 +43,7 @@ contains protein marker names, and logical entries indicating whether each colum
 }
 \examples{
 library(flowCore)
+library(limma)
 
 # filenames
 files <- list.files(system.file("extdata", package = "diffcyt"), 

@@ -22,6 +22,7 @@
 #' 
 #' @examples
 #' library(flowCore)
+#' library(limma)
 #' 
 #' # filenames
 #' files <- list.files(system.file("extdata", package = "diffcyt"), 
@@ -57,13 +58,14 @@
 #' # calculate cluster medians and frequencies
 #' d_clus <- calcMediansAndFreq(d_se)
 #' 
-#' # statistical tests for differential abundance of clusters
+#' # (1) test for differentially abundant (DA) clusters
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))  # re-level factor to use "ref" as base level
 #' res_DA <- testDA(d_clus, group)
+#' topTable(res_DA, number = 6)
 #' 
 #' # plot top differentially abundant (DA) clusters
 #' # note there is no evidence for DA in this example data set (data set is too small)
-#' plotTopDAClusters(res_DA, path = "../../diffcyt-analysis/plots")
+#' # plotTopDAClusters(res_DA)
 plotTopDAClusters <- function(res_DA, path = ".", filename = "plot_top_DA_clusters.pdf") {
   
   # select top differentially abundant (DA) cluster

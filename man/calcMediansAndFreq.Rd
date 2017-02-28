@@ -35,6 +35,7 @@ markers. The additional last sheet ('assay' slot) contains the cluster frequenci
 }
 \examples{
 library(flowCore)
+library(limma)
 
 # filenames
 files <- list.files(system.file("extdata", package = "diffcyt"), 
