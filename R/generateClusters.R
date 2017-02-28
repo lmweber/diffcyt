@@ -92,8 +92,8 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # run clustering
-#' d_se <- generateClusters(d_se, xdim = 20, ydim = 20, seed = 123, plot = FALSE)
+#' # run clustering (small 10x10 SOM grid due to small size of data set)
+#' d_se <- generateClusters(d_se, xdim = 10, ydim = 10, seed = 123, plot = FALSE)
 generateClusters <- function(d_se, 
                              cols_to_use = NULL, 
                              xdim = 20, ydim = 20, 
@@ -126,6 +126,9 @@ generateClusters <- function(d_se,
   
   # cluster labels
   clus <- fsom$map$mapping[, 1]
+  
+  # convert to factor (levels in ascending order)
+  clus <- factor(clus, levels = sort(unique(clus)))
   
   # add cluster labels to row meta-data
   rowData(d_se)$cluster <- clus

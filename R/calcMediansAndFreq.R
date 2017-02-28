@@ -26,8 +26,11 @@
 #'   additional last sheet ('assay' slot) contains the cluster frequencies.
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData colData assays
-#'   'rowData<-' 'colData<-' 'assays<-'
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData
+#' @importFrom dplyr group_by tally
+#' @importFrom tidyr complete
+#' @importFrom reshape2 cast
+#' @importFrom magrittr '%>%'
 #' @importFrom stats model.matrix
 #' @importFrom methods is
 #' 
@@ -64,8 +67,8 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # run clustering
-#' d_se <- generateClusters(d_se, xdim = 20, ydim = 20, seed = 123, plot = FALSE)
+#' # run clustering (small 10x10 SOM grid due to small size of data set)
+#' d_se <- generateClusters(d_se, xdim = 10, ydim = 10, seed = 123, plot = FALSE)
 calcMediansAndFreq <- function(d_se) {
   
   if (!is(d_se, "SummarizedExperiment")) {
@@ -77,10 +80,22 @@ calcMediansAndFreq <- function(d_se) {
                 "to generate cluster labels."))
   }
   
-  sample_IDs <- rownames(flowCore::phenoData(d_transf))
+  # calculate cluster frequencies
   
-  #clus_all <- do.call("c", clus)
-  clus_all <- clus$clus
+  rowdata_df <- as.data.frame(rowData(d_se))
+  
+  rowdata_df %>% 
+    group_by(cluster, sample) %>% 
+    tally %>% 
+    complete(sample) -> 
+    n_cells
+  
+  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
+  
+  # calculate cluster medians
+  
+  
+  
   
   # number of cells per sample
   n_cells <- sapply(as(d_transf, "list"), nrow)
