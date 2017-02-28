@@ -92,7 +92,7 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (small 10x10 SOM grid due to small size of data set)
+#' # generate clusters (small 10x10 SOM grid due to small size of example data set)
 #' d_se <- generateClusters(d_se, xdim = 10, ydim = 10, seed = 123, plot = FALSE)
 generateClusters <- function(d_se, 
                              cols_to_use = NULL, 

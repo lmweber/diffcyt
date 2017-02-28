@@ -2,7 +2,7 @@
 
 export(calcMediansAndFreq)
 export(generateClusters)
-export(plotTopDACluster)
+export(plotTopDAClusters)
 export(prepareData)
 export(testDA)
 export(transformData)
