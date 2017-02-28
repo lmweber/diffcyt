@@ -11,6 +11,10 @@ Imports:
     FlowSOM, 
     limma, 
     SummarizedExperiment, 
+    dplyr, 
+    tidyr, 
+    reshape2, 
+    magrittr, 
     stats, 
     methods, 
     grDevices

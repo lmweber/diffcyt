@@ -44,6 +44,10 @@
 #' # need to create a small example data set for examples
 testDA <- function(d_transf, group, tbl_prop) {
   
+  # table of proportions
+  tbl_prop <- t(t(tbl_freq) / colSums(tbl_freq))  # transpose because vector wraps by column
+  stopifnot(all(colSums(tbl_prop) == 1))
+  
   stopifnot(is(group, "factor"))
   
   sample_IDs <- rownames(flowCore::phenoData(d_transf))

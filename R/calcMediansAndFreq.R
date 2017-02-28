@@ -26,12 +26,12 @@
 #'   additional last sheet ('assay' slot) contains the cluster frequencies.
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment rowData
-#' @importFrom dplyr group_by tally
+#' @importFrom SummarizedExperiment SummarizedExperiment rowData colData
+#' @importFrom dplyr group_by tally summarize
 #' @importFrom tidyr complete
-#' @importFrom reshape2 cast
+#' @importFrom reshape2 acast
 #' @importFrom magrittr '%>%'
-#' @importFrom stats model.matrix
+#' @importFrom stats median
 #' @importFrom methods is
 #' 
 #' @export
@@ -67,8 +67,11 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # run clustering (small 10x10 SOM grid due to small size of data set)
+#' # generate clusters (small 10x10 SOM grid due to small size of data set)
 #' d_se <- generateClusters(d_se, xdim = 10, ydim = 10, seed = 123, plot = FALSE)
+#' 
+#' # calculate cluster medians and frequencies
+#' d_clus <- calcMediansAndFreq(d_se)
 calcMediansAndFreq <- function(d_se) {
   
   if (!is(d_se, "SummarizedExperiment")) {
@@ -92,32 +95,45 @@ calcMediansAndFreq <- function(d_se) {
   
   n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
   
+  n_cells <- list(n_cells = n_cells)
+  
   # calculate cluster medians
   
+  assaydata_mx <- assays(d_se)[[1]]
   
+  medians_func <- vector("list", sum(colData(d_se)$is_functional))
+  func_names <- as.character(colData(d_se)$markers[colData(d_se)$is_functional])
+  names(medians_func) <- func_names
   
+  clus <- rowData(d_se)$cluster
+  smp <- rowData(d_se)$sample
   
-  # number of cells per sample
-  n_cells <- sapply(as(d_transf, "list"), nrow)
+  for (i in seq_along(medians_func)) {
+    assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
+    assaydata_i <- as.data.frame(assaydata_i)
+    assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
+    colnames(assaydata_i)[1] <- "value"
+    
+    assaydata_i %>% 
+      group_by(cluster, sample) %>% 
+      summarize(median = median(value)) -> 
+      med
+    
+    med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
+    
+    medians_func[[i]] <- med
+  }
   
-  stopifnot(all(sample_IDs == gsub("\\.[a-z]+$", "", names(n_cells))))  # [to do: generalize to remove regular expression]
-  stopifnot(length(sample_IDs) == length(n_cells))
-  stopifnot(length(clus_all) == sum(n_cells))
+  # create new SummarizedExperiment
   
-  # calculate table of frequencies
-  samp <- rep(sample_IDs, n_cells)
-  stopifnot(length(samp) == length(clus_all))
-  # rows = clusters, columns = samples
-  tbl_freq <- table(cluster = clus_all, sample = samp)
-  # rearrange columns ('table()' sorts alphabetically; want original order instead)
-  tbl_freq <- tbl_freq[, sample_IDs]
-  stopifnot(all(colnames(tbl_freq) == sample_IDs))
+  list_all <- c(medians_func, n_cells)
   
-  # table of proportions
-  tbl_prop <- t(t(tbl_freq) / colSums(tbl_freq))  # transpose because vector wraps by column
-  stopifnot(all(colSums(tbl_prop) == 1))
+  row_data <- data.frame(cluster = factor(sort(unique(clus)), levels = sort(unique(clus))))
+  col_data <- data.frame(sample = factor(unique(smp), levels = unique(smp)))
   
-  list(tbl_freq = tbl_freq, tbl_prop = tbl_prop)  # [to do: try to create a SummarizedExperiment containing this]
+  d_clus <- SummarizedExperiment(list_all, rowData = row_data, colData = col_data)
+  
+  d_clus
 }
 
 
