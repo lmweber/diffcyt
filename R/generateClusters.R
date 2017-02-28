@@ -10,6 +10,10 @@
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}}, and already transformed with
 #' \code{\link{transformData}}.
 #' 
+#' The column meta-data of the input \code{SummarizedExperiment} object is assumed to
+#' contain a vector of logical entries (\code{is_lineage}) indicating which columns
+#' represent lineage markers. Only the lineage markers will be used for clustering.
+#' 
 #' We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm by default (Van Gassen 
 #' et al. 2015, \emph{Cytometry Part A}). We previously showed that \code{FlowSOM} gives
 #' very good clustering performance for high-dimensional cytometry data, for both major
@@ -19,14 +23,12 @@
 #' The clustering is run at high resolution to give a large number of small clusters, to
 #' ensure that subtle differential expression signals in small subsets are not missed.
 #' 
-#' In most cases, only lineage markers should be used for clustering.
-#' 
 #' 
 #' @param d_se Transformed input data, from \code{\link{transformData}}.
 #' 
-#' @param cols_to_use Columns to use for clustering. This will depend on the data set, 
-#'   but in most cases will be the set of lineage markers. Default = NULL, in which case
-#'   all columns will be used.
+#' @param cols_to_use Columns to use for clustering. Default = NULL, in which case the
+#'   lineage markers from \code{is_lineage} in the column meta-data of \code{d_se} will be
+#'   used.
 #' 
 #' @param xdim Width of grid for self-organizing map for FlowSOM clustering (number of 
 #'   clusters = \code{xdim} * \code{ydim}). Default value = 20 (400 clusters).
@@ -54,7 +56,7 @@
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST
 #' @importFrom flowCore flowFrame
-#' @importFrom SummarizedExperiment assays rowData 'rowData<-'
+#' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
 #' @importFrom grDevices pdf dev.off
 #' 
 #' @export
@@ -78,28 +80,27 @@
 #' group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
 #' group_IDs
 #' 
-#' # prepare data
-#' d_se <- prepareData(d_input, sample_IDs, group_IDs)
-#' 
 #' # indices of all marker columns, lineage markers, and functional markers
 #' # (see Table 1 in Bruggner et al. 2014)
 #' marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
 #' lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
-#' func_cols <- setdiff(marker_cols, lineage_cols)
+#' functional_cols <- setdiff(marker_cols, lineage_cols)
+#' 
+#' # prepare data
+#' d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols)
 #' 
 #' # transform data
-#' d_se <- transformData(d_se, cofactor = 5, marker_cols = marker_cols)
+#' d_se <- transformData(d_se, cofactor = 5)
 #' 
 #' # run clustering
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 20, ydim = 20, 
-#'                          seed = 123, plot = FALSE)
+#' d_se <- generateClusters(d_se, xdim = 20, ydim = 20, seed = 123, plot = FALSE)
 generateClusters <- function(d_se, 
                              cols_to_use = NULL, 
                              xdim = 20, ydim = 20, 
                              seed = NULL, 
                              plot = TRUE, path = ".", filename = "plot_MST.pdf", ...) {
   
-  if (is.null(cols_to_use)) cols_to_use <- 1:ncol(d_se[[1]])
+  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_lineage
   
   if (!is.null(seed)) set.seed(seed)
   

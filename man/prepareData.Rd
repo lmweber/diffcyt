@@ -4,7 +4,8 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, sample_IDs, group_IDs)
+prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols,
+  functional_cols)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}}.}
@@ -12,11 +13,18 @@ prepareData(d_input, sample_IDs, group_IDs)
 \item{sample_IDs}{Vector of sample IDs.}
 
 \item{group_IDs}{Vector of group IDs.}
+
+\item{marker_cols}{Vector of indices of all markers.}
+
+\item{lineage_cols}{Vector of indices of lineage markers.}
+
+\item{functional_cols}{Vector of indices of functional markers.}
 }
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  containing a single matrix of data in the \code{assays} slot, together with row
-  meta-data (sample and group IDs) and column meta-data (protein marker names).
+  containing a single matrix of data in the \code{assays} slot, together with row 
+  meta-data (sample and group IDs) and column meta-data (protein marker names, logical
+  vectors for: markers, linage markers, functional markers).
 }
 \description{
 Prepare data into format required by 'diffcyt' functions
@@ -27,9 +35,11 @@ Functions in the 'diffcyt' package assume that input data is provided as a
 matrix of data, together with row and column meta-data.
 
 This function accepts a list or \code{\link[flowCore]{flowSet}} as input, concatenates 
-the data tables into a single matrix, and adds row and column meta-data. Row meta-data
-contains sample labels and group membership labels; column meta-data contains protein
-marker names.
+the data tables into a single matrix, and adds row and column meta-data.
+
+Row meta-data contains sample labels and group membership labels. Column meta-data 
+contains protein marker names, and logical entries indicating whether each column is 
+(i) a marker, (ii) a lineage marker, and (iii) a functional marker.
 }
 \examples{
 library(flowCore)
@@ -50,6 +60,12 @@ sample_IDs
 group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
 group_IDs
 
+# indices of all marker columns, lineage markers, and functional markers
+# (see Table 1 in Bruggner et al. 2014)
+marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+functional_cols <- setdiff(marker_cols, lineage_cols)
+
 # prepare data
-d_se <- prepareData(d_input, sample_IDs, group_IDs)
+d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols)
 }
