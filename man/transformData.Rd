@@ -4,32 +4,60 @@
 \alias{transformData}
 \title{Transform data}
 \usage{
-transformData(d_input, cofactor = 5, marker_cols = NULL)
+transformData(d_se, cofactor = 5, marker_cols = NULL)
 }
 \arguments{
-\item{d_input}{Input data. Assumed to be in the form of a 
-\code{\link[flowCore]{flowSet}} object. The input data format can be checked using 
-the function \code{\link{checkInputData}}.}
+\item{d_se}{Input data. Assumed to be in the form of a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}}, prepared with the function
+\code{\link{prepareData}}.}
 
 \item{cofactor}{Cofactor for 'arcsinh' transform. Default = 5, which is appropriate 
 for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we recommend 
 cofactor = 150 instead.}
 
-\item{marker_cols}{Indices of protein marker columns. The transform will be applied to
+\item{marker_cols}{Indices of protein marker columns. The transform will be applied to 
 these columns only. Default = NULL, which transforms all columns.}
 }
 \value{
-d_transf Data with transform applied to protein marker columns.
+d_se Data with transform applied to protein marker columns.
 }
 \description{
 Transform data prior to clustering
 }
 \details{
 Flow and mass cytometry data should be transformed prior to clustering. This function 
-implements an 'arcsinh' transform with adjustable 'cofactor' parameter. Recommended
-values for the cofactor are 5 (mass cytometry, CyTOF) or 150 (fluorescence flow
+implements an 'arcsinh' transform with adjustable 'cofactor' parameter. Recommended 
+values for the cofactor are 5 (mass cytometry, CyTOF) or 150 (fluorescence flow 
 cytometry); see Bendall et al. (2011), \emph{Science}, Supplementary Figure S2.
 }
 \examples{
-# need to create a small example data set for examples
+library(flowCore)
+
+# filenames
+files <- list.files(system.file("extdata", package = "diffcyt"), 
+                    pattern = "\\\\.fcs$", full.names = TRUE)
+files_BCRXL <- files[grep("BCRXL", files)]
+files_ref <- files[grep("ref", files)]
+
+# load data
+files_load <- c(files_BCRXL, files_ref)
+d_input <- lapply(files_load, read.FCS, transformation = FALSE, truncate_max_range = FALSE)
+
+# sample IDs and group IDs
+sample_IDs <- gsub("\\\\.fcs$", "", basename(files_load))
+sample_IDs
+group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
+group_IDs
+
+# prepare data
+d_se <- prepareData(d_input, sample_IDs, group_IDs)
+
+# indices of all marker columns, lineage markers, and functional markers
+# (see Table 1 in Bruggner et al. 2014)
+marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+func_cols <- setdiff(marker_cols, lineage_cols)
+
+# transform data
+d_se <- transformData(d_se, cofactor = 5, marker_cols = marker_cols)
 }

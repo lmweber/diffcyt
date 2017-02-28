@@ -10,6 +10,7 @@ Imports:
     flowCore, 
     FlowSOM, 
     limma, 
+    SummarizedExperiment, 
     stats, 
     methods, 
     grDevices

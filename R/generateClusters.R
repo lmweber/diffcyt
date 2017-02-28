@@ -6,6 +6,10 @@
 #' which will then be further analyzed for differential abundance or differential 
 #' expression of functional markers.
 #' 
+#' Data is assumed to be in the form of a
+#' \code{\link[SummarizedExperiment]{SummarizedExperiment}}, and already transformed with
+#' \code{\link{transformData}}.
+#' 
 #' We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm by default (Van Gassen 
 #' et al. 2015, \emph{Cytometry Part A}). We previously showed that \code{FlowSOM} gives
 #' very good clustering performance for high-dimensional cytometry data, for both major
@@ -17,14 +21,8 @@
 #' 
 #' In most cases, only lineage markers should be used for clustering.
 #' 
-#' Note that data should be transformed prior to clustering, which can be done with the
-#' function \code{\link{transformData}}.
 #' 
-#' 
-#' @param d_transf Transformed input data. Data should be transformed prior to clustering
-#'   (see \code{\link{transformData}}). Input data must be in the form of a 
-#'   \code{\link[flowCore]{flowSet}} object from the \code{\link[flowCore]{flowCore}} 
-#'   package, which can be checked with \code{\link{checkInputData}}.
+#' @param d_se Transformed input data, from \code{\link{transformData}}.
 #' 
 #' @param cols_to_use Columns to use for clustering. This will depend on the data set, 
 #'   but in most cases will be the set of lineage markers. Default = NULL, in which case
@@ -41,62 +39,97 @@
 #' 
 #' @param plot Whether to save plot. Default = TRUE.
 #' 
+#' @param path Path to save plot.
+#' 
+#' @param filename Filename for plot.
+#' 
 #' @param ... Other parameters to pass to FlowSOM (see \code{\link[FlowSOM]{BuildSOM}} 
 #'   and \code{\link[FlowSOM]{SOM}} for details.)
 #' 
 #' 
-#' @return clus List containing cluster labels for each cell (one list item per sample).
+#' @return Returns the \code{\link[SummarizedExperiment]{SummarizedExperiment}} input 
+#'   object with an additional column of row meta-data, containing cluster labels for each
+#'   cell. Row meta-data can be accessed with \code{\link[SummarizedExperiment]{rowData}}.
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST
-#' @importFrom flowCore pData
+#' @importFrom flowCore flowFrame
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-'
 #' @importFrom grDevices pdf dev.off
 #' 
 #' @export
 #' 
 #' @examples
-#' # need to create a small example data set for examples
-generateClusters <- function(d_transf, 
+#' library(flowCore)
+#' 
+#' # filenames
+#' files <- list.files(system.file("extdata", package = "diffcyt"), 
+#'                     pattern = "\\.fcs$", full.names = TRUE)
+#' files_BCRXL <- files[grep("BCRXL", files)]
+#' files_ref <- files[grep("ref", files)]
+#' 
+#' # load data
+#' files_load <- c(files_BCRXL, files_ref)
+#' d_input <- lapply(files_load, read.FCS, transformation = FALSE, truncate_max_range = FALSE)
+#' 
+#' # sample IDs and group IDs
+#' sample_IDs <- gsub("\\.fcs$", "", basename(files_load))
+#' sample_IDs
+#' group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
+#' group_IDs
+#' 
+#' # prepare data
+#' d_se <- prepareData(d_input, sample_IDs, group_IDs)
+#' 
+#' # indices of all marker columns, lineage markers, and functional markers
+#' # (see Table 1 in Bruggner et al. 2014)
+#' marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+#' lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+#' func_cols <- setdiff(marker_cols, lineage_cols)
+#' 
+#' # transform data
+#' d_se <- transformData(d_se, cofactor = 5, marker_cols = marker_cols)
+#' 
+#' # run clustering
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 20, ydim = 20, 
+#'                          seed = 123, plot = FALSE)
+generateClusters <- function(d_se, 
                              cols_to_use = NULL, 
                              xdim = 20, ydim = 20, 
-                             seed = NULL, plot = TRUE, ...) {
+                             seed = NULL, 
+                             plot = TRUE, path = ".", filename = "plot_MST.pdf", ...) {
   
-  if (is.null(cols_to_use)) cols_to_use <- 1:ncol(d_transf[[1]])
+  if (is.null(cols_to_use)) cols_to_use <- 1:ncol(d_se[[1]])
   
   if (!is.null(seed)) set.seed(seed)
   
-  # note: not using meta-clustering
+  # FlowSOM requires input data as 'flowFrame' or 'flowSet'
+  d_ff <- flowFrame(assays(d_se)[[1]])
+  
+  # note: not using FlowSOM 'meta-clustering' step
   runtime <- system.time({
-    fsom <- FlowSOM::ReadInput(d_transf, transform = FALSE, scale = FALSE); 
-    fsom <- FlowSOM::BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim); 
-    fsom <- FlowSOM::BuildMST(fsom)
+    fsom <- ReadInput(d_ff, transform = FALSE, scale = FALSE); 
+    fsom <- BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim); 
+    fsom <- BuildMST(fsom)
   })
   
   message("FlowSOM clustering completed in ", round(runtime[["elapsed"]], 1), " seconds")
   
-  # [to do: move plotting to a separate function]
+  # [to do: move to separate plotting function; generalize arguments]
+  # save minimum spanning tree (MST) plot
   if (plot) {
-    pdf("plot_MST.pdf", width = 7, height = 7)
+    pdf(file.path(path, filename), width = 7, height = 7)
     plot(fsom$MST$l, cex = (fsom$MST$size - 7.5) / 3, pch = 19)
     dev.off()
   }
   
   # cluster labels
-  clus_all <- fsom$map$mapping[,1]
+  clus <- fsom$map$mapping[, 1]
   
-  # split cluster labels by sample
-  nm <- pData(d_transf)$name
-  n_cells_smp <- sapply(as(d_transf, "list"), nrow)
-  names(n_cells_smp) <- gsub("\\.events$", "", names(n_cells_smp))  # to do: find a way to remove this
-  stopifnot(all(names(n_cells_smp) == nm))
+  # add cluster labels to row meta-data
+  rowData(d_se)$cluster <- clus
   
-  smp <- rep(nm, n_cells_smp)
-  #smp <- factor(smp, levels = nm)  # in case levels in non-alphabetical order
-  
-  clus <- split(clus_all, smp)
-  
-  # [to do: output in SummarizedExperiment instead]
-  clus_out <- data.frame(clus = clus_all, smp = smp)
+  d_se
 }
 
 

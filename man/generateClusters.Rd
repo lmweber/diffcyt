@@ -4,14 +4,11 @@
 \alias{generateClusters}
 \title{Generate clusters}
 \usage{
-generateClusters(d_transf, cols_to_use = NULL, xdim = 20, ydim = 20,
-  seed = NULL, plot = TRUE, ...)
+generateClusters(d_se, cols_to_use = NULL, xdim = 20, ydim = 20,
+  seed = NULL, plot = TRUE, path = ".", filename = "plot_MST.pdf", ...)
 }
 \arguments{
-\item{d_transf}{Transformed input data. Data should be transformed prior to clustering
-(see \code{\link{transformData}}). Input data must be in the form of a 
-\code{\link[flowCore]{flowSet}} object from the \code{\link[flowCore]{flowCore}} 
-package, which can be checked with \code{\link{checkInputData}}.}
+\item{d_se}{Transformed input data, from \code{\link{transformData}}.}
 
 \item{cols_to_use}{Columns to use for clustering. This will depend on the data set, 
 but in most cases will be the set of lineage markers. Default = NULL, in which case
@@ -28,11 +25,17 @@ value = NULL.}
 
 \item{plot}{Whether to save plot. Default = TRUE.}
 
+\item{path}{Path to save plot.}
+
+\item{filename}{Filename for plot.}
+
 \item{...}{Other parameters to pass to FlowSOM (see \code{\link[FlowSOM]{BuildSOM}} 
 and \code{\link[FlowSOM]{SOM}} for details.)}
 }
 \value{
-clus List containing cluster labels for each cell (one list item per sample).
+Returns the \code{\link[SummarizedExperiment]{SummarizedExperiment}} input 
+  object with an additional column of row meta-data, containing cluster labels for each
+  cell. Row meta-data can be accessed with \code{\link[SummarizedExperiment]{rowData}}.
 }
 \description{
 Generate clusters for 'diffcyt' analysis
@@ -41,6 +44,10 @@ Generate clusters for 'diffcyt' analysis
 Runs a clustering algorithm to divide cells into a large number of small clusters, 
 which will then be further analyzed for differential abundance or differential 
 expression of functional markers.
+
+Data is assumed to be in the form of a
+\code{\link[SummarizedExperiment]{SummarizedExperiment}}, and already transformed with
+\code{\link{transformData}}.
 
 We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm by default (Van Gassen 
 et al. 2015, \emph{Cytometry Part A}). We previously showed that \code{FlowSOM} gives
@@ -52,10 +59,39 @@ The clustering is run at high resolution to give a large number of small cluster
 ensure that subtle differential expression signals in small subsets are not missed.
 
 In most cases, only lineage markers should be used for clustering.
-
-Note that data should be transformed prior to clustering, which can be done with the
-function \code{\link{transformData}}.
 }
 \examples{
-# need to create a small example data set for examples
+library(flowCore)
+
+# filenames
+files <- list.files(system.file("extdata", package = "diffcyt"), 
+                    pattern = "\\\\.fcs$", full.names = TRUE)
+files_BCRXL <- files[grep("BCRXL", files)]
+files_ref <- files[grep("ref", files)]
+
+# load data
+files_load <- c(files_BCRXL, files_ref)
+d_input <- lapply(files_load, read.FCS, transformation = FALSE, truncate_max_range = FALSE)
+
+# sample IDs and group IDs
+sample_IDs <- gsub("\\\\.fcs$", "", basename(files_load))
+sample_IDs
+group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
+group_IDs
+
+# prepare data
+d_se <- prepareData(d_input, sample_IDs, group_IDs)
+
+# indices of all marker columns, lineage markers, and functional markers
+# (see Table 1 in Bruggner et al. 2014)
+marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+func_cols <- setdiff(marker_cols, lineage_cols)
+
+# transform data
+d_se <- transformData(d_se, cofactor = 5, marker_cols = marker_cols)
+
+# run clustering
+d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 20, ydim = 20, 
+                         seed = 123, plot = FALSE)
 }

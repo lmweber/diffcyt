@@ -34,7 +34,8 @@
 #' library(flowCore)
 #' 
 #' # filenames
-#' files <- list.files("../inst/extdata", pattern = "\\.fcs$", full.names = TRUE)
+#' files <- list.files(system.file("extdata", package = "diffcyt"), 
+#'                     pattern = "\\.fcs$", full.names = TRUE)
 #' files_BCRXL <- files[grep("BCRXL", files)]
 #' files_ref <- files[grep("ref", files)]
 #' 
@@ -79,7 +80,7 @@ prepareData <- function(d_input, sample_IDs, group_IDs) {
   
   d_out <- SummarizedExperiment(d_combined, rowData = row_data, colData = col_data)
   
-  return(d_out)
+  d_out
 }
 
 

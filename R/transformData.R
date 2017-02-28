@@ -23,7 +23,7 @@
 #' @return d_se Data with transform applied to protein marker columns.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assays
+#' @importFrom SummarizedExperiment assays 'assays<-'
 #' 
 #' @export
 #'
@@ -31,7 +31,8 @@
 #' library(flowCore)
 #' 
 #' # filenames
-#' files <- list.files("../inst/extdata", pattern = "\\.fcs$", full.names = TRUE)
+#' files <- list.files(system.file("extdata", package = "diffcyt"), 
+#'                     pattern = "\\.fcs$", full.names = TRUE)
 #' files_BCRXL <- files[grep("BCRXL", files)]
 #' files_ref <- files[grep("ref", files)]
 #' 
@@ -58,7 +59,7 @@
 #' d_se <- transformData(d_se, cofactor = 5, marker_cols = marker_cols)
 transformData <- function(d_se, cofactor = 5, marker_cols = NULL) {
   
-  if (is.null(marker_cols)) marker_cols <- 1:ncol(d_input[[1]])
+  if (is.null(marker_cols)) marker_cols <- 1:ncol(d_se[[1]])
   
   # extract expression data
   d_ex <- assays(d_se)[[1]]
