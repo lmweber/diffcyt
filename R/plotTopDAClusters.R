@@ -69,9 +69,6 @@
 #' # plotTopDAClusters(res_DA)
 plotTopDAClusters <- function(res_DA, path = ".", filename = "plot_top_DA_clusters.pdf") {
   
-  # select top differentially abundant (DA) cluster
-  #top_DA_cluster <- rownames(topTable(res_DA))[1]  # not using for now
-  
   # [to do: make more flexible]
   pdf(file.path(path, filename), width = 7, height = 7)
   plot(NA, type = "n", 

@@ -105,7 +105,9 @@ calcECDFs <- function(d_se, resolution = 30) {
   
   # note: 'ecdf' returns a function; evaluate this function at sequence of values 's'
   evaluate_ecdf <- function(vals, s) {
-    ecdf(vals)(s)
+    e <- ecdf(vals)(s)
+    names(e) <- s
+    e
   }
   s_vals <- function(vals) {
     seq(min(vals), max(vals), length.out = resolution)

@@ -91,7 +91,7 @@
 #' res_DA <- testDA(d_clus, group)
 #' topTable(res_DA, number = 6)
 #' 
-#' # plot top differentially abundant (DA) clusters
+#' # plot top DA clusters
 #' # note there is no evidence for DA in this example data set (data set is too small)
 #' # plotTopDAClusters(res_DA)
 #' 
