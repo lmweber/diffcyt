@@ -111,8 +111,11 @@ testDE_med <- function(d_clus, group,
   counts <- assays(d_clus)[["n_cells"]]
   
   # extract medians and create concatenated matrix for limma
-  func_names <- names(assays(d_clus))[-match("n_cells", names(assays(d_clus)))]  # "n_cells" is last
+  func_names <- names(assays(d_clus))[-length(assays(d_clus))]  # remove "n_cells" (last item in list)
   meds <- do.call("rbind", as.list(assays(d_clus)[func_names]))
+  # rownames: functional marker names and cluster labels
+  rownames(meds) <- paste(rep(func_names, sapply(assays(d_clus), nrow)[-length(assays(d_clus))]), 
+                          rownames(meds), sep = "_")
   
   weights <- do.call("rbind", rep(list(counts), length(func_names)))
   
