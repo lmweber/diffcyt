@@ -1,37 +1,41 @@
-#' Calculate cluster medians and frequencies
+#' Calculate empirical cumulative distribution functions (ECDFs)
 #' 
-#' Calculate cluster medians (median functional marker expression) and frequencies (number
-#' of cells) by cluster and sample
+#' Calculate empirical cumulative distribution functions (ECDFs) for FDA-based methods
 #' 
-#' Calculate median expression of functional markers (cluster medians) and number of cells 
-#' (cluster frequencies) by cluster and sample (i.e. for each cluster in each sample).
+#' The functional data analysis (FDA) based methodology in "diffcyt-FDA" uses empirical
+#' cumulative distribution functions (ECDFs) of the functional marker expression profiles 
+#' by cluster and sample, to test for differential expression between sample groups.
 #' 
-#' The cluster frequencies are used as weights in the subsequent statistical tests. The
-#' cluster medians are either used for directly testing differences in medians
-#' ('diffcyt-med'), or for visualization of results from the other methodologies
-#' ('diffcyt-FDA' and 'diffcyt-KS').
+#' This function calculates the ECDFs for each cluster-sample combination for each 
+#' functional marker, and evaluates each of them at a set of equally-spaced points. These 
+#' ECDF values can then be used for differential testing with \code{testDE_FDA}.
 #' 
-#' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
-#' object, where rows = clusters, columns = samples, sheets ('assay' slots) = functional 
-#' markers. The additional last sheet ('assay' slot) contains the cluster frequencies.
+#' The ECDF values are returned in a
+#' \code{\link[SummarizedExperiment]{SummarizedExperiment}} with the same shape as the
+#' output from \code{\link{calcMediansAndFreq}}: rows = clusters, columns = samples,
+#' sheets ('assay' slots) = functional markers.
 #' 
 #' 
 #' @param d_se Transformed data object from previous steps, in 
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, with cluster labels 
 #'   added in row meta-data using \code{\link{generateClusters}}.
 #' 
+#' @param resolution Resolution for evaluating ECDFs. The value of each ECDF is calculated
+#'   at this number of equally spaced points between the maximum and minimum observed
+#'   marker expression values for a given cluster-sample combination. Default = 30.
+#' 
 #' 
 #' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-#'   clusters, columns = samples, sheets ('assay' slots) = functional markers. The 
-#'   additional last sheet ('assay' slot) contains the cluster frequencies.
+#'   clusters, columns = samples, sheets ('assay' slots) = functional markers. Each entry
+#'   is a list of values (i.e. the evaluated ECDF values) with length \code{resolution}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
-#' @importFrom dplyr group_by tally summarize
+#' @importFrom dplyr group_by summarize
 #' @importFrom tidyr complete
 #' @importFrom reshape2 acast
 #' @importFrom magrittr '%>%'
-#' @importFrom stats median
+#' @importFrom stats ecdf
 #' @importFrom methods is
 #' 
 #' @export
@@ -74,7 +78,10 @@
 #' 
 #' # calculate cluster medians and frequencies
 #' d_clus <- calcMediansAndFreq(d_se)
-calcMediansAndFreq <- function(d_se) {
+#' 
+#' # calculate ECDFs
+#' d_ecdfs <- calcECDFs(d_se)
+calcECDFs <- function(d_se, resolution = 30) {
   
   if (!is(d_se, "SummarizedExperiment")) {
     stop("Data object must be a 'SummarizedExperiment'")
@@ -85,32 +92,27 @@ calcMediansAndFreq <- function(d_se) {
                 "to generate cluster labels."))
   }
   
-  # calculate cluster frequencies
-  
   rowdata_df <- as.data.frame(rowData(d_se))
-  
-  rowdata_df %>% 
-    group_by(cluster, sample) %>% 
-    tally %>% 
-    complete(sample) -> 
-    n_cells
-  
-  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
-  
-  n_cells <- list(n_cells = n_cells)
-  
-  # calculate cluster medians
   
   assaydata_mx <- assays(d_se)[[1]]
   
-  medians_func <- vector("list", sum(colData(d_se)$is_functional))
+  ECDFs_func <- vector("list", sum(colData(d_se)$is_functional))
   func_names <- as.character(colData(d_se)$markers[colData(d_se)$is_functional])
-  names(medians_func) <- func_names
+  names(ECDFs_func) <- func_names
   
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
   
-  for (i in seq_along(medians_func)) {
+  # note: 'ecdf' returns a function; evaluate this function at sequence of values 's'
+  evaluate_ecdf <- function(vals, s) {
+    ecdf(vals)(s)
+  }
+  s_vals <- function(vals) {
+    seq(min(vals), max(vals), length.out = resolution)
+  }
+  
+  # calculate ECDFs for each functional marker; each cluster-sample combination
+  for (i in seq_along(ECDFs_func)) {
     assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
     assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
@@ -118,24 +120,22 @@ calcMediansAndFreq <- function(d_se) {
     
     assaydata_i %>% 
       group_by(cluster, sample) %>% 
-      summarize(median = median(value)) -> 
-      med
+      summarize(ECDF = list(evaluate_ecdf(value, s_vals(value)))) -> 
+      ECDF
     
-    med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
+    ECDF <- acast(ECDF, cluster ~ sample, value.var = "ECDF", fill = NA)
     
-    medians_func[[i]] <- med
+    ECDFs_func[[i]] <- ECDF
   }
   
   # create new SummarizedExperiment
   
-  list_all <- c(medians_func, n_cells)
-  
   row_data <- data.frame(cluster = factor(sort(unique(clus)), levels = sort(unique(clus))))
   col_data <- data.frame(sample = factor(unique(smp), levels = unique(smp)))
   
-  d_clus <- SummarizedExperiment(list_all, rowData = row_data, colData = col_data)
+  d_ecdfs <- SummarizedExperiment(ECDFs_func, rowData = row_data, colData = col_data)
   
-  d_clus
+  d_ecdfs
 }
 
 
