@@ -28,12 +28,14 @@
 #'   (i.e. minimum possible p-value = 0.0002).
 #' 
 #' 
-#' @return Returns matrix of p-values from permutation tests, summarizing the evidence for
-#'   differential expression (rows = clusters, columns = functional markers).
+#' @return Returns a data frame containing cluster labels, functional marker names, and 
+#'   p-values summarizing the evidence for differential expression. Rows are sorted by 
+#'   p-value (smallest first).
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData colData
 #' @importFrom fda Data2fd
+#' @importFrom reshape2 melt
 #' 
 #' @export
 #' 
@@ -147,7 +149,14 @@ testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
     }
   }
   
-  p_vals
+  # sort to show lowest p-values (across all cluster-sample combinations) at the top
+  res <- as.data.frame(p_vals)
+  res$cluster <- rownames(res)
+  res <- melt(res, id.vars = "cluster", variable.name = "marker", value.name = "p_val")
+  
+  res <- res[order(res$p_val), ]
+  
+  res
 }
 
 

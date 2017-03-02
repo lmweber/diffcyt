@@ -18,8 +18,9 @@ vs. healthy), for differential comparisons and statistical tests.}
 (i.e. minimum possible p-value = 0.0002).}
 }
 \value{
-Returns matrix of p-values from permutation tests, summarizing the evidence for
-  differential expression (rows = clusters, columns = functional markers).
+Returns a data frame containing cluster labels, functional marker names, and 
+  p-values summarizing the evidence for differential expression. Rows are sorted by 
+  p-value (smallest first).
 }
 \description{
 Calculate tests for differential expression of functional markers within clusters 
