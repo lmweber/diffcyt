@@ -35,34 +35,9 @@ step (\code{\link{prepareData}}) is assumed to contain a vector of logical entri
 columns; otherwise all columns are transformed.
 }
 \examples{
-library(flowCore)
-library(limma)
+# See full examples in testing functions: testDA, testDE_med, testDE_FDA
 
-# filenames
-files <- list.files(system.file("extdata", package = "diffcyt"), 
-                    pattern = "\\\\.fcs$", full.names = TRUE)
-files_BCRXL <- files[grep("BCRXL", files)]
-files_ref <- files[grep("ref", files)]
-
-# load data
-files_load <- c(files_BCRXL, files_ref)
-d_input <- lapply(files_load, read.FCS, transformation = FALSE, truncate_max_range = FALSE)
-
-# sample IDs and group IDs
-sample_IDs <- gsub("\\\\.fcs$", "", basename(files_load))
-sample_IDs
-group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
-group_IDs
-
-# indices of all marker columns, lineage markers, and functional markers
-# (see Table 1 in Bruggner et al. 2014)
-marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
-lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
-functional_cols <- setdiff(marker_cols, lineage_cols)
-
-# prepare data
-d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols)
-
-# transform data
-d_se <- transformData(d_se, cofactor = 5)
+}
+\seealso{
+\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
 }

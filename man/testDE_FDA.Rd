@@ -72,7 +72,7 @@ d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, f
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (small 10x10 SOM grid due to small size of example data set)
+# generate clusters (note: small 10x10 SOM grid due to small size of example data set)
 d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 10, ydim = 10, 
                          seed = 123, plot = FALSE)
 
@@ -82,17 +82,17 @@ d_clus <- calcMediansAndFreq(d_se)
 # calculate ECDFs
 d_ecdfs <- calcECDFs(d_se)
 
-# (1) test for differentially abundant (DA) clusters
-group <- factor(group_IDs, levels = c("ref", "BCRXL"))  # re-level factor to use "ref" as base level
-res_DA <- testDA(d_clus, group)
-topTable(res_DA, number = 6)
 
-# plot top DA clusters
-# note there is no evidence for DA in this example data set (data set is too small)
-# plotTopDAClusters(res_DA)
+#########################################################################################
+# (3) Test for differential expression (DE) of functional markers: method "diffcyt-FDA" #
+#########################################################################################
 
-# (3) test for differential expression of functional markers: method "diffcyt-FDA"
-# (note: using small number of permutations for demonstration purposes)
+# re-level factor to use "ref" as base level
+group <- factor(group_IDs, levels = c("ref", "BCRXL"))
+
+# note: using small number of permutations for demonstration purposes
 res_DE_FDA <- testDE_FDA(d_ecdfs, group, n_perm = 100)
+
 head(res_DE_FDA)
+
 }

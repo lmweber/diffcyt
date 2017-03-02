@@ -68,17 +68,32 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (small 10x10 SOM grid due to small size of example data set)
+#' # generate clusters (note: small 10x10 SOM grid due to small size of example data set)
 #' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 10, ydim = 10, 
 #'                          seed = 123, plot = FALSE)
 #' 
 #' # calculate cluster medians and frequencies
 #' d_clus <- calcMediansAndFreq(d_se)
 #' 
-#' # (1) test for differentially abundant (DA) clusters
-#' group <- factor(group_IDs, levels = c("ref", "BCRXL"))  # re-level factor to use "ref" as base level
+#' # calculate ECDFs
+#' d_ecdfs <- calcECDFs(d_se)
+#' 
+#' 
+#' ########################################################
+#' # (1) Test for differential abundance (DA) of clusters #
+#' ########################################################
+#' 
+#' # re-level factor to use "ref" as base level
+#' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
+#' 
 #' res_DA <- testDA(d_clus, group)
+#' 
 #' topTable(res_DA, number = 6)
+#' 
+#' # plot top DA clusters
+#' # note there is no evidence for DA in this example data set (data set is too small)
+#' # plotTopDAClusters(res_DA)
+#' 
 testDA <- function(d_clus, group) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
