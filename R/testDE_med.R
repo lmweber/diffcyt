@@ -1,7 +1,8 @@
-#' Test for differential expression of functional markers (method: "medians")
+#' Test for differential expression of functional markers (method: "diffcyt-med")
 #' 
 #' Calculate tests for differential expression of functional markers within clusters 
-#' (method: "medians"), using empirical Bayes moderation of variances to improve power.
+#' (method: "diffcyt-med"), using empirical Bayes moderation of variances to improve
+#' power.
 #' 
 #' The "diffcyt-med" methodology uses median functional marker expression to characterize
 #' the signal within each cluster. The differential expression tests compare the median
@@ -114,7 +115,7 @@ testDE_med <- function(d_clus, group,
   func_names <- names(assays(d_clus))[-length(assays(d_clus))]  # remove "n_cells" (last item in list)
   meds <- do.call("rbind", as.list(assays(d_clus)[func_names]))
   # rownames: functional marker names and cluster labels
-  rownames(meds) <- paste(rep(func_names, sapply(assays(d_clus), nrow)[-length(assays(d_clus))]), 
+  rownames(meds) <- paste(rep(func_names, sapply(assays(d_clus), nrow)[-length(assays(d_clus))]),  # remove "n_cells"
                           rownames(meds), sep = "_")
   
   weights <- do.call("rbind", rep(list(counts), length(func_names)))

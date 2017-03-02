@@ -2,7 +2,7 @@
 % Please edit documentation in R/testDE_med.R
 \name{testDE_med}
 \alias{testDE_med}
-\title{Test for differential expression of functional markers (method: "medians")}
+\title{Test for differential expression of functional markers (method: "diffcyt-med")}
 \usage{
 testDE_med(d_clus, group, plot = TRUE, path = ".",
   filename = "results_DE_diffcyt_med.pdf")
@@ -29,7 +29,8 @@ Returns fitted model objects from \code{\link[limma]{limma}} for each cluster,
 }
 \description{
 Calculate tests for differential expression of functional markers within clusters 
-(method: "medians"), using empirical Bayes moderation of variances to improve power.
+(method: "diffcyt-med"), using empirical Bayes moderation of variances to improve
+power.
 }
 \details{
 The "diffcyt-med" methodology uses median functional marker expression to characterize
