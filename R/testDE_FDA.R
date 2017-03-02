@@ -149,7 +149,7 @@ testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
     }
   }
   
-  # sort to show lowest p-values (across all cluster-sample combinations) at the top
+  # sort to show lowest p-values (across functional markers and clusters) at the top
   res <- as.data.frame(p_vals)
   res$cluster <- rownames(res)
   res <- melt(res, id.vars = "cluster", variable.name = "marker", value.name = "p_val")
