@@ -184,7 +184,8 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
     assays_j <- assays(d_ecdfs)[[j]]
     
     p_vals[, j] <- unlist(
-      bplapply(seq_along(clus), eval_iter_i, assays_j, resolution, smp, argvals, grp, weights1, weights2, n_perm)
+      bplapply(seq_along(clus), eval_iter_i, assays_j, resolution, smp, argvals, grp, weights1, weights2, n_perm, 
+               BPPARAM = bpparam)
     )
     
     cat("marker", j, "complete\n")
