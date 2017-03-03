@@ -4,12 +4,18 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, group, n_perm = 5000)
+testDE_FDA(d_ecdfs, d_clus, group, n_perm = 5000)
 }
 \arguments{
 \item{d_ecdfs}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
 containing empirical cumulative distribution functions (ECDFs), calculated with 
 \code{\link{calcECDFs}}.}
+
+\item{d_clus}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster medians (median expression of functional markers) and cluster 
+frequencies (number of cells), from \code{\link{calcMediansAndFreq}}. The cluster 
+frequencies are used as weights for the permutation t-tests (the cluster medians are 
+not used here).}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased 
 vs. healthy), for differential comparisons and statistical tests.}
@@ -34,8 +40,14 @@ samples in the two groups (e.g. diseased vs. healthy).
 
 Permutation tests are used to calculate p-values.
 
+The tests are weighted by the number of cells per cluster-sample combination,
+representing the relative uncertainty in calculating each curve (i.e. the ECDF for each
+cluster-sample combination). Note that these are relative weights within each cluster
+only.
+
 We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
-steps.
+steps; with modifications to the permutation t-testing function to allow weighting and
+improve runtime.
 
 Alternative methodologies for testing for differential expression of functional markers
 are available in the functions \code{testDE_med} and \code{testDE-KS}.
@@ -91,7 +103,7 @@ d_ecdfs <- calcECDFs(d_se)
 group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 
 # note: using small number of permutations for demonstration purposes
-res_DE_FDA <- testDE_FDA(d_ecdfs, group, n_perm = 100)
+res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 100)
 
 head(res_DE_FDA)
 

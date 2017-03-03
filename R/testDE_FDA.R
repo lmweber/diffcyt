@@ -10,8 +10,14 @@
 #' 
 #' Permutation tests are used to calculate p-values.
 #' 
+#' The tests are weighted by the number of cells per cluster-sample combination,
+#' representing the relative uncertainty in calculating each curve (i.e. the ECDF for each
+#' cluster-sample combination). Note that these are relative weights within each cluster
+#' only.
+#' 
 #' We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
-#' steps.
+#' steps; with modifications to the permutation t-testing function to allow weighting and
+#' improve runtime.
 #' 
 #' Alternative methodologies for testing for differential expression of functional markers
 #' are available in the functions \code{testDE_med} and \code{testDE-KS}.
@@ -20,6 +26,12 @@
 #' @param d_ecdfs \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
 #'   containing empirical cumulative distribution functions (ECDFs), calculated with 
 #'   \code{\link{calcECDFs}}.
+#' 
+#' @param d_clus \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster medians (median expression of functional markers) and cluster 
+#'   frequencies (number of cells), from \code{\link{calcMediansAndFreq}}. The cluster 
+#'   frequencies are used as weights for the permutation t-tests (the cluster medians are 
+#'   not used here).
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased 
 #'   vs. healthy), for differential comparisons and statistical tests.
@@ -90,11 +102,11 @@
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 #' 
 #' # note: using small number of permutations for demonstration purposes
-#' res_DE_FDA <- testDE_FDA(d_ecdfs, group, n_perm = 100)
+#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 100)
 #' 
 #' head(res_DE_FDA)
 #' 
-testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
+testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
   
@@ -105,6 +117,10 @@ testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
   smp <- colData(d_ecdfs)$sample
   func_markers <- names(assays(d_ecdfs))
   
+  # number of cells per cluster-sample combination: to use as weights
+  # [to do: include check that column order matches groups]
+  weights <- assays(d_clus)[["n_cells"]]
+  
   # set up matrix for p-values
   p_vals <- matrix(NA, nrow = length(clus), ncol = length(func_markers))
   rownames(p_vals) <- clus
@@ -114,6 +130,9 @@ testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
   grp <- group == levels(group)[1]
   
   argvals <- 1:resolution
+  
+  weights1 <- weights[, grp]
+  weights2 <- weights[, !grp]
   
   # calculate p-values
   # [to do: include some filtering: no. of cells, no. of samples]
@@ -140,7 +159,7 @@ testDE_FDA <- function(d_ecdfs, group, n_perm = 5000) {
       # note: keeping p-values only (discarding all other results)
       # note: error handling: may return errors for some iterations; return NA in these cases
       p_val <- tryCatch({
-        .tperm.fd_fast(fd1, fd2, nperm = n_perm, plotres = FALSE)$pval
+        .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
       }, error = function(e) e)
       
       if (is(p_val, "simpleError")) p_val <- NA
