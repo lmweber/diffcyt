@@ -31,11 +31,11 @@ sample_IDs
 names(data_BCRXL) <- sample_IDs
 
 
-# subsample to create smaller example data set (6 samples, 1000 cells per sample)
+# subsample to create small example data set (6 samples, 100 cells per sample)
 smp_keep <- sample_IDs[c(1:3, 9:11)]
 smp_keep
 
-n <- 1000
+n <- 100
 
 for (i in 1:length(smp_keep)) {
   data_i <- flowFrame(exprs(data_BCRXL[[i]])[1:n, ])

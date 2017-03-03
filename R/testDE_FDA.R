@@ -83,8 +83,8 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: small 10x10 SOM grid due to small size of example data set)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 10, ydim = 10, 
+#' # generate clusters (note: using small 3x3 SOM grid for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 3, ydim = 3, 
 #'                          seed = 123, plot = FALSE)
 #' 
 #' # calculate cluster medians and frequencies
@@ -102,8 +102,10 @@
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 #' 
 #' # note: using small number of permutations for demonstration purposes
-#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 100)
+#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 10)
 #' 
+#' # (note: this is a small example data set used for demonstration purposes only; results
+#' # are not biologically meaningful)
 #' head(res_DE_FDA)
 #' 
 testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000) {

@@ -80,8 +80,8 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: small 10x10 SOM grid due to small size of example data set)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 10, ydim = 10, 
+#' # generate clusters (note: using small 3x3 SOM grid for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 3, ydim = 3, 
 #'                          seed = 123, plot = FALSE)
 #' 
 #' # calculate cluster medians and frequencies
@@ -101,6 +101,8 @@
 #' res_DE_med <- testDE_med(d_clus, group)
 #' 
 #' # topTable: use 'coef = 2' for contrast of interest (BCRXL vs. ref)
+#' # (note: this is a small example data set used for demonstration purposes only; results
+#' # are not biologically meaningful)
 #' topTable(res_DE_med, coef = 2, number = 6)
 #' 
 testDE_med <- function(d_clus, group, 

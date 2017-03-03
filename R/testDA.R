@@ -68,8 +68,8 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: small 10x10 SOM grid due to small size of example data set)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 10, ydim = 10, 
+#' # generate clusters (note: using small 3x3 SOM grid for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 3, ydim = 3, 
 #'                          seed = 123, plot = FALSE)
 #' 
 #' # calculate cluster medians and frequencies
@@ -91,7 +91,8 @@
 #' topTable(res_DA, number = 6)
 #' 
 #' # plot top DA clusters
-#' # note there is no evidence for DA in this example data set (data set is too small)
+#' # (note: this is a small example data set used for demonstration purposes only; results
+#' # are not biologically meaningful)
 #' # plotTopDAClusters(res_DA)
 #' 
 testDA <- function(d_clus, group) {
