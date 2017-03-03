@@ -17,6 +17,7 @@ Imports:
     tidyr, 
     reshape2, 
     magrittr, 
+    BiocParallel, 
     stats, 
     methods, 
     ggplot2, 

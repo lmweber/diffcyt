@@ -4,7 +4,7 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, d_clus, group, n_perm = 5000)
+testDE_FDA(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL)
 }
 \arguments{
 \item{d_ecdfs}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
@@ -22,6 +22,9 @@ vs. healthy), for differential comparisons and statistical tests.}
 
 \item{n_perm}{Number of permutations to use for permutation testing. Default = 5000 
 (i.e. minimum possible p-value = 0.0002).}
+
+\item{n_cores}{Number of processor cores for parallelized evaluation. Default = all
+available cores.}
 }
 \value{
 Returns a data frame containing cluster labels, functional marker names, and 
@@ -48,6 +51,9 @@ only.
 We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
 steps; with modifications to the permutation t-testing function to allow weighting and
 improve runtime.
+
+The \code{\link[BiocParallel]{BiocParallel}} package is used for parallelized 
+evaluation on multi-core systems, to speed up runtime.
 
 Alternative methodologies for testing for differential expression of functional markers
 are available in the functions \code{testDE_med} and \code{testDE-KS}.
