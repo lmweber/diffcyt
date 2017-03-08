@@ -4,7 +4,8 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL)
+testDE_FDA(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000,
+  n_cores = NULL)
 }
 \arguments{
 \item{d_ecdfs}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
@@ -19,6 +20,11 @@ not used here).}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased 
 vs. healthy), for differential comparisons and statistical tests.}
+
+\item{use_weights}{Whether to include weights (per cluster-sample combination) for 
+weighted permutation tests (see details below). Without weights, runtime is much 
+faster, but result do not account for uncertainty due to different numbers of cells 
+per sample (within each cluster). Default = TRUE.}
 
 \item{n_perm}{Number of permutations to use for permutation testing. Default = 5000 
 (i.e. minimum possible p-value = 0.0002).}
@@ -43,13 +49,15 @@ samples in the two groups (e.g. diseased vs. healthy).
 
 Permutation tests are used to calculate p-values.
 
-The tests are weighted by the number of cells per cluster-sample combination,
-representing the relative uncertainty in calculating each curve (i.e. the ECDF for each
-cluster-sample combination). Note that these are relative weights within each cluster
-only.
+By default, the tests are weighted by the number of cells per cluster-sample
+combination, representing the relative uncertainty in calculating each curve (i.e. the
+ECDF for each cluster-sample combination). Note that these are relative weights within
+each cluster only. Weights can also be disabled for (much) faster runtime
+(\code{weights = FALSE}), but then the results will not account for this source of
+uncertainty.
 
 We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
-steps; with modifications to the permutation t-testing function to allow weighting and
+steps; with modifications to the permutation t-testing function to allow weights and 
 improve runtime.
 
 The \code{\link[BiocParallel]{BiocParallel}} package is used for parallelized 
@@ -108,8 +116,10 @@ d_ecdfs <- calcECDFs(d_se)
 # re-level factor to use "ref" as base level
 group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 
-# note: using small number of permutations for demonstration purposes
-res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 10)
+# note: using no weights, small number of permutations, and single core for 
+# demonstration purposes
+res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, use_weights = FALSE, 
+                         n_perm = 10, n_cores = 1)
 
 # (note: this is a small example data set used for demonstration purposes only; results
 # are not biologically meaningful)

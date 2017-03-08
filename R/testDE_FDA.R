@@ -10,13 +10,15 @@
 #' 
 #' Permutation tests are used to calculate p-values.
 #' 
-#' The tests are weighted by the number of cells per cluster-sample combination,
-#' representing the relative uncertainty in calculating each curve (i.e. the ECDF for each
-#' cluster-sample combination). Note that these are relative weights within each cluster
-#' only.
+#' By default, the tests are weighted by the number of cells per cluster-sample
+#' combination, representing the relative uncertainty in calculating each curve (i.e. the
+#' ECDF for each cluster-sample combination). Note that these are relative weights within
+#' each cluster only. Weights can also be disabled for (much) faster runtime
+#' (\code{weights = FALSE}), but then the results will not account for this source of
+#' uncertainty.
 #' 
 #' We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
-#' steps; with modifications to the permutation t-testing function to allow weighting and
+#' steps; with modifications to the permutation t-testing function to allow weights and 
 #' improve runtime.
 #' 
 #' The \code{\link[BiocParallel]{BiocParallel}} package is used for parallelized 
@@ -38,6 +40,11 @@
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased 
 #'   vs. healthy), for differential comparisons and statistical tests.
+#' 
+#' @param use_weights Whether to include weights (per cluster-sample combination) for 
+#'   weighted permutation tests (see details below). Without weights, runtime is much 
+#'   faster, but result do not account for uncertainty due to different numbers of cells 
+#'   per sample (within each cluster). Default = TRUE.
 #' 
 #' @param n_perm Number of permutations to use for permutation testing. Default = 5000 
 #'   (i.e. minimum possible p-value = 0.0002).
@@ -108,14 +115,16 @@
 #' # re-level factor to use "ref" as base level
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 #' 
-#' # note: using small number of permutations for demonstration purposes
-#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, n_perm = 10)
+#' # note: using no weights, small number of permutations, and single core for 
+#' # demonstration purposes
+#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, use_weights = FALSE, 
+#'                          n_perm = 10, n_cores = 1)
 #' 
 #' # (note: this is a small example data set used for demonstration purposes only; results
 #' # are not biologically meaningful)
 #' head(res_DE_FDA)
 #' 
-testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
+testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000, n_cores = NULL) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
   
@@ -128,7 +137,11 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
   
   # number of cells per cluster-sample combination: to use as weights
   # [to do: include check that column order matches groups]
-  weights <- assays(d_clus)[["n_cells"]]
+  if (use_weights) {
+    weights <- assays(d_clus)[["n_cells"]]
+  } else {
+    weights <- NULL
+  }
   
   # set up matrix for p-values
   p_vals <- matrix(NA, nrow = length(clus), ncol = length(func_markers))
@@ -143,9 +156,9 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
   weights1 <- weights[, grp]
   weights2 <- weights[, !grp]
   
-  
   # function for parallelized evaluation: calculates p-value for cluster 'i'
-  eval_iter_i <- function(i, assays_j, resolution, smp, argvals, grp, weights1, weights2, n_perm) {
+  eval_iter_i <- function(i, assays_j, resolution, smp, argvals, grp, 
+                          use_weights, weights1, weights2, n_perm) {
     
     y <- assays_j[i, ]
     
@@ -163,9 +176,15 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
     
     # note: keeping p-values only (discarding all other results)
     # note: error handling: may return errors for some iterations; return NA in these cases
-    p_val <- tryCatch({
-      .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
-    }, error = function(e) e)
+    if (use_weights) {
+      p_val <- tryCatch({
+        .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
+      }, error = function(e) e)
+    } else {
+      p_val <- tryCatch({
+        .tperm.fd_fast(fd1, fd2, nperm = n_perm, plotres = FALSE)$pval
+      }, error = function(e) e)
+    }
     
     if (is(p_val, "simpleError")) p_val <- NA
     
@@ -184,8 +203,8 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, n_perm = 5000, n_cores = NULL) {
     assays_j <- assays(d_ecdfs)[[j]]
     
     p_vals[, j] <- unlist(
-      bplapply(seq_along(clus), eval_iter_i, assays_j, resolution, smp, argvals, grp, weights1, weights2, n_perm, 
-               BPPARAM = bpparam)
+      bplapply(seq_along(clus), eval_iter_i, assays_j, resolution, smp, argvals, grp, 
+               use_weights, weights1, weights2, n_perm, BPPARAM = bpparam)
     )
     
     cat("marker", j, "complete\n")

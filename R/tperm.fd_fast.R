@@ -1,27 +1,20 @@
 ##########################################################################################
 # Modified version of function 'tperm.fd()' from package 'fda' (Ramsay et al. 2014)
 # 
-# Two main modifications:
-# - Allow sample-specific weights in arguments 'weights1' and 'weights2' (i.e. 'weights1' 
-# and 'weights2' contain weights for the functional data objects 'x1fd' and 'x2fd' 
-# respectively), for weighted permutation t-tests.
-# - Use 'rowWeightedMeans', 'rowWeightedVars', and 'colMaxs' from the 'matrixStats'
-# package for faster runtime.
+# Using 'rowMeans' and 'matrixStats' package ('rowVars', 'colMaxs') for faster runtime. 
+# Note: Alternative version 'tperm.fd_wtd_fast.R' also allows sample weights, but is
+# slower.
 # 
-# Note: Alternative version 'tperm.fd_fast.R' provides additional runtime improvements
-# when weights are not required.
-#
-# Modified by Lukas Weber and Mark Robinson, March 2017
+# Modified by Mark Robinson, March 2017
 ##########################################################################################
 
 
-#' @importFrom matrixStats rowWeightedMeans rowWeightedVars colMaxs
+#' @importFrom matrixStats rowVars colMaxs
 #' @importFrom fda is.fd eval.fd
 #' @importFrom stats quantile
 #' @importFrom graphics plot lines abline legend
 #' 
-.tperm.fd_wtd_fast <- function (x1fd, x2fd, weights1 = NULL, weights2 = NULL, nperm = 200, 
-                                q = 0.05, argvals = NULL, plotres = TRUE, ...)
+.tperm.fd_fast <- function (x1fd, x2fd, nperm = 200, q = 0.05, argvals = NULL, plotres = TRUE, ...)
 {
     if (!is.fd(x1fd) | !is.fd(x2fd)) {
         stop("x1fd and x2fd must both be functional data objects")
@@ -39,37 +32,21 @@
     x2mat = eval.fd(argvals, x2fd)
     n1 = ncol(x1mat)
     n2 = ncol(x2mat)
-    weights = c(weights1, weights2)
-    if (!is.null(weights)) {
-        if (!((length(weights1) == n1) & (length(weights2) == n2))) {
-            stop("lengths of weights vectors do not match number of samples")
-        }
-    }
-    if (is.null(weights)) {
-        warning(paste0("Use alternative version 'tperm.fd_fast.R' for faster runtime ", 
-                       "when weights are not required."))
-        weights1 = rep(1, n1)
-        weights2 = rep(1, n2)
-        weights = c(weights1, weights2)
-    }
     Xmat = cbind(x1mat, x2mat)
     Tnullvals = matrix(0, length(argvals), nperm)
     for (i in 1:nperm) {
-        # keep track of indices so each weight can be associated with the correct sample
-        perm_i = sample(n1 + n2)
-        weights_i = weights[perm_i]
-        tXmat = Xmat[, perm_i]
-        tmean1 = rowWeightedMeans(tXmat[, 1:n1], weights_i[1:n1])
-        tmean2 = rowWeightedMeans(tXmat[, n1 + (1:n2)], weights_i[n1 + (1:n2)])
-        tvar1 = rowWeightedVars(tXmat[, 1:n1], weights_i[1:n1]) / sum(weights_i[1:n1])
-        tvar2 = rowWeightedVars(tXmat[, n1 + (1:n2)], weights_i[n1 + (1:n2)]) / sum(weights_i[n1 + (1:n2)])
+        tXmat = Xmat[, sample(n1 + n2)]
+        tmean1 = rowMeans(tXmat[, 1:n1])
+        tmean2 = rowMeans(tXmat[, n1 + (1:n2)])
+        tvar1 = rowVars(tXmat[, 1:n1])/n1
+        tvar2 = rowVars(tXmat[, n1 + (1:n2)])/n2
         Tnullvals[, i] = abs(tmean1 - tmean2)/sqrt(tvar1 + tvar2)
     }
     Tnull = colMaxs(Tnullvals)
-    mean1 = rowWeightedMeans(Xmat[, 1:n1], weights1)
-    mean2 = rowWeightedMeans(Xmat[, n1 + (1:n2)], weights2)
-    var1 = rowWeightedVars(Xmat[, 1:n1], weights1) / sum(weights1)
-    var2 = rowWeightedVars(Xmat[, n1 + (1:n2)], weights2) / sum(weights2)
+    mean1 = rowMeans(Xmat[, 1:n1])
+    mean2 = rowMeans(Xmat[, n1 + (1:n2)])
+    var1 = rowVars(Xmat[, 1:n1])/n1
+    var2 = rowVars(Xmat[, n1 + (1:n2)])/n2
     Tvals = abs(mean1 - mean2)/sqrt(var1 + var2)
     Tobs = max(Tvals)
     pval = mean(Tobs < Tnull)
