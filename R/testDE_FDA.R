@@ -160,19 +160,15 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   # [to do: generalize for different experimental designs]
   grp <- group == levels(group)[1]
   
-  argvals <- 1:resolution
-  
-  weights1 <- weights[, grp]
-  weights2 <- weights[, !grp]
+  argvals <- seq_len(resolution)
   
   # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
-  calc_p_val <- function(indices, d_ecdfs, d_clus, min_cells, min_samples, 
-                         resolution, smp, argvals, grp, 
-                         weighted, weights1, weights2, n_perm) {
+  calc_p_val <- function(indices, d_ecdfs, d_clus, min_cells, min_samples, resolution, 
+                         smp, argvals, grp, weighted, weights, n_perm) {
     
     # extract 'i' and 'j' from 'indices' (data frame)
-    i <- unlist(indices)[1]
-    j <- unlist(indices)[2]
+    i <- unname(unlist(indices)[1])
+    j <- unname(unlist(indices)[2])
     
     y <- assays(d_ecdfs)[[j]][i, ]
     
@@ -188,6 +184,11 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
     keep <- n_cells_i >= min_cells
     y <- y[keep]
     grp <- grp[keep]
+    
+    if (weighted) {
+      weights1 <- weights[, grp]
+      weights2 <- weights[, !grp]
+    }
     
     # filtering step 2: minimum number of samples per condition
     if ((min(table(grp)) <= min_samples) | (length(table(grp)) <= 1)) {
@@ -219,9 +220,8 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   indices <- split(indices, seq_len(nrow(indices)))
   
   # calculate p-values (parallelized across clusters 'i' and markers 'j')
-  # [to do: include some filtering: no. of cells, no. of samples]
   p_vals <- bplapply(indices, calc_p_val, d_ecdfs, d_clus, min_cells, min_samples, 
-                     resolution, smp, argvals, grp, weighted, weights1, weights2, n_perm, 
+                     resolution, smp, argvals, grp, weighted, weights, n_perm, 
                      BPPARAM = bpparam)
   
   p_vals <- matrix(unlist(p_vals), nrow = length(clus), ncol = length(func_markers))
