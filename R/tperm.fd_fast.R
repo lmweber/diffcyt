@@ -2,8 +2,8 @@
 # Modified version of function 'tperm.fd()' from package 'fda' (Ramsay et al. 2014)
 # 
 # Using 'rowMeans' and 'matrixStats' package ('rowVars', 'colMaxs') for faster runtime. 
-# Note: Alternative version 'tperm.fd_wtd_fast.R' also allows sample weights, but is
-# slower.
+# Note: Alternative version 'tperm.fd_wtd_fast.R' also allows sample-specific weights, but
+# is slower.
 # 
 # Modified by Mark Robinson, March 2017
 ##########################################################################################

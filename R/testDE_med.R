@@ -12,6 +12,10 @@
 #' The number of cells per cluster per sample is used to weight the tests, representing
 #' the uncertainty in calculating each median value.
 #' 
+#' Filtering: Clusters are kept for testing if there are at least \code{min_samples}
+#' samples in each condition with at least \code{min_cells} cells. Filtered clusters are
+#' removed from testing for all functional markers.
+#' 
 #' Empirical Bayes methods are used to share information on variability across clusters, 
 #' improving power. We use the \code{\link[limma]{limma}} package (Ritchie et al. 2015, 
 #' \emph{Nucleic Acids Research}) to calculate the empirical Bayes moderated tests.
@@ -26,6 +30,14 @@
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased
 #'   vs. healthy), for differential comparisons and statistical tests.
+#' 
+#' @param min_cells Filtering parameter. Default = 6. Clusters are kept if there are at
+#'   least \code{min_samples} samples in each condition with at least \code{min_cells}
+#'   cells. Filtered clusters are removed from testing for all functional markers.
+#' 
+#' @param min_samples Filtering parameter. Default = 2. Clusters are kept if there are at 
+#'   least \code{min_samples} samples in each condition with at least \code{min_cells} 
+#'   cells. Filtered clusters are removed from testing for all functional markers.
 #' 
 #' @param plot Whether to save plot. Default = TRUE.
 #' 
@@ -105,7 +117,7 @@
 #' # are not biologically meaningful)
 #' topTable(res_DE_med, coef = 2, number = 6)
 #' 
-testDE_med <- function(d_clus, group, 
+testDE_med <- function(d_clus, group, min_cells = 6, min_samples = 2, 
                        plot = TRUE, path = ".", filename = "results_DE_diffcyt_med.pdf") {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
@@ -116,12 +128,20 @@ testDE_med <- function(d_clus, group,
   # number of cells per cluster
   counts <- assays(d_clus)[["n_cells"]]
   
+  # filtering
+  grp <- group == levels(group)[1]
+  tf <- counts >= min_cells
+  ix_keep <- (rowSums(tf[, grp]) > min_samples) & (rowSums(tf[, !grp]) > min_samples)
+  
+  counts <- counts[ix_keep, ]
+  
   # extract medians and create concatenated matrix for limma
   func_names <- names(assays(d_clus))[-length(assays(d_clus))]  # remove "n_cells" (last item in list)
-  meds <- do.call("rbind", as.list(assays(d_clus)[func_names]))
+  meds <- do.call("rbind", {
+    lapply(as.list(assays(d_clus)[func_names]), function(a) a[ix_keep, ])
+  })
   # rownames: functional marker names and cluster labels
-  rownames(meds) <- paste(rep(func_names, sapply(assays(d_clus), nrow)[-length(assays(d_clus))]),  # remove "n_cells"
-                          rownames(meds), sep = "_")
+  rownames(meds) <- paste(rep(func_names, each = nrow(counts)), rownames(meds), sep = "_")
   
   weights <- do.call("rbind", rep(list(counts), length(func_names)))
   

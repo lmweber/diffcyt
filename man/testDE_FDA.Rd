@@ -4,8 +4,8 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000,
-  n_cores = NULL)
+testDE_FDA(d_ecdfs, d_clus, group, weighted = TRUE, min_cells = 6,
+  min_samples = 2, n_perm = 5000, n_cores = NULL)
 }
 \arguments{
 \item{d_ecdfs}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
@@ -25,6 +25,13 @@ vs. healthy), for differential comparisons and statistical tests.}
 weighted permutation tests (see details below). Without weights, runtime is much 
 faster, but result do not account for uncertainty due to different numbers of cells 
 per sample (within each cluster). Default = TRUE.}
+
+\item{min_cells}{Filtering parameter. For each cluster-marker combination, samples with
+less than \code{min_cells} cells are removed. Default = 6.}
+
+\item{min_samples}{Filtering parameter. Clusters with less than \code{min_samples} 
+samples in either group (condition) are removed (for a given marker); p-value = NA in
+these cases. Default = 2.}
 
 \item{n_perm}{Number of permutations to use for permutation testing. Default = 5000 
 (i.e. minimum possible p-value = 0.0002).}
@@ -55,6 +62,11 @@ ECDF for each cluster-sample combination). Note that these are relative weights 
 each cluster only. Weights can also be disabled for (much) faster runtime
 (\code{weights = FALSE}), but then the results will not account for this source of
 uncertainty.
+
+Two levels of filtering are included by default. First, for each cluster-marker
+combination, samples with less than \code{min_cells} cells are removed. Second, any
+clusters with less than \code{min_samples} samples in either condition are removed (for
+this marker); p-value = NA is returned in these cases.
 
 We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
 steps; with modifications to the permutation t-testing function to allow weights and 

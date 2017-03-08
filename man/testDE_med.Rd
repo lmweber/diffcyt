@@ -4,8 +4,8 @@
 \alias{testDE_med}
 \title{Test for differential expression of functional markers (method: "diffcyt-med")}
 \usage{
-testDE_med(d_clus, group, plot = TRUE, path = ".",
-  filename = "results_DE_diffcyt_med.pdf")
+testDE_med(d_clus, group, min_cells = 6, min_samples = 2, plot = TRUE,
+  path = ".", filename = "results_DE_diffcyt_med.pdf")
 }
 \arguments{
 \item{d_clus}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -14,6 +14,14 @@ frequencies (number of cells), from \code{\link{calcMediansAndFreq}}.}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased
 vs. healthy), for differential comparisons and statistical tests.}
+
+\item{min_cells}{Filtering parameter. Default = 6. Clusters are kept if there are at
+least \code{min_samples} samples in each condition with at least \code{min_cells}
+cells. Filtered clusters are removed from testing for all functional markers.}
+
+\item{min_samples}{Filtering parameter. Default = 2. Clusters are kept if there are at 
+least \code{min_samples} samples in each condition with at least \code{min_cells} 
+cells. Filtered clusters are removed from testing for all functional markers.}
 
 \item{plot}{Whether to save plot. Default = TRUE.}
 
@@ -40,6 +48,10 @@ diseased vs. healthy).
 
 The number of cells per cluster per sample is used to weight the tests, representing
 the uncertainty in calculating each median value.
+
+Filtering: Clusters are kept for testing if there are at least \code{min_samples}
+samples in each condition with at least \code{min_cells} cells. Filtered clusters are
+removed from testing for all functional markers.
 
 Empirical Bayes methods are used to share information on variability across clusters, 
 improving power. We use the \code{\link[limma]{limma}} package (Ritchie et al. 2015, 

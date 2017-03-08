@@ -3,13 +3,13 @@
 # 
 # Two main modifications:
 # - Allow sample-specific weights in arguments 'weights1' and 'weights2' (i.e. 'weights1' 
-# and 'weights2' contain weights for the functional data objects 'x1fd' and 'x2fd' 
+# and 'weights2' contain weights by sample in functional data objects 'x1fd' and 'x2fd' 
 # respectively), for weighted permutation t-tests.
 # - Use 'rowWeightedMeans', 'rowWeightedVars', and 'colMaxs' from the 'matrixStats'
 # package for faster runtime.
 # 
-# Note: Alternative version 'tperm.fd_fast.R' provides additional runtime improvements
-# when weights are not required.
+# Note: Alternative version 'tperm.fd_fast.R' gives faster runtime when weights are not 
+# required.
 #
 # Modified by Lukas Weber and Mark Robinson, March 2017
 ##########################################################################################

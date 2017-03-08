@@ -77,6 +77,7 @@ calcMediansAndFreq <- function(d_se) {
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
   
+  # [to do: could possibly replace the loop with 'summarize_each'; but is already fast]
   for (i in seq_along(medians_func)) {
     assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)

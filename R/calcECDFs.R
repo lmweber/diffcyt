@@ -78,6 +78,8 @@ calcECDFs <- function(d_se, resolution = 30) {
   }
   
   # calculate ECDFs for each functional marker; each cluster-sample combination
+  # [to do: could possibly replace the loop with 'summarize_each'; but is already
+  # reasonably fast]
   for (i in seq_along(ECDFs_func)) {
     assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)

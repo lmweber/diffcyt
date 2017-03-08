@@ -17,6 +17,11 @@
 #' (\code{weights = FALSE}), but then the results will not account for this source of
 #' uncertainty.
 #' 
+#' Two levels of filtering are included by default. First, for each cluster-marker
+#' combination, samples with less than \code{min_cells} cells are removed. Second, any
+#' clusters with less than \code{min_samples} samples in either condition are removed (for
+#' this marker); p-value = NA is returned in these cases.
+#' 
 #' We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
 #' steps; with modifications to the permutation t-testing function to allow weights and 
 #' improve runtime.
@@ -45,6 +50,13 @@
 #'   weighted permutation tests (see details below). Without weights, runtime is much 
 #'   faster, but result do not account for uncertainty due to different numbers of cells 
 #'   per sample (within each cluster). Default = TRUE.
+#' 
+#' @param min_cells Filtering parameter. For each cluster-marker combination, samples with
+#'   less than \code{min_cells} cells are removed. Default = 6.
+#' 
+#' @param min_samples Filtering parameter. Clusters with less than \code{min_samples} 
+#'   samples in either group (condition) are removed (for a given marker); p-value = NA in
+#'   these cases. Default = 2.
 #' 
 #' @param n_perm Number of permutations to use for permutation testing. Default = 5000 
 #'   (i.e. minimum possible p-value = 0.0002).
@@ -124,7 +136,9 @@
 #' # are not biologically meaningful)
 #' head(res_DE_FDA)
 #' 
-testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000, n_cores = NULL) {
+testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, 
+                       min_cells = 6, min_samples = 2, 
+                       n_perm = 5000, n_cores = NULL) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
   
@@ -152,7 +166,8 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000, n
   weights2 <- weights[, !grp]
   
   # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
-  calc_p_val <- function(indices, d_ecdfs, resolution, smp, argvals, grp, 
+  calc_p_val <- function(indices, d_ecdfs, d_clus, min_cells, min_samples, 
+                         resolution, smp, argvals, grp, 
                          weighted, weights1, weights2, n_perm) {
     
     # extract 'i' and 'j' from 'indices' (data frame)
@@ -168,8 +183,19 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000, n
       yy
     })
     
-    y <- matrix(unlist(y), ncol = length(smp))
+    # filtering step 1: minimum number of cells per sample
+    n_cells_i <- assays(d_clus)[["n_cells"]][i, ]
+    keep <- n_cells_i >= min_cells
+    y <- y[keep]
+    grp <- grp[keep]
     
+    # filtering step 2: minimum number of samples per condition
+    if ((min(table(grp)) <= min_samples) | (length(table(grp)) <= 1)) {
+      return(NA)
+    }
+    
+    # prepare 'fda' objects
+    y <- matrix(unlist(y), ncol = length(smp))
     fd1 <- Data2fd(argvals = argvals, y = y[, grp])
     fd2 <- Data2fd(argvals = argvals, y = y[, !grp])
     
@@ -194,8 +220,9 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000, n
   
   # calculate p-values (parallelized across clusters 'i' and markers 'j')
   # [to do: include some filtering: no. of cells, no. of samples]
-  p_vals <- bplapply(indices, calc_p_val, d_ecdfs, resolution, smp, argvals, grp, 
-                     weighted, weights1, weights2, n_perm, BPPARAM = bpparam)
+  p_vals <- bplapply(indices, calc_p_val, d_ecdfs, d_clus, min_cells, min_samples, 
+                     resolution, smp, argvals, grp, weighted, weights1, weights2, n_perm, 
+                     BPPARAM = bpparam)
   
   p_vals <- matrix(unlist(p_vals), nrow = length(clus), ncol = length(func_markers))
   rownames(p_vals) <- clus
