@@ -186,6 +186,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
     grp <- grp[keep]
     
     if (weighted) {
+      weights <- weights[, keep]
       weights1 <- weights[, grp]
       weights2 <- weights[, !grp]
     }
