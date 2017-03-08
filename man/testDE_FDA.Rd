@@ -4,7 +4,7 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000,
+testDE_FDA(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000,
   n_cores = NULL)
 }
 \arguments{
@@ -21,7 +21,7 @@ not used here).}
 \item{group}{Factor containing group membership for each sample (for example, diseased 
 vs. healthy), for differential comparisons and statistical tests.}
 
-\item{use_weights}{Whether to include weights (per cluster-sample combination) for 
+\item{weighted}{Whether to include weights (per cluster-sample combination) for 
 weighted permutation tests (see details below). Without weights, runtime is much 
 faster, but result do not account for uncertainty due to different numbers of cells 
 per sample (within each cluster). Default = TRUE.}
@@ -118,8 +118,8 @@ group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 
 # note: using no weights, small number of permutations, and single core for 
 # demonstration purposes
-res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, use_weights = FALSE, 
-                         n_perm = 10, n_cores = 1)
+res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, weighted = FALSE, 
+                         n_perm = 100, n_cores = 1)
 
 # (note: this is a small example data set used for demonstration purposes only; results
 # are not biologically meaningful)

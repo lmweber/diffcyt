@@ -41,7 +41,7 @@
 #' @param group Factor containing group membership for each sample (for example, diseased 
 #'   vs. healthy), for differential comparisons and statistical tests.
 #' 
-#' @param use_weights Whether to include weights (per cluster-sample combination) for 
+#' @param weighted Whether to include weights (per cluster-sample combination) for 
 #'   weighted permutation tests (see details below). Without weights, runtime is much 
 #'   faster, but result do not account for uncertainty due to different numbers of cells 
 #'   per sample (within each cluster). Default = TRUE.
@@ -117,14 +117,14 @@
 #' 
 #' # note: using no weights, small number of permutations, and single core for 
 #' # demonstration purposes
-#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, use_weights = FALSE, 
-#'                          n_perm = 10, n_cores = 1)
+#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, weighted = FALSE, 
+#'                          n_perm = 100, n_cores = 1)
 #' 
 #' # (note: this is a small example data set used for demonstration purposes only; results
 #' # are not biologically meaningful)
 #' head(res_DE_FDA)
 #' 
-testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000, n_cores = NULL) {
+testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, n_perm = 5000, n_cores = NULL) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
   
@@ -137,16 +137,11 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000
   
   # number of cells per cluster-sample combination: to use as weights
   # [to do: include check that column order matches groups]
-  if (use_weights) {
+  if (weighted) {
     weights <- assays(d_clus)[["n_cells"]]
   } else {
     weights <- NULL
   }
-  
-  # set up matrix for p-values
-  p_vals <- matrix(NA, nrow = length(clus), ncol = length(func_markers))
-  rownames(p_vals) <- clus
-  colnames(p_vals) <- func_markers
   
   # [to do: generalize for different experimental designs]
   grp <- group == levels(group)[1]
@@ -156,11 +151,15 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000
   weights1 <- weights[, grp]
   weights2 <- weights[, !grp]
   
-  # function for parallelized evaluation: calculates p-value for cluster 'i'
-  eval_iter_i <- function(i, assays_j, resolution, smp, argvals, grp, 
-                          use_weights, weights1, weights2, n_perm) {
+  # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
+  calc_p_val <- function(indices, d_ecdfs, resolution, smp, argvals, grp, 
+                         weighted, weights1, weights2, n_perm) {
     
-    y <- assays_j[i, ]
+    # extract 'i' and 'j' from 'indices' (data frame)
+    i <- unlist(indices)[1]
+    j <- unlist(indices)[2]
+    
+    y <- assays(d_ecdfs)[[j]][i, ]
     
     # fix missing values (when zero cells in this cluster-sample combination)
     # [to do: move this to 'calcECDFs()']
@@ -175,18 +174,11 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000
     fd2 <- Data2fd(argvals = argvals, y = y[, !grp])
     
     # note: keeping p-values only (discarding all other results)
-    # note: error handling: may return errors for some iterations; return NA in these cases
-    if (use_weights) {
-      p_val <- tryCatch({
-        .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
-      }, error = function(e) e)
+    if (weighted) {
+      p_val <- .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
     } else {
-      p_val <- tryCatch({
-        .tperm.fd_fast(fd1, fd2, nperm = n_perm, plotres = FALSE)$pval
-      }, error = function(e) e)
+      p_val <- .tperm.fd_fast(fd1, fd2, nperm = n_perm, plotres = FALSE)$pval
     }
-    
-    if (is(p_val, "simpleError")) p_val <- NA
     
     p_val
   }
@@ -196,20 +188,18 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, use_weights = TRUE, n_perm = 5000
   if (is.null(n_cores)) n_cores <- multicoreWorkers()
   bpparam <- MulticoreParam(workers = n_cores)
   
-  # calculate p-values (parallelized for each marker 'j')
-  # [to do: include some filtering: no. of cells, no. of samples]
-  for (j in seq_along(func_markers)) {
-    
-    assays_j <- assays(d_ecdfs)[[j]]
-    
-    p_vals[, j] <- unlist(
-      bplapply(seq_along(clus), eval_iter_i, assays_j, resolution, smp, argvals, grp, 
-               use_weights, weights1, weights2, n_perm, BPPARAM = bpparam)
-    )
-    
-    cat("marker", j, "complete\n")
-  }
+  # grid of indices for parallelization
+  indices <- expand.grid(seq_along(clus), seq_along(func_markers))
+  indices <- split(indices, seq_len(nrow(indices)))
   
+  # calculate p-values (parallelized across clusters 'i' and markers 'j')
+  # [to do: include some filtering: no. of cells, no. of samples]
+  p_vals <- bplapply(indices, calc_p_val, d_ecdfs, resolution, smp, argvals, grp, 
+                     weighted, weights1, weights2, n_perm, BPPARAM = bpparam)
+  
+  p_vals <- matrix(unlist(p_vals), nrow = length(clus), ncol = length(func_markers))
+  rownames(p_vals) <- clus
+  colnames(p_vals) <- func_markers
   
   # sort to show lowest p-values (across functional markers and clusters) at the top
   res <- as.data.frame(p_vals)
