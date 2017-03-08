@@ -196,7 +196,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
     }
     
     # prepare 'fda' objects
-    y <- matrix(unlist(y), ncol = length(smp))
+    y <- matrix(unlist(y), ncol = length(grp))
     fd1 <- Data2fd(argvals = argvals, y = y[, grp])
     fd2 <- Data2fd(argvals = argvals, y = y[, !grp])
     
