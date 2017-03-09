@@ -157,6 +157,8 @@ testDE_med <- function(d_clus, group, min_cells = 6, min_samples = 2,
     dev.off()
   }
   
+  # [to do: include IHW and topTable; give same output as testDE_FDA()]
+  
   fit
 }
 

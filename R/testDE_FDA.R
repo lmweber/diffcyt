@@ -72,6 +72,7 @@
 #' 
 #' @importFrom SummarizedExperiment assays rowData colData
 #' @importFrom fda Data2fd
+#' @importFrom IHW ihw adj_pvalues
 #' @importFrom reshape2 melt
 #' @importFrom BiocParallel bplapply MulticoreParam multicoreWorkers
 #' 
@@ -229,12 +230,25 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   rownames(p_vals) <- clus
   colnames(p_vals) <- func_markers
   
-  # sort to show lowest p-values (across functional markers and clusters) at the top
   res <- as.data.frame(p_vals)
   res$cluster <- rownames(res)
-  res <- melt(res, id.vars = "cluster", variable.name = "marker", value.name = "p_val")
   
-  res <- res[order(res$p_val), ]
+  # calculate adjusted p-values using Independent Hypothesis Weighting (IHW); using 'total
+  # number of cells per cluster' as the covariate for IHW [to do: possibly correct for 
+  # samples removed during filtering, e.g. use mean across samples instead of total?]
+  res$n_cells <- rowSums(assays(d_clus)[["n_cells"]])
+  
+  res <- melt(res, id.vars = c("cluster", "n_cells"), 
+              variable.name = "marker", 
+              value.name = "p_val")
+  
+  ihw_out <- ihw(p_val ~ n_cells, data = res, alpha = 0.1)
+  
+  res$p_adj <- adj_pvalues(ihw_out)
+  
+  # sort to show lowest adjusted p-values (across all functional markers and clusters) at
+  # the top
+  res <- res[order(res$p_adj), ]
   
   res
 }

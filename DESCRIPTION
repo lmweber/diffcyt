@@ -11,6 +11,7 @@ Imports:
     FlowSOM, 
     limma, 
     fda, 
+    IHW, 
     matrixStats, 
     SummarizedExperiment, 
     dplyr, 
