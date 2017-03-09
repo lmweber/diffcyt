@@ -36,6 +36,11 @@
 #' @param ydim Height of grid for self-organizing map for FlowSOM clustering (number of 
 #'   clusters = \code{xdim} * \code{ydim}). Default value = 20 (400 clusters).
 #' 
+#' @param meta_clustering Whether to include FlowSOM "meta-clustering" step. Default =
+#'   TRUE.
+#' 
+#' @param k Number of final clusters for FlowSOM "meta-clustering. Default = 40.
+#' 
 #' @param seed Random seed (set to an integer value for reproducible results). Default 
 #'   value = NULL.
 #' 
@@ -55,6 +60,7 @@
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST
+#' @importFrom ConsensusClusterPlus ConsensusClusterPlus
 #' @importFrom flowCore flowFrame
 #' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
 #' @importFrom grDevices pdf dev.off
@@ -68,7 +74,7 @@
 #' 
 generateClusters <- function(d_se, 
                              cols_to_use = NULL, 
-                             xdim = 20, ydim = 20, 
+                             xdim = 20, ydim = 20, meta_clustering = TRUE, k = 40, 
                              seed = NULL, 
                              plot = TRUE, path = ".", filename = "plot_MST.pdf", ...) {
   
@@ -79,11 +85,16 @@ generateClusters <- function(d_se,
   # FlowSOM requires input data as 'flowFrame' or 'flowSet'
   d_ff <- flowFrame(assays(d_se)[[1]])
   
-  # note: not using FlowSOM 'meta-clustering' step
   runtime <- system.time({
+    # FlowSOM: pre meta-clustering
     fsom <- ReadInput(d_ff, transform = FALSE, scale = FALSE); 
     fsom <- BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim); 
     fsom <- BuildMST(fsom)
+    
+    # FlowSOM: meta-clustering (note: using ConsensusClusterPlus directly due to bug in 
+    # random seed in 'FlowSOM::metaClustering_consensus()')
+    meta <- ConsensusClusterPlus(t(fsom$map$codes), maxK = k, seed = seed)
+    meta <- meta[[k]]$consensusClass
   })
   
   message("FlowSOM clustering completed in ", round(runtime[["elapsed"]], 1), " seconds")
@@ -97,7 +108,8 @@ generateClusters <- function(d_se,
   }
   
   # cluster labels
-  clus <- fsom$map$mapping[, 1]
+  clus_pre <- fsom$map$mapping[, 1]  # pre meta-clustering labels
+  clus <- meta[clus_pre]             # meta-clustering labels
   
   # convert to factor (levels in ascending order)
   clus <- factor(clus, levels = sort(unique(clus)))

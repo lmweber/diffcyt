@@ -5,7 +5,8 @@
 \title{Generate clusters}
 \usage{
 generateClusters(d_se, cols_to_use = NULL, xdim = 20, ydim = 20,
-  seed = NULL, plot = TRUE, path = ".", filename = "plot_MST.pdf", ...)
+  meta_clustering = TRUE, k = 40, seed = NULL, plot = TRUE,
+  path = ".", filename = "plot_MST.pdf", ...)
 }
 \arguments{
 \item{d_se}{Transformed input data, from \code{\link{transformData}}.}
@@ -19,6 +20,11 @@ clusters = \code{xdim} * \code{ydim}). Default value = 20 (400 clusters).}
 
 \item{ydim}{Height of grid for self-organizing map for FlowSOM clustering (number of 
 clusters = \code{xdim} * \code{ydim}). Default value = 20 (400 clusters).}
+
+\item{meta_clustering}{Whether to include FlowSOM "meta-clustering" step. Default =
+TRUE.}
+
+\item{k}{Number of final clusters for FlowSOM "meta-clustering. Default = 40.}
 
 \item{seed}{Random seed (set to an integer value for reproducible results). Default 
 value = NULL.}

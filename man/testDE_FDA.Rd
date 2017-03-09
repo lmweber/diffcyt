@@ -110,8 +110,9 @@ d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, f
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (note: using small 3x3 SOM grid for demonstration purposes)
-d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 3, ydim = 3, 
+# generate clusters (note: using small SOM grid and number of clusters for
+# demonstration purposes)
+d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
                          seed = 123, plot = FALSE)
 
 # calculate cluster medians and frequencies
