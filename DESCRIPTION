@@ -15,6 +15,7 @@ Imports:
     IHW, 
     matrixStats, 
     SummarizedExperiment, 
+    S4Vectors, 
     dplyr, 
     tidyr, 
     reshape2, 

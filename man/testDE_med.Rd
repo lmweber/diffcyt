@@ -4,13 +4,16 @@
 \alias{testDE_med}
 \title{Test for differential expression of functional markers (method: "diffcyt-med")}
 \usage{
-testDE_med(d_clus, group, min_cells = 6, min_samples = 2, plot = TRUE,
-  path = ".", filename = "results_DE_diffcyt_med.pdf")
+testDE_med(d_medians, d_counts, group, min_cells = 6, min_samples = 2,
+  plot = TRUE, path = ".", filename = "results_DE_diffcyt_med.pdf")
 }
 \arguments{
-\item{d_clus}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-containing cluster medians (median expression of functional markers) and cluster
-frequencies (number of cells), from \code{\link{calcMediansAndFreq}}.}
+\item{d_medians}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster medians (median expression of functional markers), from
+\code{\link{calcMedians}}.}
+
+\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster counts (frequencies), from \code{\link{calcCounts}}.}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased
 vs. healthy), for differential comparisons and statistical tests.}
@@ -92,13 +95,15 @@ d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, f
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (note: using small SOM grid and number of clusters for
-# demonstration purposes)
-d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
-                         seed = 123, plot = FALSE)
+# generate clusters (note: using small number of clusters for demonstration purposes)
+d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
+# plotMST(d_se)
 
-# calculate cluster medians and frequencies
-d_clus <- calcMediansAndFreq(d_se)
+# calculate cluster counts
+d_counts <- calcCounts(d_se)
+
+# calculate cluster medians
+d_medians <- calcMedians(d_se)
 
 # calculate ECDFs
 d_ecdfs <- calcECDFs(d_se)
@@ -111,7 +116,7 @@ d_ecdfs <- calcECDFs(d_se)
 # re-level factor to use "ref" as base level
 group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 
-res_DE_med <- testDE_med(d_clus, group)
+res_DE_med <- testDE_med(d_medians, d_counts, group)
 
 # topTable: use 'coef = 2' for contrast of interest (BCRXL vs. ref)
 # (note: this is a small example data set used for demonstration purposes only; results

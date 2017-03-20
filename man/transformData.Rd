@@ -12,9 +12,9 @@ transformData(d_se, cofactor = 5)
 \code{\link{prepareData}}. Column meta-data is assumed to contain a vector of logical
 entries (\code{is_marker}) indicating marker columns.}
 
-\item{cofactor}{Cofactor for 'arcsinh' transform. Default = 5, which is appropriate 
-for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we recommend 
-cofactor = 150 instead.}
+\item{cofactor}{Cofactor for 'arcsinh' transform. Default = 5, which is appropriate for
+mass cytometry (CyTOF) data. For fluorescence flow cytometry, we recommend cofactor =
+150 instead.}
 }
 \value{
 d_se Data with transform applied to protein marker columns.
@@ -24,14 +24,15 @@ Transform data prior to clustering
 }
 \details{
 Flow and mass cytometry data should be transformed prior to clustering. This function 
-implements an 'arcsinh' transform with adjustable 'cofactor' parameter. Recommended 
-values for the cofactor are 5 (mass cytometry, CyTOF) or 150 (fluorescence flow 
-cytometry); see Bendall et al. (2011), \emph{Science}, Supplementary Figure S2.
+implements an inverse hyperbolic sine ('arcsinh') transform with adjustable 'cofactor'
+parameter. Recommended values for the cofactor are 5 (mass cytometry, CyTOF) or 150
+(fluorescence flow cytometry); see Bendall et al. (2011), \emph{Science}, Supplementary
+Figure S2.
 
 The transform will be applied to protein marker columns only. The 
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object created in the previous
-step (\code{\link{prepareData}}) is assumed to contain a vector of logical entries
-(\code{is_marker}) in the column meta-data, indicating which columns are marker
+step (\code{\link{prepareData}}) is assumed to contain a vector of logical entries 
+(\code{is_marker}) in the column meta-data, indicating which columns are marker 
 columns; otherwise all columns are transformed.
 }
 \examples{

@@ -4,7 +4,7 @@
 \alias{testDE_FDA}
 \title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
 \usage{
-testDE_FDA(d_ecdfs, d_clus, group, weighted = TRUE, min_cells = 6,
+testDE_FDA(d_ecdfs, d_counts, group, weighted = TRUE, min_cells = 6,
   min_samples = 2, n_perm = 5000, n_cores = NULL)
 }
 \arguments{
@@ -12,11 +12,8 @@ testDE_FDA(d_ecdfs, d_clus, group, weighted = TRUE, min_cells = 6,
 containing empirical cumulative distribution functions (ECDFs), calculated with 
 \code{\link{calcECDFs}}.}
 
-\item{d_clus}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
-containing cluster medians (median expression of functional markers) and cluster 
-frequencies (number of cells), from \code{\link{calcMediansAndFreq}}. The cluster 
-frequencies are used as weights for the permutation t-tests (the cluster medians are 
-not used here).}
+\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster counts (frequencies), from \code{\link{calcCounts}}.}
 
 \item{group}{Factor containing group membership for each sample (for example, diseased 
 vs. healthy), for differential comparisons and statistical tests.}
@@ -110,13 +107,15 @@ d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, f
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (note: using small SOM grid and number of clusters for
-# demonstration purposes)
-d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
-                         seed = 123, plot = FALSE)
+# generate clusters (note: using small number of clusters for demonstration purposes)
+d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
+# plotMST(d_se)
 
-# calculate cluster medians and frequencies
-d_clus <- calcMediansAndFreq(d_se)
+# calculate cluster counts
+d_counts <- calcCounts(d_se)
+
+# calculate cluster medians
+d_medians <- calcMedians(d_se)
 
 # calculate ECDFs
 d_ecdfs <- calcECDFs(d_se)
@@ -131,7 +130,7 @@ group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 
 # note: using no weights, small number of permutations, and single core for 
 # demonstration purposes
-res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, weighted = FALSE, 
+res_DE_FDA <- testDE_FDA(d_ecdfs, d_counts, group, weighted = FALSE, 
                          n_perm = 100, n_cores = 1)
 
 # (note: this is a small example data set used for demonstration purposes only; results

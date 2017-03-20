@@ -15,9 +15,8 @@
 #' instead of raw counts.
 #' 
 #' 
-#' @param d_clus \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster medians (median expression of functional markers) and cluster
-#'   frequencies (number of cells), from \code{\link{calcMediansAndFreq}}.
+#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster counts (frequencies), from \code{\link{calcCounts}}.
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased
 #'   vs. healthy), for differential comparisons and statistical tests.
@@ -68,13 +67,15 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: using small SOM grid and number of clusters for
-#' # demonstration purposes)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
-#'                          seed = 123, plot = FALSE)
+#' # generate clusters (note: using small number of clusters for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
+#' # plotMST(d_se)
 #' 
-#' # calculate cluster medians and frequencies
-#' d_clus <- calcMediansAndFreq(d_se)
+#' # calculate cluster counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # calculate cluster medians
+#' d_medians <- calcMedians(d_se)
 #' 
 #' # calculate ECDFs
 #' d_ecdfs <- calcECDFs(d_se)
@@ -87,7 +88,7 @@
 #' # re-level factor to use "ref" as base level
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 #' 
-#' res_DA <- testDA(d_clus, group)
+#' res_DA <- testDA(d_counts, group)
 #' 
 #' topTable(res_DA, number = 6)
 #' 
@@ -96,12 +97,12 @@
 #' # are not biologically meaningful)
 #' # plotTopDAClusters(res_DA)
 #' 
-testDA <- function(d_clus, group) {
+testDA <- function(d_counts, group) {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
   
   # transform counts to square-root proportional counts per sample
-  counts <- assays(d_clus)[["n_cells"]]
+  counts <- assays(d_counts)[[1]]
   prop <- t(t(counts) / colSums(counts))  # transpose because colSums vector wraps by column
   stopifnot(all(colSums(prop) == 1))
   sqrt_prop <- sqrt(prop)

@@ -1,20 +1,22 @@
 #' Prepare data
 #' 
-#' Prepare data into format required by 'diffcyt' functions
+#' Prepare data into format required for \code{diffcyt} pipeline
 #' 
-#' Functions in the 'diffcyt' package assume that input data is provided as a
-#' \code{\link[SummarizedExperiment]{SummarizedExperiment}}, which contains a single
-#' matrix of data, together with row and column meta-data.
+#' Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
+#' a \code{\link[SummarizedExperiment]{SummarizedExperiment}}, which contains a single 
+#' matrix of data values, together with row and column meta-data.
 #' 
-#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input, concatenates 
-#' the data tables into a single matrix, and adds row and column meta-data.
+#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
+#' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
+#' tables into a single matrix, and adds row and column meta-data.
 #' 
 #' Row meta-data contains sample labels and group membership labels. Column meta-data 
 #' contains protein marker names, and logical entries indicating whether each column is 
 #' (i) a marker, (ii) a lineage marker, and (iii) a functional marker.
 #' 
 #' 
-#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}}.
+#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
+#'   item or \code{\link[flowCore]{flowFrame}} per sample).
 #' 
 #' @param sample_IDs Vector of sample IDs.
 #' 
@@ -22,15 +24,16 @@
 #' 
 #' @param marker_cols Vector of indices of all markers.
 #' 
-#' @param lineage_cols Vector of indices of lineage markers.
+#' @param lineage_cols Vector of indices of lineage markers (for clustering).
 #' 
-#' @param functional_cols Vector of indices of functional markers.
+#' @param functional_cols Vector of indices of functional markers (for differential
+#'   expression analysis).
 #' 
 #' 
 #' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-#'   containing a single matrix of data in the \code{assays} slot, together with row 
-#'   meta-data (sample and group IDs) and column meta-data (protein marker names, logical
-#'   vectors for: markers, linage markers, functional markers).
+#'   containing a single matrix of data (expression values) in the \code{assays} slot,
+#'   together with row meta-data (sample and group IDs) and column meta-data (protein
+#'   marker names, logical vectors for: markers, lineage markers, functional markers).
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -44,7 +47,8 @@
 #' @examples
 #' # See full examples in testing functions: testDA, testDE_med, testDE_FDA
 #' 
-prepareData <- function(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols) {
+prepareData <- function(d_input, sample_IDs, group_IDs, 
+                        marker_cols, lineage_cols, functional_cols) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
@@ -55,6 +59,13 @@ prepareData <- function(d_input, sample_IDs, group_IDs, marker_cols, lineage_col
   }
   
   d_ex <- lapply(d_input, exprs)
+  
+  if (!(length(sample_IDs) == length(d_ex))) {
+    stop("'sample_IDs' vector must have length equal to number of samples")
+  }
+  if (!(length(group_IDs) == length(d_ex))) {
+    stop("'group_IDs' vector must have length equal to number of samples")
+  }
   
   n_cells <- sapply(d_ex, nrow)
   

@@ -1,29 +1,26 @@
-#' Calculate cluster medians and frequencies
+#' Calculate cluster medians
 #' 
-#' Calculate cluster medians (median functional marker expression) and frequencies (number
-#' of cells) by cluster and sample
+#' Calculate cluster medians (median functional marker expression per cluster per sample)
 #' 
-#' Calculate median expression of functional markers (cluster medians) and number of cells 
-#' (cluster frequencies) by cluster and sample (i.e. for each cluster in each sample).
+#' Calculate median expression of functional markers (cluster medians) per cluster per
+#' sample; i.e. one table of values per functional marker; each containing one value for 
+#' each cluster in each sample.
 #' 
-#' The cluster frequencies are used as weights in the subsequent statistical tests. The
-#' cluster medians are either used for directly testing differences in medians
-#' ('diffcyt-med'), or for visualization of results from the other methodologies
-#' ('diffcyt-FDA' and 'diffcyt-KS').
+#' The cluster medians are used in the subsequent statistical tests for method 
+#' "diffcyt-med", as well as for visualization of results from all methods.
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
 #' object, where rows = clusters, columns = samples, sheets ('assay' slots) = functional 
-#' markers. The additional last sheet ('assay' slot) contains the cluster frequencies.
+#' markers.
 #' 
 #' 
-#' @param d_se Transformed data object from previous steps, in 
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, with cluster labels 
-#'   added in row meta-data using \code{\link{generateClusters}}.
+#' @param d_se Data object from previous steps, in 
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
+#'   labels as a column in the row meta-data (from \code{\link{generateClusters}}).
 #' 
 #' 
 #' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-#'   clusters, columns = samples, sheets ('assay' slots) = functional markers. The 
-#'   additional last sheet ('assay' slot) contains the cluster frequencies.
+#'   clusters, columns = samples, sheets ('assay' slots) = functional markers.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
@@ -41,7 +38,7 @@
 #' @examples
 #' # See full examples in testing functions: testDA, testDE_med, testDE_FDA
 #' 
-calcMediansAndFreq <- function(d_se) {
+calcMedians <- function(d_se) {
   
   if (!is(d_se, "SummarizedExperiment")) {
     stop("Data object must be a 'SummarizedExperiment'")
@@ -51,20 +48,6 @@ calcMediansAndFreq <- function(d_se) {
     stop(paste0("Data object does not contain cluster labels. Run 'generateClusters()' ", 
                 "to generate cluster labels."))
   }
-  
-  # calculate cluster frequencies
-  
-  rowdata_df <- as.data.frame(rowData(d_se))
-  
-  rowdata_df %>% 
-    group_by(cluster, sample) %>% 
-    tally %>% 
-    complete(sample) -> 
-    n_cells
-  
-  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
-  
-  n_cells <- list(n_cells = n_cells)
   
   # calculate cluster medians
   
@@ -77,7 +60,7 @@ calcMediansAndFreq <- function(d_se) {
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
   
-  # [to do: could possibly replace the loop with 'summarize_each'; but is already fast]
+  # [to do: could possibly replace loop with 'summarize_each'; but is already fast]
   for (i in seq_along(medians_func)) {
     assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
@@ -96,14 +79,12 @@ calcMediansAndFreq <- function(d_se) {
   
   # create new SummarizedExperiment
   
-  list_all <- c(medians_func, n_cells)
-  
   row_data <- data.frame(cluster = factor(sort(unique(clus)), levels = sort(unique(clus))))
   col_data <- data.frame(sample = factor(unique(smp), levels = unique(smp)))
   
-  d_clus <- SummarizedExperiment(list_all, rowData = row_data, colData = col_data)
+  d_medians <- SummarizedExperiment(medians_func, rowData = row_data, colData = col_data)
   
-  d_clus
+  d_medians
 }
 
 

@@ -7,35 +7,37 @@
 calcECDFs(d_se, resolution = 30)
 }
 \arguments{
-\item{d_se}{Transformed data object from previous steps, in 
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, with cluster labels 
-added in row meta-data using \code{\link{generateClusters}}.}
+\item{d_se}{Data object from previous steps, in 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
+labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 
 \item{resolution}{Resolution for evaluating ECDFs. The value of each ECDF is calculated
-at this number of equally spaced points between the maximum and minimum observed
+at this number of equally spaced points between the maximum and minimum observed 
 marker expression values for a given cluster-sample combination. Default = 30.}
 }
 \value{
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-  clusters, columns = samples, sheets ('assay' slots) = functional markers. Each entry
-  is a list of values (i.e. the evaluated ECDF values) with length \code{resolution}.
+  clusters, columns = samples, sheets ('assay' slots) = functional markers. Each entry 
+  is a vector of values (i.e. the evaluated ECDF values) with length \code{resolution}.
 }
 \description{
-Calculate empirical cumulative distribution functions (ECDFs) for FDA-based methods
+Calculate empirical cumulative distribution functions (ECDFs) required for
+methods "diffcyt-FDA", "diffcyt-KS", and "diffcyt-LM"
 }
 \details{
-The functional data analysis (FDA) based methodology in "diffcyt-FDA" uses empirical
-cumulative distribution functions (ECDFs) of the functional marker expression profiles 
-by cluster and sample, to test for differential expression between sample groups.
+Methods "diffcyt-FDA", "diffcyt-KS", and "diffcyt-LM" use the empirical cumulative
+distribution functions (ECDFs) of functional marker expression profiles (for each
+cluster-sample combination) to test for differential expression of functional markers
+between sample groups.
 
 This function calculates the ECDFs for each cluster-sample combination for each 
-functional marker, and evaluates each of them at a set of equally-spaced points. These 
-ECDF values can then be used for differential testing with \code{testDE_FDA}.
+functional marker, and evaluates each of them at a set of equally-spaced points. The 
+ECDF values can then be used in the tests for differential expression.
 
-The ECDF values are returned in a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} with the same shape as the
-output from \code{\link{calcMediansAndFreq}}: rows = clusters, columns = samples,
-sheets ('assay' slots) = functional markers.
+The ECDF values are returned in a new
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = clusters,
+columns = samples, sheets ('assay' slots) = functional markers. Note that each "value"
+is a vector of evaluated ECDF values.
 }
 \examples{
 # See full examples in testing functions: testDA, testDE_med, testDE_FDA

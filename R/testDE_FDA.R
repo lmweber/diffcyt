@@ -37,11 +37,8 @@
 #'   containing empirical cumulative distribution functions (ECDFs), calculated with 
 #'   \code{\link{calcECDFs}}.
 #' 
-#' @param d_clus \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
-#'   containing cluster medians (median expression of functional markers) and cluster 
-#'   frequencies (number of cells), from \code{\link{calcMediansAndFreq}}. The cluster 
-#'   frequencies are used as weights for the permutation t-tests (the cluster medians are 
-#'   not used here).
+#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster counts (frequencies), from \code{\link{calcCounts}}.
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased 
 #'   vs. healthy), for differential comparisons and statistical tests.
@@ -110,13 +107,15 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: using small SOM grid and number of clusters for
-#' # demonstration purposes)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
-#'                          seed = 123, plot = FALSE)
+#' # generate clusters (note: using small number of clusters for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
+#' # plotMST(d_se)
 #' 
-#' # calculate cluster medians and frequencies
-#' d_clus <- calcMediansAndFreq(d_se)
+#' # calculate cluster counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # calculate cluster medians
+#' d_medians <- calcMedians(d_se)
 #' 
 #' # calculate ECDFs
 #' d_ecdfs <- calcECDFs(d_se)
@@ -131,14 +130,14 @@
 #' 
 #' # note: using no weights, small number of permutations, and single core for 
 #' # demonstration purposes
-#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_clus, group, weighted = FALSE, 
+#' res_DE_FDA <- testDE_FDA(d_ecdfs, d_counts, group, weighted = FALSE, 
 #'                          n_perm = 100, n_cores = 1)
 #' 
 #' # (note: this is a small example data set used for demonstration purposes only; results
 #' # are not biologically meaningful)
 #' head(res_DE_FDA)
 #' 
-testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE, 
+testDE_FDA <- function(d_ecdfs, d_counts, group, weighted = TRUE, 
                        min_cells = 6, min_samples = 2, 
                        n_perm = 5000, n_cores = NULL) {
   
@@ -154,7 +153,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   # number of cells per cluster-sample combination: to use as weights
   # [to do: include check that column order matches groups]
   if (weighted) {
-    weights <- assays(d_clus)[["n_cells"]]
+    weights <- assays(d_counts)[[1]]
   } else {
     weights <- NULL
   }
@@ -165,7 +164,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   argvals <- seq_len(resolution)
   
   # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
-  calc_p_val <- function(indices, d_ecdfs, d_clus, min_cells, min_samples, resolution, 
+  calc_p_val <- function(indices, d_ecdfs, d_counts, min_cells, min_samples, resolution, 
                          smp, argvals, grp, weighted, weights, n_perm) {
     
     # extract 'i' and 'j' from 'indices' (data frame)
@@ -182,7 +181,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
     })
     
     # filtering step 1: minimum number of cells per sample
-    n_cells_i <- assays(d_clus)[["n_cells"]][i, ]
+    n_cells_i <- assays(d_counts)[[1]][i, ]
     keep <- n_cells_i >= min_cells
     y <- y[keep]
     grp <- grp[keep]
@@ -223,7 +222,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   indices <- split(indices, seq_len(nrow(indices)))
   
   # calculate p-values (parallelized across clusters 'i' and markers 'j')
-  p_vals <- bplapply(indices, calc_p_val, d_ecdfs, d_clus, min_cells, min_samples, 
+  p_vals <- bplapply(indices, calc_p_val, d_ecdfs, d_counts, min_cells, min_samples, 
                      resolution, smp, argvals, grp, weighted, weights, n_perm, 
                      BPPARAM = bpparam)
   
@@ -237,7 +236,7 @@ testDE_FDA <- function(d_ecdfs, d_clus, group, weighted = TRUE,
   # calculate adjusted p-values using Independent Hypothesis Weighting (IHW); using 'total
   # number of cells per cluster' as the covariate for IHW [to do: possibly correct for 
   # samples removed during filtering, e.g. use mean across samples instead of total?]
-  res$n_cells <- rowSums(assays(d_clus)[["n_cells"]])
+  res$n_cells <- rowSums(assays(d_counts)[[1]])
   
   res <- melt(res, id.vars = c("cluster", "n_cells"), 
               variable.name = "marker", 

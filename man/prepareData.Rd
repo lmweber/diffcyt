@@ -8,7 +8,8 @@ prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols,
   functional_cols)
 }
 \arguments{
-\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}}.}
+\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
+item or \code{\link[flowCore]{flowFrame}} per sample).}
 
 \item{sample_IDs}{Vector of sample IDs.}
 
@@ -16,26 +17,28 @@ prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols,
 
 \item{marker_cols}{Vector of indices of all markers.}
 
-\item{lineage_cols}{Vector of indices of lineage markers.}
+\item{lineage_cols}{Vector of indices of lineage markers (for clustering).}
 
-\item{functional_cols}{Vector of indices of functional markers.}
+\item{functional_cols}{Vector of indices of functional markers (for differential
+expression analysis).}
 }
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  containing a single matrix of data in the \code{assays} slot, together with row 
-  meta-data (sample and group IDs) and column meta-data (protein marker names, logical
-  vectors for: markers, linage markers, functional markers).
+  containing a single matrix of data (expression values) in the \code{assays} slot,
+  together with row meta-data (sample and group IDs) and column meta-data (protein
+  marker names, logical vectors for: markers, lineage markers, functional markers).
 }
 \description{
-Prepare data into format required by 'diffcyt' functions
+Prepare data into format required for \code{diffcyt} pipeline
 }
 \details{
-Functions in the 'diffcyt' package assume that input data is provided as a
-\code{\link[SummarizedExperiment]{SummarizedExperiment}}, which contains a single
-matrix of data, together with row and column meta-data.
+Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
+a \code{\link[SummarizedExperiment]{SummarizedExperiment}}, which contains a single 
+matrix of data values, together with row and column meta-data.
 
-This function accepts a list or \code{\link[flowCore]{flowSet}} as input, concatenates 
-the data tables into a single matrix, and adds row and column meta-data.
+This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
+one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
+tables into a single matrix, and adds row and column meta-data.
 
 Row meta-data contains sample labels and group membership labels. Column meta-data 
 contains protein marker names, and logical entries indicating whether each column is 

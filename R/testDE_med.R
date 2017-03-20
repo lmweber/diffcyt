@@ -24,9 +24,12 @@
 #' are available in the functions \code{testDE-FDA} and \code{testDE-KS}.
 #' 
 #' 
-#' @param d_clus \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster medians (median expression of functional markers) and cluster
-#'   frequencies (number of cells), from \code{\link{calcMediansAndFreq}}.
+#' @param d_medians \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster medians (median expression of functional markers), from
+#'   \code{\link{calcMedians}}.
+#' 
+#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster counts (frequencies), from \code{\link{calcCounts}}.
 #' 
 #' @param group Factor containing group membership for each sample (for example, diseased
 #'   vs. healthy), for differential comparisons and statistical tests.
@@ -92,13 +95,15 @@
 #' # transform data
 #' d_se <- transformData(d_se, cofactor = 5)
 #' 
-#' # generate clusters (note: using small SOM grid and number of clusters for
-#' # demonstration purposes)
-#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, k = 6, 
-#'                          seed = 123, plot = FALSE)
+#' # generate clusters (note: using small number of clusters for demonstration purposes)
+#' d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
+#' # plotMST(d_se)
 #' 
-#' # calculate cluster medians and frequencies
-#' d_clus <- calcMediansAndFreq(d_se)
+#' # calculate cluster counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # calculate cluster medians
+#' d_medians <- calcMedians(d_se)
 #' 
 #' # calculate ECDFs
 #' d_ecdfs <- calcECDFs(d_se)
@@ -111,14 +116,14 @@
 #' # re-level factor to use "ref" as base level
 #' group <- factor(group_IDs, levels = c("ref", "BCRXL"))
 #' 
-#' res_DE_med <- testDE_med(d_clus, group)
+#' res_DE_med <- testDE_med(d_medians, d_counts, group)
 #' 
 #' # topTable: use 'coef = 2' for contrast of interest (BCRXL vs. ref)
 #' # (note: this is a small example data set used for demonstration purposes only; results
 #' # are not biologically meaningful)
 #' topTable(res_DE_med, coef = 2, number = 6)
 #' 
-testDE_med <- function(d_clus, group, min_cells = 6, min_samples = 2, 
+testDE_med <- function(d_medians, d_counts, group, min_cells = 6, min_samples = 2, 
                        plot = TRUE, path = ".", filename = "results_DE_diffcyt_med.pdf") {
   
   if (!is.factor(group)) group <- factor(group, levels = unique(group))
@@ -127,7 +132,7 @@ testDE_med <- function(d_clus, group, min_cells = 6, min_samples = 2,
   mm <- model.matrix(~ group)
   
   # number of cells per cluster
-  counts <- assays(d_clus)[["n_cells"]]
+  counts <- assays(d_counts)[[1]]
   
   # filtering
   grp <- group == levels(group)[1]
@@ -137,9 +142,9 @@ testDE_med <- function(d_clus, group, min_cells = 6, min_samples = 2,
   counts <- counts[ix_keep, ]
   
   # extract medians and create concatenated matrix for limma
-  func_names <- names(assays(d_clus))[-length(assays(d_clus))]  # remove "n_cells" (last item in list)
+  func_names <- names(assays(d_medians))
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_clus)[func_names]), function(a) a[ix_keep, ])
+    lapply(as.list(assays(d_medians)[func_names]), function(a) a[ix_keep, ])
   })
   # rownames: functional marker names and cluster labels
   rownames(meds) <- paste(rep(func_names, each = nrow(counts)), rownames(meds), sep = "_")
