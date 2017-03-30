@@ -63,17 +63,17 @@
         perm_i = sample(n1 + n2)
         weights_i = weights[perm_i]
         tXmat = Xmat[, perm_i]
-        tmean1 = rowWeightedMeans(tXmat, cols = 1:n1, w = weights_i[1:n1])
-        tmean2 = rowWeightedMeans(tXmat, cols = n1 + 1:n2, w = weights_i[n1 + (1:n2)])
-        tvar1 = rowWeightedVars(tXmat, cols = 1:n1, w = weights_i[1:n1])
-        tvar2 = rowWeightedVars(tXmat, cols = n1 + 1:n2, w = weights_i[n1 + (1:n2)])
+        tmean1 = rowWeightedMeans(tXmat, w = weights_i[1:n1], cols = 1:n1)
+        tmean2 = rowWeightedMeans(tXmat, w = weights_i[n1 + (1:n2)], cols = n1 + 1:n2)
+        tvar1 = rowWeightedVars(tXmat, w = weights_i[1:n1], cols = 1:n1)
+        tvar2 = rowWeightedVars(tXmat, w = weights_i[n1 + (1:n2)], cols = n1 + 1:n2)
         Tnullvals[, i] = abs(tmean1 - tmean2) / sqrt(tvar1/n1 + tvar2/n2)  # note dividing vars by n1 and n2 here
     }
     Tnull = colMaxs(Tnullvals)
-    mean1 = rowWeightedMeans(Xmat, cols = 1:n1, w = weights1)
-    mean2 = rowWeightedMeans(Xmat, cols = n1 + 1:n2, w = weights2)
-    var1 = rowWeightedVars(Xmat, cols = 1:n1, w = weights1)
-    var2 = rowWeightedVars(Xmat, cols = n1 + 1:n2, w = weights2)
+    mean1 = rowWeightedMeans(Xmat, w = weights1, cols = 1:n1)
+    mean2 = rowWeightedMeans(Xmat, w = weights2, cols = n1 + 1:n2)
+    var1 = rowWeightedVars(Xmat, w = weights1, cols = 1:n1)
+    var2 = rowWeightedVars(Xmat, w = weights2, cols = n1 + 1:n2)
     Tvals = abs(mean1 - mean2) / sqrt(var1/n1 + var2/n2)  # note dividing vars by n1 and n2 here
     Tobs = max(Tvals)
     pval = mean(Tobs < Tnull)
