@@ -98,8 +98,8 @@ generateClusters <- function(d_se,
   runtime <- system.time({
     # FlowSOM: pre meta-clustering
     fsom <- ReadInput(d_ff, transform = FALSE, scale = FALSE); 
-    fsom <- BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim, ...); 
-    fsom <- BuildMST(fsom)
+    fsom <- suppressMessages(BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim, ...)); 
+    fsom <- suppressMessages(BuildMST(fsom))
     
     if (meta_clustering) {
       # FlowSOM: optional meta-clustering step
