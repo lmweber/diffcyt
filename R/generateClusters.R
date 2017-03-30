@@ -28,7 +28,7 @@
 #' are not missed.
 #' 
 #' When testing only for differential abundance (frequencies) of clusters, it may be more 
-#' useful to return larger, more easily interpretabel clusters. This can be done by 
+#' useful to return larger, more easily interpretable clusters. This can be done by 
 #' setting \code{meta_clustering = TRUE} to include the final 'meta-clustering' step from 
 #' the \code{FlowSOM} algorithm (and optionally, specify the number of meta-clusters 
 #' \code{meta_k}).
@@ -70,8 +70,7 @@
 #'   list, and can be accessed with \code{metadata(d_se)$MST}.
 #' 
 #' 
-#' @importFrom FlowSOM ReadInput BuildSOM BuildMST
-#' @importFrom ConsensusClusterPlus ConsensusClusterPlus
+#' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
 #' @importFrom flowCore flowFrame
 #' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
 #' @importFrom S4Vectors 'metadata<-'
@@ -103,10 +102,8 @@ generateClusters <- function(d_se,
     fsom <- BuildMST(fsom)
     
     if (meta_clustering) {
-      # FlowSOM: optional meta-clustering step (note: using ConsensusClusterPlus directly 
-      # due to bug in random seed in 'FlowSOM::metaClustering_consensus()')
-      meta <- ConsensusClusterPlus(t(fsom$map$codes), maxK = meta_k, seed = seed)
-      meta <- meta[[meta_k]]$consensusClass
+      # FlowSOM: optional meta-clustering step
+      meta <- metaClustering_consensus(fsom$map$codes, k = meta_k, seed = seed)
     }
   })
   

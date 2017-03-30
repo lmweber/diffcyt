@@ -9,7 +9,6 @@ License: MIT + file LICENSE
 Imports:
     flowCore, 
     FlowSOM, 
-    ConsensusClusterPlus, 
     limma, 
     fda, 
     IHW, 

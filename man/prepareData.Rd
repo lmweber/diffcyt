@@ -4,8 +4,8 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols,
-  functional_cols)
+prepareData(d_input, sample_IDs, group_IDs, marker_cols = NULL,
+  lineage_cols = NULL, functional_cols = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list

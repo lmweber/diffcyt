@@ -69,7 +69,7 @@ markers, since it ensures that subtle differential expression signals in small s
 are not missed.
 
 When testing only for differential abundance (frequencies) of clusters, it may be more 
-useful to return larger, more easily interpretabel clusters. This can be done by 
+useful to return larger, more easily interpretable clusters. This can be done by 
 setting \code{meta_clustering = TRUE} to include the final 'meta-clustering' step from 
 the \code{FlowSOM} algorithm (and optionally, specify the number of meta-clusters 
 \code{meta_k}).

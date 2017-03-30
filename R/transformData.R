@@ -41,7 +41,7 @@ transformData <- function(d_se, cofactor = 5) {
   
   is_marker <- colData(d_se)$is_marker
   
-  if (is.null(marker_cols)) marker_cols <- 1:ncol(d_se[[1]])
+  if (is.null(is_marker)) is_marker <- rep(TRUE, ncol(d_se[[1]]))
   
   # extract expression data
   d_ex <- assays(d_se)[[1]]

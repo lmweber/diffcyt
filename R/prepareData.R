@@ -48,7 +48,7 @@
 #' # See full examples in testing functions: testDA, testDE_med, testDE_FDA
 #' 
 prepareData <- function(d_input, sample_IDs, group_IDs, 
-                        marker_cols, lineage_cols, functional_cols) {
+                        marker_cols = NULL, lineage_cols = NULL, functional_cols = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
