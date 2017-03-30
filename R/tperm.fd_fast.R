@@ -5,7 +5,7 @@
 # Note: Alternative version 'tperm.fd_wtd_fast.R' also allows sample-specific weights, but
 # is slower.
 # 
-# Modified by Mark Robinson, March 2017
+# Modified by Lukas Weber and Mark Robinson, March 2017
 ##########################################################################################
 
 
@@ -38,15 +38,15 @@
         tXmat = Xmat[, sample(n1 + n2)]
         tmean1 = rowMeans(tXmat[, 1:n1])
         tmean2 = rowMeans(tXmat[, n1 + (1:n2)])
-        tvar1 = rowVars(tXmat[, 1:n1])/n1
-        tvar2 = rowVars(tXmat[, n1 + (1:n2)])/n2
+        tvar1 = rowVars(tXmat, cols = 1:n1)/n1
+        tvar2 = rowVars(tXmat, cols = n1 + 1:n2)/n2
         Tnullvals[, i] = abs(tmean1 - tmean2)/sqrt(tvar1 + tvar2)
     }
     Tnull = colMaxs(Tnullvals)
     mean1 = rowMeans(Xmat[, 1:n1])
     mean2 = rowMeans(Xmat[, n1 + (1:n2)])
-    var1 = rowVars(Xmat[, 1:n1])/n1
-    var2 = rowVars(Xmat[, n1 + (1:n2)])/n2
+    var1 = rowVars(Xmat, cols = 1:n1)/n1
+    var2 = rowVars(Xmat, cols = n1 + 1:n2)/n2
     Tvals = abs(mean1 - mean2)/sqrt(var1 + var2)
     Tobs = max(Tvals)
     pval = mean(Tobs < Tnull)

@@ -1,13 +1,14 @@
 ##########################################################################################
 # Modified version of function 'tperm.fd()' from package 'fda' (Ramsay et al. 2014)
 # 
-# Main modifications:
+# Modifications:
 # - Allow sample-specific weights in arguments 'weights1' and 'weights2' (i.e. 'weights1' 
-# and 'weights2' contain weights by sample in functional data objects 'x1fd' and 'x2fd' 
-# respectively), for weighted permutation t-tests.
+# and 'weights2' contain weights by sample in functional data objects 'x1fd' and 'x2fd'), 
+# for weighted permutation t-tests.
 # - Use 'rowWeightedMeans', 'rowWeightedVars', and 'colMaxs' from the 'matrixStats'
 # package for faster runtime.
-# - Not calculating quantiles, plots, etc (for faster runtime).
+# - Not calculating quantiles, point-wise p-values / q-values, plots; returning p-values
+# only (for faster runtime).
 # 
 # Note: Alternative version 'tperm.fd_fast.R' gives faster runtime when weights are not 
 # required.
@@ -62,18 +63,18 @@
         perm_i = sample(n1 + n2)
         weights_i = weights[perm_i]
         tXmat = Xmat[, perm_i]
-        tmean1 = rowWeightedMeans(tXmat[, 1:n1], weights_i[1:n1])
-        tmean2 = rowWeightedMeans(tXmat[, n1 + (1:n2)], weights_i[n1 + (1:n2)])
-        tvar1 = rowWeightedVars(tXmat[, 1:n1], weights_i[1:n1])
-        tvar2 = rowWeightedVars(tXmat[, n1 + (1:n2)], weights_i[n1 + (1:n2)])
-        Tnullvals[, i] = abs(tmean1 - tmean2) / sqrt(tvar1/n1 + tvar2/n2)  # note dividing by n1 and n2 here
+        tmean1 = rowWeightedMeans(tXmat, cols = 1:n1, w = weights_i[1:n1])
+        tmean2 = rowWeightedMeans(tXmat, cols = n1 + 1:n2, w = weights_i[n1 + (1:n2)])
+        tvar1 = rowWeightedVars(tXmat, cols = 1:n1, w = weights_i[1:n1])
+        tvar2 = rowWeightedVars(tXmat, cols = n1 + 1:n2, w = weights_i[n1 + (1:n2)])
+        Tnullvals[, i] = abs(tmean1 - tmean2) / sqrt(tvar1/n1 + tvar2/n2)  # note dividing vars by n1 and n2 here
     }
     Tnull = colMaxs(Tnullvals)
-    mean1 = rowWeightedMeans(Xmat[, 1:n1], weights1)
-    mean2 = rowWeightedMeans(Xmat[, n1 + (1:n2)], weights2)
-    var1 = rowWeightedVars(Xmat[, 1:n1], weights1)
-    var2 = rowWeightedVars(Xmat[, n1 + (1:n2)], weights2)
-    Tvals = abs(mean1 - mean2) / sqrt(var1/n1 + var2/n2)  # note dividing by n1 and n2 here
+    mean1 = rowWeightedMeans(Xmat, cols = 1:n1, w = weights1)
+    mean2 = rowWeightedMeans(Xmat, cols = n1 + 1:n2, w = weights2)
+    var1 = rowWeightedVars(Xmat, cols = 1:n1, w = weights1)
+    var2 = rowWeightedVars(Xmat, cols = n1 + 1:n2, w = weights2)
+    Tvals = abs(mean1 - mean2) / sqrt(var1/n1 + var2/n2)  # note dividing vars by n1 and n2 here
     Tobs = max(Tvals)
     pval = mean(Tobs < Tnull)
     #qval = quantile(Tnull, q)
