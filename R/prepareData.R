@@ -79,9 +79,10 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   
   # column meta-data
   is_marker <- is_lineage <- is_functional <- rep(FALSE, ncol(d_combined))
-  is_marker[marker_cols] <- TRUE
-  is_lineage[lineage_cols] <- TRUE
-  is_functional[functional_cols] <- TRUE
+  
+  if (!is.null(marker_cols)) is_marker[marker_cols] <- TRUE
+  if (!is.null(lineage_cols)) is_lineage[lineage_cols] <- TRUE
+  if (!is.null(functional_cols)) is_functional[functional_cols] <- TRUE
   
   col_data <- data.frame(markers = colnames(d_combined), 
                          is_marker = is_marker, 
