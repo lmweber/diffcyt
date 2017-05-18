@@ -1,0 +1,106 @@
+#' Prepare data
+#' 
+#' Prepare data into format required for \code{diffcyt} pipeline
+#' 
+#' Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
+#' a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a 
+#' single matrix of data values, together with row and column meta-data.
+#' 
+#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing 
+#' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data 
+#' tables into a single matrix, and adds row and column meta-data.
+#' 
+#' Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains 
+#' protein marker names, and logical entries indicating whether each column is (i) a 
+#' marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for 
+#' differential expression analysis within clusters.
+#' 
+#' 
+#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list 
+#'   item or \code{\link[flowCore]{flowFrame}} per sample).
+#' 
+#' @param sample_IDs Vector of sample IDs.
+#' 
+#' @param cols_markers Column indices indicating all protein markers.
+#' 
+#' @param cols_clustering Column indices indicating protein markers to be used for 
+#'   clustering.
+#' 
+#' @param cols_DE Column indices indicating protein markers to be used for differential 
+#'   expression analysis.
+#' 
+#' 
+#' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+#'   containing a single matrix of data (expression values) in the \code{assays} slot, 
+#'   together with row meta-data (sample IDs) and column meta-data (protein marker names, 
+#'   logical vectors for: all markers, markers for clustering, markers for differential 
+#'   expression analysis).
+#' 
+#' 
+#' @importFrom SummarizedExperiment SummarizedExperiment
+#' @importFrom flowCore flowSet exprs
+#' @importFrom methods is as
+#' 
+#' @export
+#' 
+#' @seealso \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
+#'   \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+#'
+#' @examples
+#' # See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
+#' # testDE_LM
+#' 
+prepareData <- function(d_input, sample_IDs, 
+                        cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL) {
+  
+  if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
+    stop("Input data must be a 'list' or 'flowSet'")
+  }
+  
+  if (is(d_input, "flowSet")) {
+    d_input <- as(d_input, "list")
+  }
+  
+  d_ex <- lapply(d_input, exprs)
+  
+  if (!(length(sample_IDs) == length(d_ex))) {
+    stop("'sample_IDs' vector must have length equal to number of samples")
+  }
+  
+  n_cells <- sapply(d_ex, nrow)
+  
+  d_combined <- do.call(rbind, d_ex)
+  
+  # create row meta-data
+  if (!is.factor(sample_IDs)) sample_IDs <- factor(sample_IDs, levels = unique(sample_IDs))
+  row_data <- data.frame(sample = rep(sample_IDs, n_cells))
+  
+  # create column meta-data
+  if (!is.null(cols_markers)) {
+    is_marker_col <- rep(FALSE, ncol(d_combined))
+    is_marker_col[cols_markers] <- TRUE
+  }
+  if (!is.null(cols_clustering)) {
+    is_clustering_col <- rep(FALSE, ncol(d_combined))
+    is_clustering_col[cols_clustering] <- TRUE
+  }
+  if (!is.null(cols_DE)) {
+    is_DE_col <- rep(FALSE, ncol(d_combined))
+    is_DE_col[cols_DE] <- TRUE
+  }
+  
+  col_data <- data.frame(markers = colnames(d_combined), 
+                         is_marker_col = is_marker_col, 
+                         is_clustering_col = is_clustering_col, 
+                         is_DE_col = is_DE_col, 
+                         row.names = colnames(d_combined))
+  
+  colnames(d_combined) <- NULL
+  
+  # create SummarizedExperiment object
+  d_out <- SummarizedExperiment(d_combined, rowData = row_data, colData = col_data)
+  
+  d_out
+}
+
+

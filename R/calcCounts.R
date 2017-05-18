@@ -1,20 +1,23 @@
-#' Calculate cluster counts (frequencies)
+#' Calculate cluster cell counts
 #' 
-#' Calculate number of cells per cluster per sample (i.e. cluster counts / frequencies / 
-#' abundances)
+#' Calculate number of cells per cluster per sample (i.e. cell counts / abundances /
+#' frequencies per cluster-sample combination)
 #' 
-#' Calculate number of cells per cluster per sample (referred to as cluster 'counts', 
-#' 'frequencies', or 'abundances').
+#' Calculate number of cells per cluster per sample (referred to as cluster cell 'counts',
+#' 'abundances', or 'frequencies').
 #' 
-#' The cluster counts are used as weights in the subsequent statistical tests and 
-#' calculation of false discovery rates (FDRs).
+#' The cluster cell counts are required for the differential abundance tests, and are also
+#' used as weights in the differential expression tests and the calculation of false
+#' discovery rates (FDRs).
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
-#' object, where rows = clusters, columns = samples, assay = values (counts).
+#' object, where rows = clusters, columns = samples, assay = values (counts). (Note that
+#' this structure differs from the input data object, where rows = cells, and columns =
+#' markers.)
 #' 
 #' 
 #' @param d_se Data object from previous steps, in 
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
 #'   labels as a column in the row meta-data (from \code{\link{generateClusters}}).
 #' 
 #' 
@@ -32,9 +35,11 @@
 #' @export
 #' 
 #' @seealso \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
+#'   \code{\link{testDE_KS}} \code{\link{testDE_LM}}
 #'
 #' @examples
-#' # See full examples in testing functions: testDA, testDE_med, testDE_FDA
+#' # See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
+#' # testDE_LM
 #' 
 calcCounts <- function(d_se) {
   
@@ -43,11 +48,11 @@ calcCounts <- function(d_se) {
   }
   
   if (!("cluster" %in% (colnames(rowData(d_se))))) {
-    stop(paste0("Data object does not contain cluster labels. Run 'generateClusters()' ", 
-                "to generate cluster labels."))
+    stop(paste0("Data object does not contain cluster labels. Run 'generateClusters' to ", 
+                "generate cluster labels."))
   }
   
-  # calculate cluster counts
+  # calculate cluster cell counts
   
   rowdata_df <- as.data.frame(rowData(d_se))
   
@@ -59,13 +64,12 @@ calcCounts <- function(d_se) {
   
   n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
   
-  # create new SummarizedExperiment
+  # create new SummarizedExperiment (with rows = clusters)
   
-  clus <- rowData(d_se)$cluster
-  smp <- rowData(d_se)$sample
-  
-  row_data <- data.frame(cluster = factor(sort(unique(clus)), levels = sort(unique(clus))))
-  col_data <- data.frame(sample = factor(unique(smp), levels = unique(smp)))
+  row_data <- data.frame(cluster = factor(rownames(n_cells), 
+                                          levels = levels(rowData(d_se)$cluster)))
+  col_data <- data.frame(sample = factor(colnames(n_cells), 
+                                         levels = levels(rowData(d_se)$sample)))
   
   d_counts <- SummarizedExperiment(n_cells, rowData = row_data, colData = col_data)
   
