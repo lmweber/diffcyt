@@ -3,8 +3,8 @@
 #' Calculate empirical cumulative distribution functions (ECDFs) required for differential
 #' expression testing methods 'diffcyt-FDA', 'diffcyt-KS', and 'diffcyt-LM'
 #' 
-#' Methods 'diffcyt-FDA', 'diffcyt-KS', and 'diffcyt-LM' use empirical cumulative
-#' distribution functions (ECDFs) of the marker expression profiles (for each
+#' Methods 'diffcyt-FDA', 'diffcyt-KS', and 'diffcyt-LM' use empirical cumulative 
+#' distribution functions (ECDFs) of the marker expression profiles (for each 
 #' cluster-sample combination) to test for differential expression of markers between
 #' sample groups.
 #' 

@@ -1,6 +1,6 @@
 ##########################################################################################
-# Script to save small data set for examples and vignette (small subset of 'BCR-XL' data #
-# set; from Bruggner et al. 2014 and Bodenmiller et al. 2012)                            #
+# Script to save small data set for examples (small subset of 'BCR-XL' data set from 
+# Bodenmiller et al. 2012)
 ##########################################################################################
 
 
@@ -9,7 +9,7 @@ library(magrittr)
 
 
 # filenames
-files <- list.files("../../benchmark_data/Citrus_paper_data/experiment_15713_files", full.names = TRUE)
+files <- list.files("../../benchmark_data/BCR_XL/raw_data/experiment_15713_files", full.names = TRUE)
 
 # groups: BCR-XL vs. reference
 files_BCRXL <- files[grep("patient[1-8]_BCR-XL\\.fcs$", files)]
