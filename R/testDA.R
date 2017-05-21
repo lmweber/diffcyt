@@ -124,16 +124,16 @@
 #' d_ecdfs <- calcECDFs(d_se)
 #' 
 #' 
-#' ################################################
-#' # Test for differentially abundant (DA) clusters
-#' ################################################
+#' ##################################################
+#' # Test for differential abundance (DA) of clusters
+#' ##################################################
 #' 
 #' # create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
 #' patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
 #' patient_IDs <- as.numeric(patient_IDs)
 #' patient_IDs
 #' 
-#' # test for differentially abundant (DA) clusters
+#' # test for differential abundance (DA) of clusters
 #' res_DA <- testDA(d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
 #' 
 #' # show results using 'rowData' accessor function
@@ -180,13 +180,12 @@ testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot =
   }
   
   # return new 'SummarizedExperiment' object with results stored in 'rowData'
-  res_DA <- d_counts
-  
   top <- topTable(efit, coef = 2, number = Inf, adjust.method = "BH", sort.by = "none")
-  
   if (!all(rownames(top) == cluster)) {
     stop("cluster labels do not match")
   }
+  
+  res_DA <- d_counts
   
   rowData(res_DA) <- cbind(rowData(res_DA), top)
   
