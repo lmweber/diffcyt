@@ -2,42 +2,79 @@
 % Please edit documentation in R/testDA.R
 \name{testDA}
 \alias{testDA}
-\title{Test clusters for differential abundance}
+\title{Test for differential abundance}
 \usage{
-testDA(d_counts, group)
+testDA(d_counts, group_IDs, paired = FALSE, block_IDs = NULL,
+  plot = FALSE, path = ".")
 }
 \arguments{
 \item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
-containing cluster counts (frequencies), from \code{\link{calcCounts}}.}
+containing cluster cell counts, from \code{\link{calcCounts}}.}
 
-\item{group}{Factor containing group membership for each sample (for example, diseased
-vs. healthy), for differential comparisons and statistical tests.}
+\item{group_IDs}{Vector or factor of group membership IDs for each sample (e.g. 
+diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors 
+internally. The first level of the factor will be used as the reference level for 
+differential testing. Currently, only two-group comparisons are implemented.}
+
+\item{paired}{Whether to perform paired tests. Set to TRUE and provide the 
+\code{block_IDs} argument (e.g. patient IDs) to calculate paired tests. Default = 
+FALSE.}
+
+\item{block_IDs}{Vector or factor of block IDs for samples (e.g. patient ID), required 
+for paired tests. Default = NULL.}
+
+\item{plot}{Whether to save 'voom' diagnostic plots. Default = FALSE.}
+
+\item{path}{Path to save diagnostic plots, if \code{plot = TRUE}. Default = current 
+working directory.}
 }
 \value{
-Returns fitted model objects from \code{\link[limma]{limma}} for each cluster, 
-  including p-values from the empirical Bayes moderated tests for differential
-  abundance. The p-values can be accessed with the function
-  \code{\link[limma]{topTable}} from the \code{limma} package.
+Returns new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
+  with differential test results for each cluster stored in the 'rowData' slot. Results
+  include p-values and adjusted p-values from the \code{\link[limma]{limma}} empirical
+  Bayes moderated tests, which can be used to rank clusters by evidence for
+  differential abundance. The results can be accessed with the 
+  \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate empirical Bayes moderated tests for differential abundance of clusters
+Calculate tests for differential abundance of clusters
 }
 \details{
 Calculates tests for differential abundance (differential frequencies) of clusters, 
-using empirical Bayes moderation of cluster-wise variances to improve power.
+using empirical Bayes moderation of cluster variances to improve power.
 
 We use the \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 Research}) to calculate the empirical Bayes moderated tests. Empirical Bayes methods 
 improve statistical power by sharing information on variability (i.e. variance across 
-samples for a single cluster) across clusters.
+samples for a single cluster) between clusters.
 
-Note that an additional transformation is included: the tests for differential
-abundance are calculated using the square root of proportional counts per sample,
-instead of raw counts.
+Since count data are often heteroscedastic, we use the  \code{\link[limma]{voom}} 
+method (Law et al. 2014, \emph{Genomie Biology}) to transform the raw cluster cell 
+counts and estimate observation-level weights to stabilize the mean-variance 
+relationship. Diagnostic plots are shown if \code{plot = TRUE}.
+
+The group membership IDs for each sample (e.g. diseased vs. healthy, or treated vs. 
+untreated) are specified with the \code{group_IDs} argument. The group IDs should be 
+checked carefully to ensure they are in the same order as the samples (columns) in the 
+data object \code{d_counts}.
+
+The \code{group_IDs} argument can be provided as a vector or factor. Vectors are 
+converted to factors internally. For two-group comparisons, the first level of the 
+factor will be used as the reference level for the differential tests. To specify a 
+different reference level, use \code{relevel} to re-order the levels (so that the 
+reference level is first).
+
+Currently, only two-group comparisons are possible. More complex comparisons 
+(contrasts) will be implemented in a future version.
+
+For paired data (e.g. treated vs. untreated samples from the same patient), paired 
+tests can be performed, which improves the statistical power of the differential tests.
+Paired tests are performed by setting \code{paired = TRUE} and providing the 
+\code{block_IDs} argument (e.g. one block per patient).
 }
 \examples{
 library(flowCore)
-library(limma)
+library(SummarizedExperiment)
 
 # filenames
 files <- list.files(system.file("extdata", package = "diffcyt"), 
@@ -55,23 +92,28 @@ sample_IDs
 group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
 group_IDs
 
+# set group reference level for differential testing
+group_IDs <- factor(group_IDs, levels = c("ref", "BCRXL"))
+group_IDs
+
 # indices of all marker columns, lineage markers, and functional markers
 # (see Table 1 in Bruggner et al. 2014)
-marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
-lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
-functional_cols <- setdiff(marker_cols, lineage_cols)
+cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+cols_lineage <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+cols_func <- setdiff(cols_markers, cols_lineage)
 
 # prepare data
-d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols)
+# (note: using lineage markers for clustering, and functional markers for DE testing)
+d_se <- prepareData(d_input, sample_IDs, cols_markers, cols_lineage, cols_func)
 
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (note: using small number of clusters for demonstration purposes)
-d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
-# plotMST(d_se)
+# generate clusters
+# (note: using small number of clusters for demonstration purposes in this example)
+d_se <- generateClusters(d_se, xdim = 4, ydim = 4, seed = 123)
 
-# calculate cluster counts
+# calculate cluster cell counts
 d_counts <- calcCounts(d_se)
 
 # calculate cluster medians
@@ -81,20 +123,22 @@ d_medians <- calcMedians(d_se)
 d_ecdfs <- calcECDFs(d_se)
 
 
-########################################################
-# (1) Test for differential abundance (DA) of clusters #
-########################################################
+##################################################
+# Test for differential abundance (DA) of clusters
+##################################################
 
-# re-level factor to use "ref" as base level
-group <- factor(group_IDs, levels = c("ref", "BCRXL"))
+# create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
+patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
+patient_IDs <- as.numeric(patient_IDs)
+patient_IDs
 
-res_DA <- testDA(d_counts, group)
+# test for differential abundance (DA) of clusters
+res_DA <- testDA(d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
 
-topTable(res_DA, number = 6)
+# show results using 'rowData' accessor function
+rowData(res_DA)
 
-# plot top DA clusters
-# (note: this is a small example data set used for demonstration purposes only; results
-# are not biologically meaningful)
-# plotTopDAClusters(res_DA)
+# sort to show top (most highly significant) clusters
+head(rowData(res_DA)[order(rowData(res_DA)$adj.P.Val), ], 10)
 
 }

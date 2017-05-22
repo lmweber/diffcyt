@@ -75,7 +75,7 @@
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
 #' @importFrom flowCore flowFrame
 #' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
-#' @importFrom S4Vectors 'metadata<-'
+#' @importFrom S4Vectors metadata 'metadata<-'
 #' @importFrom grDevices pdf dev.off
 #' 
 #' @export

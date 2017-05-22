@@ -11,38 +11,49 @@ calcECDFs(d_se, resolution = 30)
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
 labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 
-\item{resolution}{Resolution for evaluating ECDFs. The value of each ECDF is calculated
-at this number of equally spaced points between the maximum and minimum observed 
-marker expression values for a given cluster-sample combination. Default = 30.}
+\item{resolution}{Resolution for evaluating ECDFs. The value of each ECDF curve is
+calculated at this number of equally spaced points between the minimum and maximum
+observed (transformed) marker expression values for each cluster-sample combination.
+Default = 30.}
 }
 \value{
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-  clusters, columns = samples, sheets ('assay' slots) = functional markers. Each entry 
-  is a vector of values (i.e. the evaluated ECDF values) with length \code{resolution}.
+  clusters, columns = samples, sheets ('assay' slots) = markers (non-clustering markers
+  only). Each entry is a vector of values (i.e. the evaluated ECDF values) with length 
+  \code{resolution}.
 }
 \description{
-Calculate empirical cumulative distribution functions (ECDFs) required for
-methods "diffcyt-FDA", "diffcyt-KS", and "diffcyt-LM"
+Calculate empirical cumulative distribution functions (ECDFs) required for differential
+expression testing methods 'diffcyt-FDA', 'diffcyt-KS', and 'diffcyt-LM'
 }
 \details{
-Methods "diffcyt-FDA", "diffcyt-KS", and "diffcyt-LM" use the empirical cumulative
-distribution functions (ECDFs) of functional marker expression profiles (for each
-cluster-sample combination) to test for differential expression of functional markers
-between sample groups.
+Methods 'diffcyt-FDA', 'diffcyt-KS', and 'diffcyt-LM' use empirical cumulative 
+distribution functions (ECDFs) of the marker expression profiles (for each 
+cluster-sample combination) to test for differential expression of markers between
+sample groups.
+
+By using the ECDFs, these methods take the full distributions of the marker expression 
+profiles into account. By contrast, most existing approaches (as well as 'diffcyt-med')
+rely on only a single feature value or summary statistic for each marker expression
+profile (e.g. the median), which, discards a significant amount of extra information
+contained in the rest of the distributions.
 
 This function calculates the ECDFs for each cluster-sample combination for each 
-functional marker, and evaluates each of them at a set of equally-spaced points. The 
-ECDF values can then be used in the tests for differential expression.
+non-clustering marker, and evaluates them at a set of equally-spaced points. The 
+evaluated ECDF values can then be used in the differential expression tests.
 
-The ECDF values are returned in a new
+The evaluated ECDF values are returned in a new 
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = clusters,
-columns = samples, sheets ('assay' slots) = functional markers. Note that each "value"
-is a vector of evaluated ECDF values.
+columns = samples, sheets ('assay' slots) = markers (non-clustering markers only). Note
+that there is a separate table of values ('assay') for each marker, and each 'value' in
+the tables consists of a vector of evaluated ECDF values.
 }
 \examples{
-# See full examples in testing functions: testDA, testDE_med, testDE_FDA
+# See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
+# testDE_LM
 
 }
 \seealso{
 \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
+  \code{\link{testDE_KS}} \code{\link{testDE_LM}}
 }

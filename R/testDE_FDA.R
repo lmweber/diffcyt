@@ -110,7 +110,7 @@
 #' 
 #' @examples
 #' library(flowCore)
-#' library(limma)
+#' library(SummarizedExperiment)
 #' 
 #' # filenames
 #' files <- list.files(system.file("extdata", package = "diffcyt"), 

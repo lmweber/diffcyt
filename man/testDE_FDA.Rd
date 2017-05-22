@@ -2,82 +2,116 @@
 % Please edit documentation in R/testDE_FDA.R
 \name{testDE_FDA}
 \alias{testDE_FDA}
-\title{Test for differential expression of functional markers (method: "diffcyt-FDA")}
+\title{Test for differential expression within clusters (method: 'diffcyt-FDA')}
 \usage{
-testDE_FDA(d_ecdfs, d_counts, group, weighted = TRUE, min_cells = 6,
-  min_samples = 2, n_perm = 5000, n_cores = NULL)
+testDE_FDA(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
+  paired = FALSE, block_IDs = NULL, min_cells = 5, min_samples = 2,
+  n_perm = 1000, n_cores = NULL)
 }
 \arguments{
+\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster cell counts, from \code{\link{calcCounts}}. Required for filtering
+and (optionally) weighted tests.}
+
+\item{d_medians}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster medians (median expression of functional markers), from 
+\code{\link{calcMedians}}.}
+
 \item{d_ecdfs}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
 containing empirical cumulative distribution functions (ECDFs), calculated with 
 \code{\link{calcECDFs}}.}
 
-\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
-containing cluster counts (frequencies), from \code{\link{calcCounts}}.}
+\item{group_IDs}{Vector or factor of group membership IDs for each sample (e.g. 
+diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors 
+internally. The first level of the factor will be used as the reference level for 
+differential testing. Currently, only two-group comparisons are implemented.}
 
-\item{group}{Factor containing group membership for each sample (for example, diseased 
-vs. healthy), for differential comparisons and statistical tests.}
+\item{weighted}{Whether to include weights for the number of cells per sample, within 
+each cluster. Weights (number of cells) represent the relative uncertainty in 
+calculating each ECDF curve. If \code{weighted = FALSE}, unweighted tests will be
+calculated, which gives faster runtime but ignores this source of uncertainty. Note
+these are relative weights within each cluster only (not across clusters). Default =
+TRUE.}
 
-\item{weighted}{Whether to include weights (per cluster-sample combination) for 
-weighted permutation tests (see details below). Without weights, runtime is much 
-faster, but result do not account for uncertainty due to different numbers of cells 
-per sample (within each cluster). Default = TRUE.}
+\item{paired}{Whether to perform paired tests. Set to TRUE and provide the 
+\code{block_IDs} argument (e.g. patient IDs) to calculate paired tests. Default = 
+FALSE.}
+
+\item{block_IDs}{Vector or factor of block IDs for samples (e.g. patient ID), required 
+for paired tests. Default = NULL.}
 
 \item{min_cells}{Filtering parameter. For each cluster-marker combination, samples with
-less than \code{min_cells} cells are removed. Default = 6.}
+less than \code{min_cells} cells are removed. If \code{paired = TRUE}, both samples 
+from a pair are removed if either has less than \code{min_cells} cells. Default = 5.}
 
 \item{min_samples}{Filtering parameter. Clusters with less than \code{min_samples} 
-samples in either group (condition) are removed (for a given marker); p-value = NA in
-these cases. Default = 2.}
+samples remaining in either group are removed (for a given marker), with p-value = NA
+returned in these cases. Default = 2.}
 
-\item{n_perm}{Number of permutations to use for permutation testing. Default = 5000 
-(i.e. minimum possible p-value = 0.0002).}
+\item{n_perm}{Number of permutations to use for permutation testing. By definition of 
+permutation tests, the minimum p-value is 1/n_perm. Default = 1000 (i.e. minimum 
+p-value = 0.001).}
 
-\item{n_cores}{Number of processor cores for parallelized evaluation. Default = all
+\item{n_cores}{Number of processor cores for parallelized evaluation. Default = all 
 available cores.}
 }
 \value{
-Returns a data frame containing cluster labels, functional marker names, and 
-  p-values summarizing the evidence for differential expression. Rows are sorted by 
-  p-value (smallest first).
+Returns new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
+  where rows = cluster-marker combinations, columns = samples, values = median marker
+  expression. In the rows, clusters are repeated for each functional marker (i.e. the
+  sheets or 'assays' from the previous \code{d_medians} object are stacked into a
+  single matrix). Differential test results are stored in the 'rowData' slot. Results
+  include p-values and adjusted p-values (using Independent Hypothesis Weighting;
+  Ignatiadis et al. 2016), which can be used to rank cluster-marker combinations by
+  evidence for differential expression. The results can be accessed with the
+  \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
 Calculate tests for differential expression of functional markers within clusters 
-(method: "diffcyt-FDA")
+(method: 'diffcyt-FDA')
 }
 \details{
-The "diffcyt-FDA" methodology uses techniques from functional data analysis (FDA) to 
+The 'diffcyt-FDA' methodology uses techniques from functional data analysis (FDA) to 
 model the functional marker expression signals within each cluster. The differential 
 expression tests compare the FDA-modeled expression profiles within clusters between 
-samples in the two groups (e.g. diseased vs. healthy).
+the two groups of samples (e.g. diseased vs. healthy). Permutation tests are used to 
+calculate null distributions and p-values.
 
-Permutation tests are used to calculate p-values.
+By default, the tests are weighted by the number of cells per sample, within each 
+cluster (i.e. using the number of cells per cluster-sample combination as weights in 
+the permutation tests). The number of cells per cluster-sample combination represents
+an approximation for the relative uncertainty in calculating each ECDF curve. Note that
+these are relative weights within each cluster only (not across clusters). The
+weighting can also be disabled (\code{weighted = FALSE}), which greatly speeds up
+runtime but ignores this source of uncertainty.
 
-By default, the tests are weighted by the number of cells per cluster-sample
-combination, representing the relative uncertainty in calculating each curve (i.e. the
-ECDF for each cluster-sample combination). Note that these are relative weights within
-each cluster only. Weights can also be disabled for (much) faster runtime
-(\code{weights = FALSE}), but then the results will not account for this source of
-uncertainty.
-
-Two levels of filtering are included by default. First, for each cluster-marker
-combination, samples with less than \code{min_cells} cells are removed. Second, any
-clusters with less than \code{min_samples} samples in either condition are removed (for
-this marker); p-value = NA is returned in these cases.
+Two levels of filtering are included by default. First, for each cluster-marker 
+combination, samples with less than \code{min_cells} cells are removed. Second, any 
+clusters with less than \code{min_samples} samples remaining in either condition are
+removed (for this marker), with p-value = NA returned in these cases.
 
 We use the \code{\link[fda]{fda}} package (Ramsay et al. 2014) for the FDA modeling 
-steps; with modifications to the permutation t-testing function to allow weights and 
-improve runtime.
+procedures, with modifications to the permutation t-tests function to improve runtime
+and allow sample weights.
 
 The \code{\link[BiocParallel]{BiocParallel}} package is used for parallelized 
-evaluation on multi-core systems, to speed up runtime.
+evaluation on multi-core systems to further speed up runtime.
 
-Alternative methodologies for testing for differential expression of functional markers
-are available in the functions \code{testDE_med} and \code{testDE-KS}.
+Currently, only two-group comparisons are possible. More complex comparisons 
+(contrasts) will be implemented in a future version.
+
+For paired data (e.g. treated vs. untreated samples from the same patient), paired 
+tests can be used, which improves the statistical power of the differential tests. To
+use paired tests, set \code{paired = TRUE} and provide the \code{block_IDs} argument
+(e.g. one block per patient).
+
+Alternative methodologies for testing for differential expression within clusters are 
+available in the functions \code{\link{testDE_med}}, \code{\link{testDE_KS}}, and 
+\code{\link{testDE_LM}}.
 }
 \examples{
 library(flowCore)
-library(limma)
+library(SummarizedExperiment)
 
 # filenames
 files <- list.files(system.file("extdata", package = "diffcyt"), 
@@ -95,23 +129,28 @@ sample_IDs
 group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
 group_IDs
 
+# set group reference level for differential testing
+group_IDs <- factor(group_IDs, levels = c("ref", "BCRXL"))
+group_IDs
+
 # indices of all marker columns, lineage markers, and functional markers
 # (see Table 1 in Bruggner et al. 2014)
-marker_cols <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
-lineage_cols <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
-functional_cols <- setdiff(marker_cols, lineage_cols)
+cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+cols_lineage <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+cols_func <- setdiff(cols_markers, cols_lineage)
 
 # prepare data
-d_se <- prepareData(d_input, sample_IDs, group_IDs, marker_cols, lineage_cols, functional_cols)
+# (note: using lineage markers for clustering, and functional markers for DE testing)
+d_se <- prepareData(d_input, sample_IDs, cols_markers, cols_lineage, cols_func)
 
 # transform data
 d_se <- transformData(d_se, cofactor = 5)
 
-# generate clusters (note: using small number of clusters for demonstration purposes)
-d_se <- generateClusters(d_se, cols_to_use = lineage_cols, xdim = 4, ydim = 4, seed = 123)
-# plotMST(d_se)
+# generate clusters
+# (note: using small number of clusters for demonstration purposes in this example)
+d_se <- generateClusters(d_se, xdim = 4, ydim = 4, seed = 123)
 
-# calculate cluster counts
+# calculate cluster cell counts
 d_counts <- calcCounts(d_se)
 
 # calculate cluster medians
@@ -121,20 +160,26 @@ d_medians <- calcMedians(d_se)
 d_ecdfs <- calcECDFs(d_se)
 
 
-#########################################################################################
-# (3) Test for differential expression (DE) of functional markers: method "diffcyt-FDA" #
-#########################################################################################
+#############################################################################
+# Test for differential expression (DE) of functional markers within clusters
+# (method 'diffcyt-FDA')
+#############################################################################
 
-# re-level factor to use "ref" as base level
-group <- factor(group_IDs, levels = c("ref", "BCRXL"))
+# create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
+patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
+patient_IDs <- as.numeric(patient_IDs)
+patient_IDs
 
-# note: using no weights, small number of permutations, and single core for 
-# demonstration purposes
-res_DE_FDA <- testDE_FDA(d_ecdfs, d_counts, group, weighted = FALSE, 
-                         n_perm = 100, n_cores = 1)
+# test for differential expression (DE) of functional markers within clusters
+# (for demonstration purposes: using unweighted tests, low permutations, single core)
+res_DE <- testDE_FDA(d_counts, d_medians, d_ecdfs, group_IDs, weighted = FALSE, 
+                     paired = TRUE, block_IDs = patient_IDs, 
+                     n_perm = 100, n_cores = 1)
 
-# (note: this is a small example data set used for demonstration purposes only; results
-# are not biologically meaningful)
-head(res_DE_FDA)
+# show results using 'rowData' accessor function
+rowData(res_DE)
+
+# sort to show top (most highly significant) cluster-marker combinations
+head(rowData(res_DE)[order(rowData(res_DE)$p_adj), ], 10)
 
 }

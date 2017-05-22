@@ -2,13 +2,13 @@
 % Please edit documentation in R/calcCounts.R
 \name{calcCounts}
 \alias{calcCounts}
-\title{Calculate cluster counts (frequencies)}
+\title{Calculate cluster cell counts}
 \usage{
 calcCounts(d_se)
 }
 \arguments{
 \item{d_se}{Data object from previous steps, in 
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
 labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 }
 \value{
@@ -16,23 +16,28 @@ labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
   clusters, columns = samples, assay = values (counts).
 }
 \description{
-Calculate number of cells per cluster per sample (i.e. cluster counts / frequencies / 
-abundances)
+Calculate number of cells per cluster per sample (i.e. cell counts / abundances /
+frequencies per cluster-sample combination)
 }
 \details{
-Calculate number of cells per cluster per sample (referred to as cluster 'counts', 
-'frequencies', or 'abundances').
+Calculate number of cells per cluster per sample (referred to as cluster cell 'counts',
+'abundances', or 'frequencies').
 
-The cluster counts are used as weights in the subsequent statistical tests and 
-calculation of false discovery rates (FDRs).
+The cluster cell counts are required for the differential abundance tests, and are also
+used as weights in the differential expression tests and the calculation of false
+discovery rates (FDRs).
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
-object, where rows = clusters, columns = samples, assay = values (counts).
+object, where rows = clusters, columns = samples, assay = values (counts). (Note that
+this structure differs from the input data object, where rows = cells, and columns =
+markers.)
 }
 \examples{
-# See full examples in testing functions: testDA, testDE_med, testDE_FDA
+# See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
+# testDE_LM
 
 }
 \seealso{
 \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
+  \code{\link{testDE_KS}} \code{\link{testDE_LM}}
 }
