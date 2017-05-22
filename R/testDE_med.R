@@ -27,12 +27,12 @@
 #' \code{\link{testDE_LM}}.
 #' 
 #' 
+#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+#'   containing cluster cell counts, from \code{\link{calcCounts}}.
+#' 
 #' @param d_medians \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
 #'   containing cluster medians (median expression of functional markers), from 
 #'   \code{\link{calcMedians}}.
-#' 
-#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
-#'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
 #' @param group_IDs Vector or factor of group membership IDs for each sample (e.g. 
 #'   diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors 
@@ -64,14 +64,14 @@
 #' 
 #' 
 #' @return Returns new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, 
-#'   where rows = clusters, columns = samples. Rows (clusters) are repeated for each 
-#'   functional marker (i.e. the sheets or 'assays' from the previous \code{d_medians}
-#'   object are stacked into a single matrix). Differential test results are stored in the
-#'   'rowData' slot. Results include p-values and adjusted p-values from the
-#'   \code{\link[limma]{limma}} empirical Bayes moderated tests, which can be used to rank
-#'   clusters (across all functional markers) by evidence for differential expression. The
-#'   results can be accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor
-#'   function.
+#'   where rows = cluster-marker combinations, columns = samples. In the rows, clusters
+#'   are repeated for each functional marker (i.e. the sheets or 'assays' from the
+#'   previous \code{d_medians} object are stacked into a single matrix). Differential test
+#'   results are stored in the 'rowData' slot. Results include p-values and adjusted
+#'   p-values from the \code{\link[limma]{limma}} empirical Bayes moderated tests, which
+#'   can be used to rank cluster-marker combinations by evidence for differential
+#'   expression. The results can be accessed with the
+#'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData colData
@@ -145,12 +145,15 @@
 #' patient_IDs
 #' 
 #' # test for differential expression (DE) of functional markers within clusters
-#' res_DE <- testDE_med(d_medians, d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
+#' res_DE <- testDE_med(d_counts, d_medians, group_IDs, paired = TRUE, block_IDs = patient_IDs)
 #' 
 #' # show results using 'rowData' accessor function
 #' rowData(res_DE)
 #' 
-testDE_med <- function(d_medians, d_counts, group_IDs, paired = FALSE, block_IDs = NULL, 
+#' # sort to show top (most highly significant) cluster-marker combinations
+#' head(rowData(res_DE)[order(rowData(res_DE)$adj.P.Val), ], 10)
+#' 
+testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs = NULL, 
                        min_cells = 5, min_samples = NULL, plot = FALSE, path = ".") {
   
   if (!is.factor(group_IDs)) group_IDs <- factor(group_IDs, levels = unique(group_IDs))
@@ -175,17 +178,15 @@ testDE_med <- function(d_medians, d_counts, group_IDs, paired = FALSE, block_IDs
   cluster <- cluster[ix_keep]
   
   # remove any remaining rows with zeros (required by voom)
-  ix_zeros <- apply(counts_tmp, 1, function(r) any(r == 0))
+  ix_zeros <- apply(counts, 1, function(r) any(r == 0))
   
   counts <- counts[!ix_zeros, ]
   cluster <- cluster[!ix_zeros]
   
-  ix_meds <- cluster
-  
   # extract medians and create concatenated matrix
   func_names <- names(assays(d_medians))
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[func_names]), function(a) a[ix_meds, ])
+    lapply(as.list(assays(d_medians)[func_names]), function(a) a[cluster, ])
   })
   
   # functional marker names and cluster labels (for SummarizedExperiment rowData)

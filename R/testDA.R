@@ -139,6 +139,9 @@
 #' # show results using 'rowData' accessor function
 #' rowData(res_DA)
 #' 
+#' # sort to show top (most highly significant) clusters
+#' head(rowData(res_DA)[order(rowData(res_DA)$adj.P.Val), ], 10)
+#' 
 testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot = FALSE, path = ".") {
   
   if (!is.factor(group_IDs)) group_IDs <- factor(group_IDs, levels = unique(group_IDs))
@@ -180,12 +183,12 @@ testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot =
   }
   
   # return new 'SummarizedExperiment' object with results stored in 'rowData'
+  res_DA <- d_counts
+  
   top <- topTable(efit, coef = 2, number = Inf, adjust.method = "BH", sort.by = "none")
   if (!all(rownames(top) == cluster)) {
     stop("cluster labels do not match")
   }
-  
-  res_DA <- d_counts
   
   rowData(res_DA) <- cbind(rowData(res_DA), top)
   
