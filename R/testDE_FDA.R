@@ -280,9 +280,9 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
     
     # note: keeping p-values only (discarding all other results)
     if (weighted) {
-      p_val <- .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm, plotres = FALSE)$pval
+      p_val <- .tperm.fd_wtd_fast(fd1, fd2, weights1[i, ], weights2[i, ], nperm = n_perm)$pval
     } else {
-      p_val <- .tperm.fd_fast(fd1, fd2, nperm = n_perm, plotres = FALSE)$pval
+      p_val <- .tperm.fd_fast(fd1, fd2, nperm = n_perm)$pval
     }
     
     p_val
