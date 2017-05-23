@@ -172,6 +172,7 @@ patient_IDs
 
 # test for differential expression (DE) of functional markers within clusters
 # (for demonstration purposes: using unweighted tests, low permutations, single core)
+set.seed(123)
 res_DE <- testDE_FDA(d_counts, d_medians, d_ecdfs, group_IDs, weighted = FALSE, 
                      paired = TRUE, block_IDs = patient_IDs, 
                      n_perm = 100, n_cores = 1)
