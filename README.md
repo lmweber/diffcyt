@@ -6,6 +6,24 @@ Under development.
 
 
 
+## How to install
+
+Bioconductor dependences need to be installed manually (since `install_github` can only install CRAN dependencies automatically):
+
+```{r}
+source("https://bioconductor.org/biocLite.R")
+biocLite(c("flowCore", "FlowSOM", "limma", "IHW", "SummarizedExperiment", "BiocParallel"))
+```
+
+After the Bioconductor dependencies are installed, the package can be installed from GitHub. Note that an authentication token is required since this is a private repository.
+
+```{r}
+library(devtools)
+install_github("lmweber/diffcyt", auth_token = "...")
+```
+
+
+
 ## Types of differential discovery
 
 We consider two main types of differential discovery / analysis:
@@ -30,21 +48,4 @@ Several different statistical approaches are under development:
 
 - `diffcyt-LM`: under development
 
-
-
-## How to install
-
-Bioconductor dependences need to be installed manually (since `install_github` can only install CRAN dependencies automatically):
-
-```{r}
-source("https://bioconductor.org/biocLite.R")
-biocLite(c("flowCore", "FlowSOM", "limma", "IHW", "SummarizedExperiment", "BiocParallel"))
-```
-
-After the Bioconductor dependencies are installed, the package can be installed from GitHub. Note that an authentication token is required since this is a private repository.
-
-```{r}
-library(devtools)
-install_github("lmweber/diffcyt", auth_token = "...")
-```
 
