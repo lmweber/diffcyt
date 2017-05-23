@@ -150,7 +150,7 @@
 #' # show results using 'rowData' accessor function
 #' rowData(res_DE)
 #' 
-#' # sort to show top (most highly significant) cluster-marker combinations
+#' # sort to show top (most highly significant) cluster-marker combinations first
 #' head(rowData(res_DE)[order(rowData(res_DE)$adj.P.Val), ], 10)
 #' 
 testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs = NULL, 
@@ -205,7 +205,7 @@ testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs
   
   # voom transformation and weights
   if (plot) {
-    pdf(file.path(path, "mean_variance_pre_voom.pdf"), width = 6, height = 6)
+    pdf(file.path(path, "testDE_med_mean_var_pre_voom.pdf"), width = 6, height = 6)
     v <- voom(meds, design = mm, plot = TRUE)
     dev.off()
   } else {
@@ -224,7 +224,7 @@ testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs
   efit <- eBayes(vfit)
   
   if (plot) {
-    pdf(file.path(path, "mean_variance_post_voom.pdf"), width = 6, height = 6)
+    pdf(file.path(path, "testDE_med_mean_mean_var_post_voom.pdf"), width = 6, height = 6)
     plotSA(efit)
     dev.off()
   }

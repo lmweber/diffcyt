@@ -149,7 +149,7 @@ res_DE <- testDE_med(d_counts, d_medians, group_IDs, paired = TRUE, block_IDs = 
 # show results using 'rowData' accessor function
 rowData(res_DE)
 
-# sort to show top (most highly significant) cluster-marker combinations
+# sort to show top (most highly significant) cluster-marker combinations first
 head(rowData(res_DE)[order(rowData(res_DE)$adj.P.Val), ], 10)
 
 }

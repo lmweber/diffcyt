@@ -139,7 +139,7 @@
 #' # show results using 'rowData' accessor function
 #' rowData(res_DA)
 #' 
-#' # sort to show top (most highly significant) clusters
+#' # sort to show top (most highly significant) clusters first
 #' head(rowData(res_DA)[order(rowData(res_DA)$adj.P.Val), ], 10)
 #' 
 testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot = FALSE, path = ".") {

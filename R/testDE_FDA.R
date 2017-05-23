@@ -178,7 +178,7 @@
 #' # show results using 'rowData' accessor function
 #' rowData(res_DE)
 #' 
-#' # sort to show top (most highly significant) cluster-marker combinations
+#' # sort to show top (most highly significant) cluster-marker combinations first
 #' head(rowData(res_DE)[order(rowData(res_DE)$p_adj), ], 10)
 #' 
 testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE, 

@@ -138,7 +138,7 @@ res_DA <- testDA(d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
 # show results using 'rowData' accessor function
 rowData(res_DA)
 
-# sort to show top (most highly significant) clusters
+# sort to show top (most highly significant) clusters first
 head(rowData(res_DA)[order(rowData(res_DA)$adj.P.Val), ], 10)
 
 }
