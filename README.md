@@ -2,28 +2,32 @@
 
 R package: Statistical methods for differential discovery in high-dimensional flow cytometry and mass cytometry (CyTOF) data.
 
-Work in progress.
+Under development.
 
 
 
 ## Types of differential discovery
 
-Methods are under development for two main types of differential discovery analysis:
+We consider two main types of differential discovery / analysis:
 
-- *Differential abundance* of cell populations, using [FlowSOM](http://bioconductor.org/packages/release/bioc/html/FlowSOM.html) for automated clustering, and empirical Bayes methods to improve power by sharing information on variability across clusters.
+- *Differential abundance* of cell populations. Cell populations are defined using unsupervised clustering.
 
-- *Differential expression of functional markers* within automatically defined clusters. For example, in immunology, cell populations (clusters) may be defined using lineage markers; this is then followed by differential expression analysis of additional functional markers. If possible, empirical Bayes methods will again be used to improve power by sharing information on variability across clusters, under the assumption that most functional markers in most clusters are not differentially expressed.
+- *Differential expression of functional markers* within cell populations. Cell populations are defined using unsupervised clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
 
 
 
 ## Statistical approaches
 
-Three main statistical approaches are under development:
+Several different statistical approaches are under development:
 
-- `diffcyt-FDA`: methods based on functional data analysis (FDA), using the [fda](https://cran.r-project.org/web/packages/fda/index.html) package. (Not sure yet whether this can incorporate empirical Bayes.)
+- `diffcyt-DA`: differential abundance; using empirical Bayes methods (from the `limma` package) to share information on variability between clusters
 
-- `diffcyt-KS`: methods based on Kolmogorov-Smirnov (KS) tests, and permutation null distributions. We calculate the maximum KS statistic between any two samples, followed by random permutations of group membership labels and re-calculation of the KS statistic to generate a null distribution. (Not sure yet whether this can incorporate empirical Bayes.)
+- `diffcyt-med`: differential expression of functional markers; characterizing each functional marker expression profile by its median, and using empirical Bayes methods to share information on variability between clusters
 
-- `diffcyt-med`: simple comparison of medians, i.e. median expression of functional markers within each cluster. (Using empirical Bayes to improve power.)
+- `diffcyt-FDA`: differential expression of functional markers; using methods from functional data analysis (FDA) to characterize each functional marker expression profile by its empirical cumulative distribution function (ECDF), which contains significantly more information than a single value (e.g. median). Also using number of cells per cluster-sample combination as weights to represent the uncertainty in calculating each ECDF. Using permutation tests to test for differences between the groups of ECDF curves.
+
+- `diffcyt-KS`: under development; possibly using Kolmogorov-Smirnov (KS) tests to compare the groups of ECDF curves. Permutation null distributions. Calculate the maximum KS statistic between any two samples; random permutations of group membership labels to calculate null distribution.
+
+- `diffcyt-LM`: under development
 
 
