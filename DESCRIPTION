@@ -10,6 +10,7 @@ Imports:
     flowCore, 
     FlowSOM, 
     limma, 
+    statmod, 
     fda, 
     IHW, 
     matrixStats, 
