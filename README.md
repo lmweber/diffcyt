@@ -28,9 +28,9 @@ install_github("lmweber/diffcyt", auth_token = "...")
 
 We consider two main types of differential discovery / analysis:
 
-- *Differential abundance* of cell populations. Cell populations are defined using unsupervised clustering.
+- **Differential abundance** of cell populations. Cell populations are defined using unsupervised clustering.
 
-- *Differential expression of functional markers* within cell populations. Cell populations are defined using unsupervised clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
+- **Differential expression of functional markers** within cell populations. Cell populations are defined using unsupervised clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
 
 
 
