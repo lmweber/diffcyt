@@ -99,7 +99,7 @@ group_IDs
 # indices of all marker columns, lineage markers, and functional markers
 # (see Table 1 in Bruggner et al. 2014)
 cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
-cols_lineage <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+cols_lineage <- c(3:4, 9, 11, 12, 14, 21, 29, 31, 33)
 cols_func <- setdiff(cols_markers, cols_lineage)
 
 # prepare data
@@ -123,16 +123,16 @@ d_medians <- calcMedians(d_se)
 d_ecdfs <- calcECDFs(d_se)
 
 
-##################################################
-# Test for differential abundance (DA) of clusters
-##################################################
+################################################
+# Test for differentially abundant (DA) clusters
+################################################
 
 # create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
 patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
 patient_IDs <- as.numeric(patient_IDs)
 patient_IDs
 
-# test for differential abundance (DA) of clusters
+# test for differentially abundant (DA) clusters
 res_DA <- testDA(d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
 
 # show results using 'rowData' accessor function

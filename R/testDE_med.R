@@ -110,7 +110,7 @@
 #' # indices of all marker columns, lineage markers, and functional markers
 #' # (see Table 1 in Bruggner et al. 2014)
 #' cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
-#' cols_lineage <- c(3:4, 9, 11,12,14, 21, 29, 31, 33)
+#' cols_lineage <- c(3:4, 9, 11, 12, 14, 21, 29, 31, 33)
 #' cols_func <- setdiff(cols_markers, cols_lineage)
 #' 
 #' # prepare data
