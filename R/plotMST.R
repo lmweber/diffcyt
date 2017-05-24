@@ -45,8 +45,8 @@
 #' @importFrom S4Vectors metadata
 #' @importFrom SummarizedExperiment rowData
 #' @importFrom scales trans_new
-#' @importFrom ggplot2 ggplot aes geom_point coord_fixed ggtitle theme_bw ggsave 
-#'   scale_color_gradient
+#' @importFrom ggplot2 ggplot aes geom_point coord_fixed facet_wrap scale_size 
+#'   scale_color_gradient ggtitle theme_bw ggsave
 #' 
 #' @export
 #' 
@@ -73,10 +73,7 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
   colnames(d_plot) <- c("MST_x", "MST_y", "n_cells")
   
   if (!(type == "basic")) {
-    # transformation function for displaying p-values
-    cuberoot_trans <- function() {
-      trans_new("cuberoot", function(x) x^(1/3), function(x) x^3)
-    }
+    # transformation for displaying p-values
     nroot_trans <- function() {
       trans_new("nroot", function(x) x^(1/10), function(x) x^10)
     }
@@ -103,7 +100,7 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     
     ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
       geom_point(alpha = 0.75) + 
-      scale_color_gradient(low = "orange", high = "gray60", trans = "nroot",  # 'nroot' defined above
+      scale_color_gradient(low = "orange", high = "gray60", trans = nroot_trans(), 
                            breaks = c(min_val, 0.05, max_val), 
                            labels = c(round(min_val), 0.05, round(max_val))) + 
       coord_fixed() + 
@@ -134,7 +131,7 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
       geom_point(alpha = 0.5) + 
       facet_wrap(~ marker) + 
       scale_size(range = c(0, 3)) + 
-      scale_color_gradient(low = "red", high = "gray50", trans = "nroot",  # 'nroot' defined above
+      scale_color_gradient(low = "red", high = "gray50", trans = nroot_trans(), 
                            breaks = c(min_val, 0.05, max_val), 
                            labels = c(round(min_val), 0.05, round(max_val))) + 
       coord_fixed() + 
