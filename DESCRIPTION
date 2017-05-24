@@ -24,5 +24,6 @@ Imports:
     stats, 
     methods, 
     ggplot2, 
+    scales, 
     grDevices
 RoxygenNote: 6.0.1
