@@ -94,20 +94,20 @@ generateClusters <- function(d_se, cols_to_use = NULL,
   
   if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_clustering_col
   
-  if (!is.null(seed)) set.seed(seed)
-  
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
   d_ff <- flowFrame(assays(d_se)[[1]])
   
   runtime <- system.time({
     # FlowSOM: pre meta-clustering
+    # (note: FlowSOM seed is not reproducible across operating systems)
+    if (!is.null(seed)) set.seed(seed); 
     fsom <- ReadInput(d_ff, transform = FALSE, scale = FALSE); 
     fsom <- suppressMessages(BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim, ...)); 
     fsom <- suppressMessages(BuildMST(fsom))
     
     if (meta_clustering) {
       # FlowSOM: meta-clustering
-      # (note: seed must be provided via argument)
+      # (note: seed for meta-clustering must be provided via argument)
       meta <- metaClustering_consensus(fsom$map$codes, k = meta_k, seed = seed)
     }
   })
