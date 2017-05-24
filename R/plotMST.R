@@ -100,12 +100,14 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     
     min_val <- min(p_adj_DA)
     max_val <- max(p_adj_DA) - 0.3  # slightly reduce max value for legend display
+                                    # due to ggplot2 bug (see below)
     
     ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
       geom_point(alpha = 0.75) + 
       scale_color_gradient(low = "orange", high = "gray60", trans = nroot_trans(), 
                            breaks = c(min_val, 0.05, max_val), 
                            labels = c(round(min_val), 0.05, round(max_val))) + 
+                           #guide = guide_colorbar(title.vjust = 0.5)) +  # bug in ggplot: doesn't work
       coord_fixed() + 
       ggtitle("MST: Differential abundance (DA) test results") + 
       theme_bw()
