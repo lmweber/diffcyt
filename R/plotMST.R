@@ -99,7 +99,7 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     d_plot <- cbind(d_plot, p_adj = p_adj_DA[as.character(d_plot$cluster)])
     
     min_val <- min(p_adj_DA)
-    max_val <- max(p_adj_DA)
+    max_val <- max(p_adj_DA) - 0.3  # slightly reduce max value for legend display
     
     ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
       geom_point(alpha = 0.75) + 
