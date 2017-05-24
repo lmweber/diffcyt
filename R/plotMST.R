@@ -116,16 +116,19 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     # column name of adjusted p-values
     col_p_adj <- colnames(rowData(res_DE))[which(colnames(rowData(res_DE)) %in% c("p_adj", "adj.P.Val"))]
     
+    p_adj_DE <- rowData(res_DE)[, col_p_adj]
+    
     n_markers <- length(table(rowData(res_DE)$marker))
     d_plot_rep <- do.call("rbind", rep(list(d_plot), n_markers))
-    
-    d_plot <- cbind(rowData(res_DE)[, c("n_cells", "marker", col_p_adj)], 
-                    d_plot_rep[, c("MST_x", "MST_y")])
+    d_plot <- cbind(d_plot_rep, rowData(res_DE)[, c("marker", col_p_adj)])
     
     # give consistent name to column with adjusted p-values
     colnames(d_plot)[match(col_p_adj, colnames(d_plot))] <- "p_adj"
     
     d_plot <- as.data.frame(d_plot)
+    
+    min_val <- min(p_adj_DE)
+    max_val <- max(p_adj_DE)
     
     ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
       geom_point(alpha = 0.5) + 
