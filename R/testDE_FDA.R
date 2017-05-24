@@ -312,7 +312,7 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
   
   # calculate adjusted p-values using Independent Hypothesis Weighting (IHW)
   # using total number of cells per cluster as the covariate for IHW
-  res$n_cells <- rowSums(assays(d_counts)[[1]])
+  res$n_cells <- rowData(d_counts)$n_cells
   
   res <- melt(res, id.vars = c("cluster", "n_cells"), 
               variable.name = "marker", 
