@@ -64,10 +64,14 @@ calcCounts <- function(d_se) {
   
   n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
   
+  n_cells_total <- rowSums(n_cells)
+  
   # create new SummarizedExperiment (with rows = clusters)
   
   row_data <- data.frame(cluster = factor(rownames(n_cells), 
-                                          levels = levels(rowData(d_se)$cluster)))
+                                          levels = levels(rowData(d_se)$cluster)), 
+                         n_cells = n_cells_total)
+  
   col_data <- data.frame(sample = factor(colnames(n_cells), 
                                          levels = levels(rowData(d_se)$sample)))
   
