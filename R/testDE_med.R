@@ -191,7 +191,7 @@ testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs
   
   # functional marker names and cluster labels (for SummarizedExperiment rowData)
   clus <- rep(cluster, length(func_names))
-  func <- factor(rep(func_names, each = length(cluster), levels = func_names))
+  func <- factor(rep(func_names, each = length(cluster)), levels = func_names)
   
   if (!(length(clus) == nrow(meds))) {
     stop("Check filtering: length of cluster labels vector does not match medians matrix")
