@@ -63,14 +63,15 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
   mst <- metadata(d_se)$MST
   mst_coords <- mst$l
   
-  if (!(nrow(mst_coords) == length(rowData(d_counts)$cluster))) {
+  cluster <- rowData(d_counts)$cluster
+  n_cells <- rowData(d_counts)$n_cells
+  
+  if (!(nrow(mst_coords) == length(cluster))) {
     stop("minimum spanning tree (MST) does not have correct number of clusters")
   }
   
-  n_cells <- rowData(d_counts)$n_cells
-  
-  d_plot <- data.frame(mst_coords, n_cells)
-  colnames(d_plot) <- c("MST_x", "MST_y", "n_cells")
+  d_plot <- data.frame(cluster, n_cells, mst_coords)
+  colnames(d_plot) <- c("cluster", "n_cells", "MST_x", "MST_y")
   
   if (!(type == "basic")) {
     # transformation for displaying p-values
@@ -93,7 +94,9 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     if (is.null(res_DA)) stop("'res_DA' object must be provided if 'type == 'DA''")
     
     p_adj_DA <- rowData(res_DA)$adj.P.Val
-    d_plot <- cbind(d_plot, p_adj = p_adj_DA)
+    names(p_adj_DA) <- rowData(res_DA)$cluster
+    
+    d_plot <- cbind(d_plot, p_adj = p_adj_DA[as.character(d_plot$cluster)])
     
     min_val <- min(p_adj_DA)
     max_val <- max(p_adj_DA)
@@ -116,21 +119,21 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
     # column name of adjusted p-values
     col_p_adj <- colnames(rowData(res_DE))[which(colnames(rowData(res_DE)) %in% c("p_adj", "adj.P.Val"))]
     
-    p_adj_DE <- rowData(res_DE)[, col_p_adj]
+    n_markers <- length(levels(rowData(res_DE)$marker))
     
-    n_markers <- length(table(rowData(res_DE)$marker))
-    d_plot_rep <- do.call("rbind", rep(list(d_plot), n_markers))
-    d_plot <- cbind(d_plot_rep, rowData(res_DE)[, c("marker", col_p_adj)])
+    # clusters present in results object (some may be missing due to filtering)
+    ix <- rowData(res_DE)$cluster
     
-    # give consistent name to column with adjusted p-values
-    colnames(d_plot)[match(col_p_adj, colnames(d_plot))] <- "p_adj"
+    d_plot_rep <- cbind(rowData(res_DE)[, c("marker", col_p_adj)], d_plot[ix, ])
+    d_plot_rep <- as.data.frame(d_plot_rep)
     
-    d_plot <- as.data.frame(d_plot)
+    # consistent column name for adjusted p-values
+    colnames(d_plot_rep)[match(col_p_adj, colnames(d_plot_rep))] <- "p_adj"
     
-    min_val <- min(p_adj_DE)
-    max_val <- max(p_adj_DE)
+    min_val <- min(d_plot_rep$p_adj)
+    max_val <- max(d_plot_rep$p_adj)
     
-    ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
+    ggplot(d_plot_rep, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
       geom_point(alpha = 0.5) + 
       facet_wrap(~ marker) + 
       scale_size(range = c(0, 3)) + 
