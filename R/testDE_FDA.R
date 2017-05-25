@@ -253,7 +253,7 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
       }
       keep1 <- grp_ref & keep
       keep2 <- !grp_ref & keep
-      keep <- keep1 | keep2
+      keep <- unname(rep(keep1[grp_ref] & keep2[!grp_ref], length(levels(group_IDs))))
     }
     
     y <- y[keep]
@@ -331,7 +331,12 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
     stop("cluster labels do not match")
   }
   
-  col_data <- cbind(colData(d_medians), data.frame(group_IDs), data.frame(block_IDs))
+  if (paired) {
+    col_data <- cbind(colData(d_medians), data.frame(group_IDs), data.frame(block_IDs))
+  } else {
+    col_data <- cbind(colData(d_medians), data.frame(group_IDs))
+  }
+  
   row_data <- res
   
   res_DE <- SummarizedExperiment(meds, rowData = row_data, colData = col_data)

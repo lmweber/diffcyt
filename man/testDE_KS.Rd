@@ -2,10 +2,178 @@
 % Please edit documentation in R/testDE_KS.R
 \name{testDE_KS}
 \alias{testDE_KS}
-\title{testDE_KS}
+\title{Test for differential expression within clusters (method: 'diffcyt-KS')}
 \usage{
-testDE_KS()
+testDE_KS(d_counts, d_medians, d_vals, group_IDs, paired = FALSE,
+  block_IDs = NULL, min_cells = 5, min_samples = 2, n_perm = 1000,
+  n_cores = NULL)
+}
+\arguments{
+\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster cell counts, from \code{\link{calcCounts}}. Required for filtering
+and adjusted p-values.}
+
+\item{d_medians}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing cluster medians (median expression of functional markers), from 
+\code{\link{calcMedians}}.}
+
+\item{d_vals}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
+containing subsetted marker expression values for each cluster-sample combination,
+calculated with \code{\link{subsetVals}}.}
+
+\item{group_IDs}{Vector or factor of group membership IDs for each sample (e.g. 
+diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors 
+internally. The first level of the factor will be used as the reference level for 
+differential testing. Currently, only two-group comparisons are implemented.}
+
+\item{paired}{Whether to perform paired tests. Set to TRUE and provide the 
+\code{block_IDs} argument (e.g. patient IDs) to calculate paired tests. Default = 
+FALSE.}
+
+\item{block_IDs}{Vector or factor of block IDs for samples (e.g. patient ID), required 
+for paired tests. Default = NULL.}
+
+\item{min_cells}{Filtering parameter. For each cluster-marker combination, samples with
+less than \code{min_cells} cells are removed. If \code{paired = TRUE}, both samples 
+from a pair are removed if either has less than \code{min_cells} cells. Default = 5.}
+
+\item{min_samples}{Filtering parameter. Clusters with less than \code{min_samples} 
+samples remaining in either group are removed (for a given marker), with p-value = NA
+returned in these cases. Default = 2.}
+
+\item{n_perm}{Number of permutations to use for permutation testing (unpaired tests
+only). By definition of permutation tests, the minimum p-value is 1/n_perm. Default =
+1000 (i.e. minimum p-value = 0.001).}
+
+\item{n_cores}{Number of processor cores for parallelized evaluation. Default = all 
+available cores.}
+}
+\value{
+Returns new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, 
+  where rows = cluster-marker combinations, columns = samples, values = median marker 
+  expression. In the rows, clusters are repeated for each functional marker (i.e. the 
+  sheets or 'assays' from the previous \code{d_medians} object are stacked into a 
+  single matrix). Differential test results are stored in the 'rowData' slot. Results 
+  include p-values and adjusted p-values (using Independent Hypothesis Weighting; 
+  Ignatiadis et al. 2016), which can be used to rank cluster-marker combinations by 
+  evidence for differential expression. The results can be accessed with the 
+  \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-to do
+Calculate tests for differential expression of functional markers within clusters 
+(method: 'diffcyt-KS')
+}
+\details{
+The 'diffcyt-KS' methodology uses Kolmogorov-Smirnov (KS) tests to compare the 
+functional marker expression profiles in each cluster between the two groups of samples
+(e.g. diseased vs. healthy).
+
+KS tests are sensitive to differences in both location and shape of the respective 
+distributions (marker expression profiles). Therefore, this method makes use of more of
+the information contained in the expression profiles, compared to testing based on 
+differences in medians only.
+
+For unpaired tests (default), the maximum KS statistic between any two samples between 
+the two groups is used as the test statistic. Permutations of group membership labels 
+are used to generate a null distribution. The minimum p-value in this case is \code{1 /
+n_perm}, where \code{n_perm} is the number of permutations.
+
+For paired tests, p-values are calculated directly from the two-sample KS tests for 
+each pair. The p-values for the pairs are combined using Fisher's method for combining 
+p-values ("Fisher's combined probability test"), giving an overall p-value for each 
+cluster.
+
+Two levels of filtering are included by default. First, for each cluster-marker 
+combination, samples with less than \code{min_cells} cells are removed. Second, any 
+clusters with less than \code{min_samples} samples remaining in either condition are 
+removed (for this marker), with p-value = NA returned in these cases.
+
+Sample sizes or weights (number of cells per cluster-sample combination) are used 
+during the calculation of the p-values.
+
+Currently, only two-group comparisons are possible with this method.
+
+The \code{\link[BiocParallel]{BiocParallel}} package is used for parallelized 
+evaluation on multi-core systems to speed up runtime (for unpaired tests only).
+
+Alternative methodologies for testing for differential expression within clusters are 
+available in the functions \code{\link{testDE_med}}, \code{\link{testDE_KS}}, and 
+\code{\link{testDE_LM}}.
+}
+\examples{
+library(flowCore)
+library(SummarizedExperiment)
+
+# filenames
+files <- list.files(system.file("extdata", package = "diffcyt"), 
+                    pattern = "\\\\.fcs$", full.names = TRUE)
+files_BCRXL <- files[grep("BCRXL", files)]
+files_ref <- files[grep("ref", files)]
+
+# load data
+files_load <- c(files_BCRXL, files_ref)
+d_input <- lapply(files_load, read.FCS, transformation = FALSE, truncate_max_range = FALSE)
+
+# sample IDs and group IDs
+sample_IDs <- gsub("\\\\.fcs$", "", basename(files_load))
+sample_IDs
+group_IDs <- gsub("^patient[0-9]_", "", sample_IDs)
+group_IDs
+
+# set group reference level for differential testing
+group_IDs <- factor(group_IDs, levels = c("ref", "BCRXL"))
+group_IDs
+
+# indices of all marker columns, lineage markers, and functional markers
+# (see Table 1 in Bruggner et al. 2014)
+cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+cols_lineage <- c(3:4, 9, 11, 12, 14, 21, 29, 31, 33)
+cols_func <- setdiff(cols_markers, cols_lineage)
+
+# prepare data
+# (note: using lineage markers for clustering, and functional markers for DE testing)
+d_se <- prepareData(d_input, sample_IDs, cols_markers, cols_lineage, cols_func)
+
+# transform data
+d_se <- transformData(d_se, cofactor = 5)
+
+# generate clusters
+# (note: using small number of clusters for demonstration purposes in this example)
+d_se <- generateClusters(d_se, xdim = 4, ydim = 4, seed = 123)
+
+# calculate cluster cell counts
+d_counts <- calcCounts(d_se)
+
+# calculate cluster medians
+d_medians <- calcMedians(d_se)
+
+# calculate ECDFs
+d_ecdfs <- calcECDFs(d_se)
+
+# subset marker expresison values
+d_vals <- subsetVals(d_se)
+
+
+#############################################################################
+# Test for differential expression (DE) of functional markers within clusters
+# (method 'diffcyt-KS')
+#############################################################################
+
+# create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
+patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
+patient_IDs <- as.numeric(patient_IDs)
+patient_IDs
+
+# test for differential expression (DE) of functional markers within clusters
+# (for demonstration purposes: single core)
+set.seed(123)
+res_DE <- testDE_KS(d_counts, d_medians, d_vals, group_IDs, 
+                    paired = TRUE, block_IDs = patient_IDs)
+
+# show results using 'rowData' accessor function
+rowData(res_DE)
+
+# sort to show top (most highly significant) cluster-marker combinations first
+head(rowData(res_DE)[order(rowData(res_DE)$p_adj), ], 10)
+
 }
