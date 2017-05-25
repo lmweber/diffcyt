@@ -276,8 +276,7 @@ testDE_KS <- function(d_counts, d_medians, d_vals, group_IDs,
   if (!paired) {
     
     # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
-    calc_p_val <- function(indices, d_vals, d_counts, paired, block_IDs, 
-                           min_cells, min_samples, n_perm, grp_ref) {
+    calc_p_val <- function(indices, d_vals, d_counts, min_cells, min_samples, n_perm, grp_ref) {
       
       # extract 'i' and 'j' from 'indices' (data frame)
       i <- unname(unlist(indices)[1])
@@ -322,7 +321,7 @@ testDE_KS <- function(d_counts, d_medians, d_vals, group_IDs,
       KS_perm <- rep(NA, n_perm)
       
       for (b in seq_len(n_perm)) {
-        perm <- sample(grp_ref)
+        perm <- sample(grp_ref_keep)
         y1 <- y[perm]
         y2 <- y[!perm]
         
@@ -350,8 +349,8 @@ testDE_KS <- function(d_counts, d_medians, d_vals, group_IDs,
     indices <- split(indices, seq_len(nrow(indices)))
     
     # calculate p-values (parallelized across clusters 'i' and markers 'j')
-    p_vals <- bplapply(indices, calc_p_val, d_vals, d_counts, paired, block_IDs, 
-                       min_cells, min_samples, n_perm, grp_ref, BPPARAM = bpparam)
+    p_vals <- bplapply(indices, calc_p_val, d_vals, d_counts, min_cells, min_samples, 
+                       n_perm, grp_ref, BPPARAM = bpparam)
     
     p_vals <- matrix(unlist(p_vals), nrow = length(levels(cluster)), ncol = length(func_names))
     rownames(p_vals) <- levels(cluster)
