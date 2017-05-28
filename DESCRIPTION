@@ -12,6 +12,8 @@ Imports:
     limma, 
     statmod, 
     fda, 
+    lme4, 
+    multcomp, 
     IHW, 
     matrixStats, 
     SummarizedExperiment, 
