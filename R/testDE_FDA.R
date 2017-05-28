@@ -216,7 +216,7 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
   }
   
   if (weighted) {
-    if (!all(colnames(weights) == levels(samples))) {
+    if (!all(colnames(weights) == samples)) {
       stop("Column order in weights matrix does not match order of samples in 'd_ecdfs' object")
     }
   }
@@ -228,8 +228,8 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
   
   # function for parallelized evaluation: calculates p-value for cluster 'i' and marker 'j'
   calc_p_val <- function(indices, d_ecdfs, d_counts, weighted, paired, block_IDs, 
-                         min_cells, min_samples, n_perm, resolution, samples, grp_ref, 
-                         argvals, weights) {
+                         min_cells, min_samples, n_perm, resolution, grp_ref, argvals, 
+                         weights) {
     
     # extract 'i' and 'j' from 'indices' (data frame)
     i <- unname(unlist(indices)[1])
@@ -300,8 +300,8 @@ testDE_FDA <- function(d_counts, d_medians, d_ecdfs, group_IDs, weighted = TRUE,
   
   # calculate p-values (parallelized across clusters 'i' and markers 'j')
   p_vals <- bplapply(indices, calc_p_val, d_ecdfs, d_counts, weighted, paired, block_IDs, 
-                     min_cells, min_samples, n_perm, resolution, samples, grp_ref, 
-                     argvals, weights, BPPARAM = bpparam)
+                     min_cells, min_samples, n_perm, resolution, grp_ref, argvals, 
+                     weights, BPPARAM = bpparam)
   
   p_vals <- matrix(unlist(p_vals), nrow = length(levels(cluster)), ncol = length(func_names))
   rownames(p_vals) <- levels(cluster)
