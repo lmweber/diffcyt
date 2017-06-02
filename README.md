@@ -1,7 +1,5 @@
 # diffcyt
 
-[![Travis-CI Build Status](https://travis-ci.org/lmweber/diffcyt.svg?branch=master)](https://travis-ci.org/lmweber/diffcyt)
-
 R package: Statistical methods for differential discovery in high-dimensional flow cytometry and mass cytometry (CyTOF) data.
 
 Under development.
