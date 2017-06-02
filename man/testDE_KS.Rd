@@ -150,7 +150,7 @@ d_medians <- calcMedians(d_se)
 # calculate ECDFs
 d_ecdfs <- calcECDFs(d_se)
 
-# subset marker expresison values
+# subset marker expression values
 d_vals <- subsetVals(d_se)
 
 

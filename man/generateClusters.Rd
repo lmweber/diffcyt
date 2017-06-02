@@ -4,7 +4,7 @@
 \alias{generateClusters}
 \title{Generate mini-clusters}
 \usage{
-generateClusters(d_se, cols_to_use = NULL, xdim = 20, ydim = 20,
+generateClusters(d_se, cols_to_use = NULL, xdim = 30, ydim = 30,
   meta_clustering = FALSE, meta_k = 40, seed = NULL, ...)
 }
 \arguments{
@@ -16,10 +16,10 @@ the markers specified by \code{is_clustering_col} in the column meta-data of
 \code{d_se} will be used.}
 
 \item{xdim}{Width of grid for self-organizing map for FlowSOM clustering (number of 
-clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).}
+clusters = \code{xdim} * \code{ydim}). Default = 30 (i.e. 900 clusters).}
 
 \item{ydim}{Height of grid for self-organizing map for FlowSOM clustering (number of 
-clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).}
+clusters = \code{xdim} * \code{ydim}). Default = 30 (i.e. 900 clusters).}
 
 \item{meta_clustering}{Whether to include FlowSOM 'meta-clustering' step. Default = 
 \code{FALSE}.}
@@ -48,7 +48,7 @@ Generate mini-clusters for \code{diffcyt} analysis
 Performs clustering to divide cells into subsets (clusters or populations), which can 
 then be further analyzed for differential abundance, or differential expression within 
 clusters. By default, a large number of small clusters is generated ('mini-clusters', 
-i.e. over-clustering), to ensure that rare populations are adequately separated from
+i.e. over-clustering), to ensure that rare populations are adequately separated from 
 larger ones.
 
 Data is assumed to be in the form of a 
@@ -63,7 +63,7 @@ clustering, see the CyTOF data analysis workflow by Nowicka et al. (2017),
 \emph{F1000Research}.
 
 We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen et al. 2015,
-\emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We
+\emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We 
 previously showed that \code{FlowSOM} gives very good clustering performance for 
 high-dimensional cytometry data, for both major and rare cell populations, and is 
 extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
@@ -71,8 +71,8 @@ extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
 By default, the clustering is run at high resolution to give a large number of small 
 clusters ('mini-clusters' or over-clustering). This is done by running only the initial
 'self-organizing map' clustering step in the \code{FlowSOM} algorithm, i.e. without the
-final 'meta-clustering' step. This ensures that small or rare populations are
-adequately separated from larger populations, which is crucial for detecting
+final 'meta-clustering' step. This ensures that small or rare populations are 
+adequately separated from larger populations, which is crucial for detecting 
 differential abundance or differential expression signals from these populations.
 
 The minimum spanning tree (MST) object from \code{\link[FlowSOM]{BuildMST}} (required 
@@ -86,6 +86,6 @@ accessed with \code{metadata(d_se)$MST}.
 
 }
 \seealso{
-\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
+\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}} 
   \code{\link{testDE_KS}} \code{\link{testDE_LM}}
 }

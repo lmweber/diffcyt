@@ -8,7 +8,7 @@ Under development.
 
 ## How to install
 
-Bioconductor dependences need to be installed manually (since `install_github` can only install CRAN dependencies automatically):
+Bioconductor dependencies need to be installed manually (since `install_github` can only install CRAN dependencies automatically):
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
@@ -28,9 +28,9 @@ install_github("lmweber/diffcyt", auth_token = "...")
 
 We consider two main types of differential discovery / analysis:
 
-- **Differential abundance** of cell populations. Cell populations are defined using unsupervised clustering.
+- **Differential abundance** of cell populations. Cell populations are defined using high-resolution clustering.
 
-- **Differential expression of functional markers** within cell populations. Cell populations are defined using unsupervised clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
+- **Differential expression of functional markers** within cell populations. Cell populations are defined using high-resolution clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
 
 
 
@@ -38,14 +38,14 @@ We consider two main types of differential discovery / analysis:
 
 Several different statistical approaches are under development:
 
-- `diffcyt-DA`: differential abundance; using empirical Bayes methods (from the `limma` package) to share information on variability between clusters
+- `diffcyt-DA`: differential abundance of clusters; based on `limma-voom` methods.
 
-- `diffcyt-med`: differential expression of functional markers; characterizing each functional marker expression profile by its median, and using empirical Bayes methods to share information on variability between clusters
+- `diffcyt-med`: differential expression of functional markers within clusters; simple approach based on medians for each functional marker expression profile
 
-- `diffcyt-FDA`: differential expression of functional markers; using methods from functional data analysis (FDA) to characterize each functional marker expression profile by its empirical cumulative distribution function (ECDF), which contains significantly more information than a single value (e.g. median). Also using number of cells per cluster-sample combination as weights to represent the uncertainty in calculating each ECDF. Using permutation tests to test for differences between the groups of ECDF curves.
+- `diffcyt-FDA`: differential expression of functional markers within clusters; using methods from functional data analysis (FDA) to test for differences between functional marker expression profiles represented by empirical cumulative distribution functions (ECDFs) in each condition
 
-- `diffcyt-KS`: under development; possibly using Kolmogorov-Smirnov (KS) tests to compare the groups of ECDF curves. Permutation null distributions. Calculate the maximum KS statistic between any two samples; random permutations of group membership labels to calculate null distribution.
+- `diffcyt-KS`: differential expression of functional markers within clusters; using Kolmogorov-Smirnov tests to test for differences between ECDFs in each condition
 
-- `diffcyt-LM`: under development
+- `diffcyt-LM`: differential expression of functional markers within clusters; using linear models or mixed models to test for differences between ECDFs in each condition
 
 

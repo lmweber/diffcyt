@@ -2,8 +2,8 @@
 #' 
 #' Calculate tests for differential abundance of clusters
 #' 
-#' Calculates tests for differential abundance (differential frequencies) of clusters, 
-#' using empirical Bayes moderation of cluster variances to improve power.
+#' Calculates tests for differential abundance (differential cell frequencies) of
+#' clusters, using empirical Bayes moderation of cluster variances to improve power.
 #' 
 #' We use the \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 #' Research}) to calculate the empirical Bayes moderated tests. Empirical Bayes methods 
@@ -11,9 +11,17 @@
 #' samples for a single cluster) between clusters.
 #' 
 #' Since count data are often heteroscedastic, we use the  \code{\link[limma]{voom}} 
-#' method (Law et al. 2014, \emph{Genomie Biology}) to transform the raw cluster cell 
+#' method (Law et al. 2014, \emph{Genome Biology}) to transform the raw cluster cell 
 #' counts and estimate observation-level weights to stabilize the mean-variance 
 #' relationship. Diagnostic plots are shown if \code{plot = TRUE}.
+#' 
+#' Filtering: Clusters are kept for testing if there are at least \code{min_cells} cells 
+#' per sample in at least \code{min_samples} samples in at least one condition. The
+#' \code{voom} diagnostic plots can be used to optimize the level of filtering: the
+#' mean-variance trend prior to transformation (sqrt standard deviation vs. log2 count
+#' size) should be strictly monotonically decreasing; if there is an initial increasing
+#' trend, the amount of filtering should be increased (Law et al. 2014, \emph{Genome
+#' Biology}).
 #' 
 #' The group membership IDs for each sample (e.g. diseased vs. healthy, or treated vs. 
 #' untreated) are specified with the \code{group_IDs} argument. The group IDs should be 
@@ -29,11 +37,6 @@
 #' Currently, only two-group comparisons are possible. More complex comparisons 
 #' (contrasts) will be implemented in a future version.
 #' 
-#' For paired data (e.g. treated vs. untreated samples from the same patient), paired 
-#' tests can be performed, which improves the statistical power of the differential tests.
-#' Paired tests are performed by setting \code{paired = TRUE} and providing the 
-#' \code{block_IDs} argument (e.g. one block per patient).
-#' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object 
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
@@ -43,12 +46,14 @@
 #'   internally. The first level of the factor will be used as the reference level for 
 #'   differential testing. Currently, only two-group comparisons are implemented.
 #' 
-#' @param paired Whether to perform paired tests. Set to TRUE and provide the 
-#'   \code{block_IDs} argument (e.g. patient IDs) to calculate paired tests. Default = 
-#'   FALSE.
+#' @param min_cells Filtering parameter. Default = 5. Clusters are kept if there are at 
+#'   least \code{min_cells} cells per sample in at least \code{min_samples} samples in at
+#'   least one condition.
 #' 
-#' @param block_IDs Vector or factor of block IDs for samples (e.g. patient ID), required 
-#'   for paired tests. Default = NULL.
+#' @param min_samples Filtering parameter. Default = \code{n - 1}, where \code{n} = number
+#'   of replicates in smallest group. Clusters are kept if there are at least 
+#'   \code{min_cells} cells per sample in at least \code{min_samples} samples in at least
+#'   one condition.
 #' 
 #' @param plot Whether to save 'voom' diagnostic plots. Default = FALSE.
 #' 
@@ -65,7 +70,7 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
-#' @importFrom limma voom duplicateCorrelation lmFit eBayes plotSA topTable
+#' @importFrom limma voom lmFit eBayes plotSA topTable
 #' @importFrom stats model.matrix
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
@@ -123,18 +128,16 @@
 #' # calculate ECDFs
 #' d_ecdfs <- calcECDFs(d_se)
 #' 
+#' # subset marker expression values
+#' d_vals <- subsetVals(d_se)
+#' 
 #' 
 #' ################################################
 #' # Test for differentially abundant (DA) clusters
 #' ################################################
 #' 
-#' # create block IDs for paired tests (this is a paired data set, so we use 1 block per patient)
-#' patient_IDs <- factor(gsub("_(BCRXL|ref)$", "", sample_IDs))
-#' patient_IDs <- as.numeric(patient_IDs)
-#' patient_IDs
-#' 
 #' # test for differentially abundant (DA) clusters
-#' res_DA <- testDA(d_counts, group_IDs, paired = TRUE, block_IDs = patient_IDs)
+#' res_DA <- testDA(d_counts, group_IDs)
 #' 
 #' # show results using 'rowData' accessor function
 #' rowData(res_DA)
@@ -142,16 +145,26 @@
 #' # sort to show top (most highly significant) clusters first
 #' head(rowData(res_DA)[order(rowData(res_DA)$adj.P.Val), ], 10)
 #' 
-testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot = FALSE, path = ".") {
+testDA <- function(d_counts, group_IDs, 
+                   min_cells = 5, min_samples = NULL, 
+                   plot = FALSE, path = ".") {
   
   if (!is.factor(group_IDs)) group_IDs <- factor(group_IDs, levels = unique(group_IDs))
   
-  if (paired & is.null(block_IDs)) {
-    stop("'block_IDs' argument is required for paired tests")
+  if (is.null(min_samples)) {
+    min_samples <- min(table(group_IDs)) - 1
   }
   
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
+  
+  # filtering
+  grp <- group_IDs == levels(group_IDs)[1]
+  tf <- counts >= min_cells
+  ix_keep <- (rowSums(tf[, grp]) >= min_samples) | (rowSums(tf[, !grp]) >= min_samples)
+  
+  counts <- counts[ix_keep, ]
+  cluster <- cluster[ix_keep]
   
   # model matrix
   mm <- model.matrix(~ group_IDs)
@@ -166,12 +179,7 @@ testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot =
   }
   
   # fit linear models
-  if (paired) {
-    dupcor <- duplicateCorrelation(v, design = mm, block = block_IDs)
-    vfit <- lmFit(v, design = mm, block = block_IDs, correlation = dupcor$consensus.correlation)
-  } else {
-    vfit <- lmFit(v, design = mm)
-  }
+  vfit <- lmFit(v, design = mm)
   
   # calculate empirical Bayes moderated tests
   efit <- eBayes(vfit)
@@ -183,17 +191,27 @@ testDA <- function(d_counts, group_IDs, paired = FALSE, block_IDs = NULL, plot =
   }
   
   # return new 'SummarizedExperiment' object with results stored in 'rowData'
-  res_DA <- d_counts
   
   top <- topTable(efit, coef = 2, number = Inf, adjust.method = "BH", sort.by = "none")
   if (!all(rownames(top) == cluster)) {
     stop("cluster labels do not match")
   }
   
-  rowData(res_DA) <- cbind(rowData(res_DA), top)
+  # fill in missing rows (filtered clusters) with NAs
+  row_data <- as.data.frame(matrix(NA, nrow = nlevels(cluster), ncol = ncol(top)))
+  colnames(row_data) <- colnames(top)
+  cluster_nm <- as.numeric(cluster)
+  row_data[cluster_nm, ] <- top
+  
+  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster))), row_data)
   
   # also store additional sample information in 'colData'
-  colData(res_DA) <- cbind(colData(res_DA), data.frame(group_IDs), data.frame(block_IDs))
+  col_data <- cbind(colData(d_counts), data.frame(group_IDs))
+  
+  res_DA <- d_counts
+  
+  rowData(res_DA) <- row_data
+  colData(res_DA) <- col_data
   
   res_DA
 }

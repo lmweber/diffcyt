@@ -172,12 +172,12 @@ testDE_med <- function(d_counts, d_medians, group_IDs, paired = FALSE, block_IDs
   # filtering
   grp <- group_IDs == levels(group_IDs)[1]
   tf <- counts >= min_cells
-  ix_keep <- (rowSums(tf[, grp]) >= min_samples) & (rowSums(tf[, !grp]) >= min_samples)
+  ix_keep <- (rowSums(tf[, grp]) >= min_samples) & (rowSums(tf[, !grp]) >= min_samples)  ##### should this be 'or' instead of 'and'?? (see testDA.R)
   
   counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
   
-  # remove any remaining rows with zeros (required by voom)
+  # remove any remaining rows with zeros (required by voom)  ##### is this required?? (see testDA.R)
   ix_zeros <- apply(counts, 1, function(r) any(r == 0))
   
   counts <- counts[!ix_zeros, ]

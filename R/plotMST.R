@@ -146,7 +146,7 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
       ggtitle("MST: Differential expression (DE) test results") + 
       theme_bw()
     
-    ggsave(file.path(path, "MST_results_DE.pdf"), width = 10, height = 10)
+    ggsave(file.path(path, "MST_results_DE.png"), width = 10, height = 10)
   }
 }
 
