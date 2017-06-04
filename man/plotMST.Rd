@@ -5,7 +5,7 @@
 \title{Plot minimum spanning trees (MST)}
 \usage{
 plotMST(d_se, d_counts, res_DA = NULL, res_DE = NULL, type = c("basic",
-  "DA", "DE"), path = ".")
+  "DA", "DE"), pvalue_type = c("adjusted", "raw"), path = ".")
 }
 \arguments{
 \item{d_se}{Data object from \code{\link{generateClusters}}, which contains the minimum
@@ -25,6 +25,9 @@ Default = NULL.}
 \item{type}{Type of MST plot to generate. Options are "basic" (no differential test 
 results), "DA" (shading to represent DA test results), "DE" (shading to represent DE
 test results). Default = "basic".}
+
+\item{pvalue_type}{Whether to use adjusted p-values (default) or raw p-values for
+significance shading. Options: "adjusted", "raw".}
 
 \item{path}{Path to save plot. Default = current working directory.}
 }

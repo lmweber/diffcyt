@@ -39,6 +39,9 @@
 #'   results), "DA" (shading to represent DA test results), "DE" (shading to represent DE
 #'   test results). Default = "basic".
 #' 
+#' @param pvalue_type Whether to use adjusted p-values (default) or raw p-values for
+#'   significance shading. Options: "adjusted", "raw".
+#' 
 #' @param path Path to save plot. Default = current working directory.
 #' 
 #' 
@@ -58,7 +61,8 @@
 #' # testDE_LM
 #' 
 plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL, 
-                    type = c("basic", "DA", "DE"), path = ".") {
+                    type = c("basic", "DA", "DE"), pvalue_type = c("adjusted", "raw"), 
+                    path = ".") {
   
   mst <- metadata(d_se)$MST
   mst_coords <- mst$l
@@ -93,18 +97,20 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
   if (type == "DA") {
     if (is.null(res_DA)) stop("'res_DA' object must be provided if 'type == 'DA''")
     
-    p_adj_DA <- rowData(res_DA)$adj.P.Val
-    names(p_adj_DA) <- rowData(res_DA)$cluster
+    if (pvalue_type == "adjusted") p_vals_DA <- rowData(res_DA)$adj.P.Val
+    if (pvalue_type == "raw") p_vals_DA <- rowData(res_DA)$P.Value
     
-    d_plot <- cbind(d_plot, p_adj = p_adj_DA[as.character(d_plot$cluster)])
+    names(p_vals_DA) <- rowData(res_DA)$cluster
     
-    min_val <- min(p_adj_DA)
-    max_val <- max(p_adj_DA) - 0.3  # slightly reduce max value for legend display
-                                    # due to ggplot2 bug (see below)
+    d_plot <- cbind(d_plot, p_vals = p_vals_DA[as.character(d_plot$cluster)])
     
-    ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
+    min_val <- min(p_vals_DA, na.rm = TRUE)
+    max_val <- max(p_vals_DA, na.rm = TRUE) - 0.3  # slightly reduce max value for legend display
+                                                   # due to ggplot2 bug (see below)
+    
+    ggplot(d_plot, aes(x = MST_x, y = MST_y, size = n_cells, color = p_vals)) + 
       geom_point(alpha = 0.75) + 
-      scale_color_gradient(low = "orange", high = "gray60", trans = nroot_trans(), 
+      scale_color_gradient(low = "red", high = "gray60", trans = nroot_trans(), 
                            breaks = c(min_val, 0.05, max_val), 
                            labels = c(round(min_val), 0.05, round(max_val))) + 
                            #guide = guide_colorbar(title.vjust = 0.5)) +  # bug in ggplot: doesn't work
@@ -112,30 +118,35 @@ plotMST <- function(d_se, d_counts, res_DA = NULL, res_DE = NULL,
       ggtitle("MST: Differential abundance (DA) test results") + 
       theme_bw()
     
-    ggsave(file.path(path, "MST_results_DA.pdf"), width = 7, height = 7)
+    ggsave(file.path(path, "MST_results_DA.pdf"), width = 9, height = 9)
   }
   
   if (type == "DE") {
     if (is.null(res_DE)) stop("'res_DE' object must be provided if 'type == 'DE''")
     
-    # column name of adjusted p-values
-    col_p_adj <- colnames(rowData(res_DE))[which(colnames(rowData(res_DE)) %in% c("p_adj", "adj.P.Val"))]
+    # column name of p-values or adjusted p-values
+    if (pvalue_type == "adjusted") {
+      col_p_vals <- colnames(rowData(res_DE))[which(colnames(rowData(res_DE)) %in% c("p_adj", "adj.P.Val"))]
+    }
+    if (pvalue_type == "raw") {
+      col_p_vals <- colnames(rowData(res_DE))[which(colnames(rowData(res_DE)) %in% c("p_vals", "P.Value"))]
+    }
     
     n_markers <- length(levels(rowData(res_DE)$marker))
     
     # clusters present in results object (some may be missing due to filtering)
     ix <- rowData(res_DE)$cluster
     
-    d_plot_rep <- cbind(rowData(res_DE)[, c("marker", col_p_adj)], d_plot[ix, ])
+    d_plot_rep <- cbind(rowData(res_DE)[, c("marker", col_p_vals)], d_plot[ix, ])
     d_plot_rep <- as.data.frame(d_plot_rep)
     
-    # consistent column name for adjusted p-values
-    colnames(d_plot_rep)[match(col_p_adj, colnames(d_plot_rep))] <- "p_adj"
+    # consistent column name for p-values or adjusted p-values
+    colnames(d_plot_rep)[match(col_p_vals, colnames(d_plot_rep))] <- "p_vals"
     
-    min_val <- min(d_plot_rep$p_adj)
-    max_val <- max(d_plot_rep$p_adj)
+    min_val <- min(d_plot_rep$p_vals, na.rm = TRUE)
+    max_val <- max(d_plot_rep$p_vals, na.rm = TRUE)
     
-    ggplot(d_plot_rep, aes(x = MST_x, y = MST_y, size = n_cells, color = p_adj)) + 
+    ggplot(d_plot_rep, aes(x = MST_x, y = MST_y, size = n_cells, color = p_vals)) + 
       geom_point(alpha = 0.5) + 
       facet_wrap(~ marker) + 
       scale_size(range = c(0, 3)) + 
