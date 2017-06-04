@@ -64,6 +64,17 @@ calcCounts <- function(d_se) {
   
   n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
   
+  # fill in any missing clusters
+  if (nrow(n_cells) < nlevels(rowData(d_se)$cluster)) {
+    ix_missing <- which(!(levels(rowData(d_se)$cluster) %in% rownames(n_cells)))
+    n_cells_tmp <- matrix(0, nrow = length(ix_missing), ncol = ncol(n_cells))
+    rownames(n_cells_tmp) <- ix_missing
+    n_cells <- rbind(n_cells, n_cells_tmp)
+    
+    # re-order rows
+    n_cells <- n_cells[order(as.numeric(rownames(n_cells))), ]
+  }
+  
   n_cells_total <- rowSums(n_cells)
   
   # create new SummarizedExperiment (with rows = clusters)
