@@ -3,37 +3,37 @@
 #' Prepare data into format required for \code{diffcyt} pipeline
 #' 
 #' Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
-#' a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a 
+#' a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
 #' single matrix of data values, together with row and column meta-data.
 #' 
-#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing 
-#' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data 
+#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
+#' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 #' tables into a single matrix, and adds row and column meta-data.
 #' 
-#' Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains 
-#' protein marker names, and logical entries indicating whether each column is (i) a 
-#' marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for 
+#' Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains
+#' protein marker names, and logical entries indicating whether each column is (i) a
+#' marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for
 #' differential expression analysis within clusters.
 #' 
 #' 
-#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list 
+#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 #'   item or \code{\link[flowCore]{flowFrame}} per sample).
 #' 
 #' @param sample_IDs Vector of sample IDs.
 #' 
 #' @param cols_markers Column indices indicating all protein markers.
 #' 
-#' @param cols_clustering Column indices indicating protein markers to be used for 
+#' @param cols_clustering Column indices indicating protein markers to be used for
 #'   clustering.
 #' 
-#' @param cols_DE Column indices indicating protein markers to be used for differential 
+#' @param cols_DE Column indices indicating protein markers to be used for differential
 #'   expression analysis.
 #' 
 #' 
 #' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-#'   containing a single matrix of data (expression values) in the \code{assays} slot, 
-#'   together with row meta-data (sample IDs) and column meta-data (protein marker names, 
-#'   logical vectors for: all markers, markers for clustering, markers for differential 
+#'   containing a single matrix of data (expression values) in the \code{assays} slot,
+#'   together with row meta-data (sample IDs) and column meta-data (protein marker names,
+#'   logical vectors for: all markers, markers for clustering, markers for differential
 #'   expression analysis).
 #' 
 #' 
@@ -43,12 +43,10 @@
 #' 
 #' @export
 #' 
-#' @seealso \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
-#'   \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+#' @seealso \code{\link{testDA}}
 #'
 #' @examples
-#' # See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
-#' # testDE_LM
+#' # See full examples in testing functions.
 #' 
 prepareData <- function(d_input, sample_IDs, 
                         cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL) {
@@ -76,24 +74,27 @@ prepareData <- function(d_input, sample_IDs,
   row_data <- data.frame(sample = rep(sample_IDs, n_cells))
   
   # create column meta-data
+  empty <- rep(FALSE, ncol(d_combined))
   if (!is.null(cols_markers)) {
-    is_marker_col <- rep(FALSE, ncol(d_combined))
+    is_marker_col <- empty
     is_marker_col[cols_markers] <- TRUE
   }
   if (!is.null(cols_clustering)) {
-    is_clustering_col <- rep(FALSE, ncol(d_combined))
+    is_clustering_col <- empty
     is_clustering_col[cols_clustering] <- TRUE
   }
   if (!is.null(cols_DE)) {
-    is_DE_col <- rep(FALSE, ncol(d_combined))
+    is_DE_col <- empty
     is_DE_col[cols_DE] <- TRUE
   }
   
-  col_data <- data.frame(markers = colnames(d_combined), 
-                         is_marker_col = is_marker_col, 
-                         is_clustering_col = is_clustering_col, 
-                         is_DE_col = is_DE_col, 
-                         row.names = colnames(d_combined))
+  col_data <- data.frame(
+    markers = colnames(d_combined), 
+    is_marker_col = is_marker_col, 
+    is_clustering_col = is_clustering_col, 
+    is_DE_col = is_DE_col, 
+    row.names = colnames(d_combined)
+  )
   
   colnames(d_combined) <- NULL
   

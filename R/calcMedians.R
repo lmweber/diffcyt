@@ -1,33 +1,29 @@
 #' Calculate cluster medians
 #' 
-#' Calculate cluster medians (median expression of each non-clustering marker for each 
-#' cluster-sample combination)
+#' Calculate cluster medians (median expression of each marker for each cluster-sample
+#' combination)
 #' 
-#' Calculate median expression of each non-clustering marker for each cluster-sample
-#' combination.
+#' Calculate median expression of each marker for each cluster-sample combination.
 #' 
-#' The data object is assumed to contain a vector \code{is_DE_col} in the column meta-data
-#' (see \code{\link{prepareData}}), which indicates whether each column is a 
-#' 'non-clustering' marker to be used for differential expression analysis. Cluster 
-#' medians are calculated for these markers only.
+#' The data object is assumed to contain a vector \code{is_marker_col} in the column
+#' meta-data (see \code{\link{prepareData}}), which indicates whether each column
+#' represents a marker. Cluster medians are calculated for these columns.
 #' 
-#' The cluster medians are used for the differential expression tests, and for
-#' visualization of results.
+#' The cluster medians are required for the differential expression tests and plotting of
+#' results.
 #' 
-#' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
-#' object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers 
-#' (non-clustering markers only). Note that there is a separate table of values ('assay') 
-#' for each marker.
+#' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+#' object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
+#' Note that there is a separate table of values ('assay') for each marker.
 #' 
 #' 
-#' @param d_se Data object from previous steps, in 
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
+#' @param d_se Data object from previous steps, in
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 #'   labels as a column in the row meta-data (from \code{\link{generateClusters}}).
 #' 
 #' 
-#' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-#'   clusters, columns = samples, sheets ('assay' slots) = markers (non-clustering markers
-#'   only).
+#' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
+#'   clusters, columns = samples, sheets ('assay' slots) = markers.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
@@ -40,12 +36,10 @@
 #' 
 #' @export
 #' 
-#' @seealso \code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
-#'   \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+#' @seealso \code{\link{testDA}}
 #'
 #' @examples
-#' # See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
-#' # testDE_LM
+#' # See full examples in testing functions.
 #' 
 calcMedians <- function(d_se) {
   
@@ -54,23 +48,23 @@ calcMedians <- function(d_se) {
   }
   
   if (!("cluster" %in% (colnames(rowData(d_se))))) {
-    stop(paste0("Data object does not contain cluster labels. Run 'generateClusters' to ", 
-                "generate cluster labels."))
+    stop("Data object does not contain cluster labels. Run 'generateClusters' to ", 
+         "generate cluster labels.")
   }
   
-  # calculate cluster medians for each functional (non-clustering) marker
+  # calculate cluster medians for each marker
   
   assaydata_mx <- assays(d_se)[[1]]
   
-  medians_func <- vector("list", sum(colData(d_se)$is_DE_col))
-  func_names <- as.character(colData(d_se)$markers[colData(d_se)$is_DE_col])
-  names(medians_func) <- func_names
+  medians <- vector("list", sum(colData(d_se)$is_marker_col))
+  marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker_col])
+  names(medians) <- marker_names
   
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
   
-  for (i in seq_along(medians_func)) {
-    assaydata_i <- assaydata_mx[, func_names[i], drop = FALSE]
+  for (i in seq_along(medians)) {
+    assaydata_i <- assaydata_mx[, marker_names[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
     assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
     colnames(assaydata_i)[1] <- "value"
@@ -82,27 +76,30 @@ calcMedians <- function(d_se) {
     
     med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
     
-    medians_func[[i]] <- med
+    medians[[i]] <- med
   }
   
   # check cluster IDs and sample IDs are identical
-  for (i in seq_along(medians_func)) {
-    if (!all(rownames(medians_func[[i]]) == rownames(medians_func[[1]]))) {
+  for (i in seq_along(medians)) {
+    if (!all(rownames(medians[[i]]) == rownames(medians[[1]]))) {
       stop("Cluster IDs do not match")
     }
-    if (!all(colnames(medians_func[[i]]) == colnames(medians_func[[1]]))) {
+    if (!all(colnames(medians[[i]]) == colnames(medians[[1]]))) {
       stop("Sample IDs do not match")
     }
   }
   
   # create new SummarizedExperiment (rows = clusters, columns = samples)
   
-  row_data <- data.frame(cluster = factor(rownames(medians_func[[1]]), 
-                                          levels = levels(rowData(d_se)$cluster)))
-  col_data <- data.frame(sample = factor(colnames(medians_func[[1]]), 
-                                         levels = levels(rowData(d_se)$sample)))
+  row_data <- data.frame(
+    cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster))
+  )
   
-  d_medians <- SummarizedExperiment(medians_func, rowData = row_data, colData = col_data)
+  col_data <- data.frame(
+    sample = factor(colnames(medians[[1]]), levels = levels(rowData(d_se)$sample))
+  )
+  
+  d_medians <- SummarizedExperiment(medians, rowData = row_data, colData = col_data)
   
   d_medians
 }
