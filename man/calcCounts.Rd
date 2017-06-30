@@ -7,37 +7,34 @@
 calcCounts(d_se)
 }
 \arguments{
-\item{d_se}{Data object from previous steps, in 
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
+\item{d_se}{Data object from previous steps, in
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 }
 \value{
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
   clusters, columns = samples, assay = values (counts).
 }
 \description{
-Calculate number of cells per cluster per sample (i.e. cell counts / abundances /
-frequencies per cluster-sample combination)
+Calculate number of cells per cluster-sample combination
 }
 \details{
-Calculate number of cells per cluster per sample (referred to as cluster cell 'counts',
-'abundances', or 'frequencies').
+Calculate number of cells per cluster-sample combination (referred to as cluster cell
+'counts', 'abundances', or 'frequencies').
 
 The cluster cell counts are required for the differential abundance tests, and are also
-used as weights in the differential expression tests and the calculation of false
-discovery rates (FDRs).
+used as weights to improve statistical performance of the differential expression
+tests.
 
-Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
+Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = samples, assay = values (counts). (Note that
 this structure differs from the input data object, where rows = cells, and columns =
 markers.)
 }
 \examples{
-# See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
-# testDE_LM
+# See full examples in testing functions.
 
 }
 \seealso{
-\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
-  \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+to do
 }

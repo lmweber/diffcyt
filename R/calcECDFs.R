@@ -54,7 +54,7 @@
 #' 
 #' @export
 #' 
-#' @seealso \code{\link{testDA}}
+#' @seealso to do
 #'
 #' @examples
 #' # See full examples in testing functions.

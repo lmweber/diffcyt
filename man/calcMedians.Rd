@@ -7,42 +7,36 @@
 calcMedians(d_se)
 }
 \arguments{
-\item{d_se}{Data object from previous steps, in 
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster 
+\item{d_se}{Data object from previous steps, in
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 }
 \value{
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows = 
-  clusters, columns = samples, sheets ('assay' slots) = markers (non-clustering markers
-  only).
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
+  clusters, columns = samples, sheets ('assay' slots) = markers.
 }
 \description{
-Calculate cluster medians (median expression of each non-clustering marker for each 
-cluster-sample combination)
+Calculate cluster medians (median expression of each marker for each cluster-sample
+combination)
 }
 \details{
-Calculate median expression of each non-clustering marker for each cluster-sample
-combination.
+Calculate median expression of each marker for each cluster-sample combination.
 
-The data object is assumed to contain a vector \code{is_DE_col} in the column meta-data
-(see \code{\link{prepareData}}), which indicates whether each column is a 
-'non-clustering' marker to be used for differential expression analysis. Cluster 
-medians are calculated for these markers only.
+The data object is assumed to contain a vector \code{is_marker_col} in the column
+meta-data (see \code{\link{prepareData}}), which indicates whether each column
+represents a marker. Cluster medians are calculated for these columns.
 
-The cluster medians are used for the differential expression tests, and for
-visualization of results.
+The cluster medians are required for the differential expression tests and plotting of
+results.
 
-Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} 
-object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers 
-(non-clustering markers only). Note that there is a separate table of values ('assay') 
-for each marker.
+Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
+Note that there is a separate table of values ('assay') for each marker.
 }
 \examples{
-# See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
-# testDE_LM
+# See full examples in testing functions.
 
 }
 \seealso{
-\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
-  \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+to do
 }

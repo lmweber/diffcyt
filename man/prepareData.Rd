@@ -8,24 +8,24 @@ prepareData(d_input, sample_IDs, cols_markers = NULL,
   cols_clustering = NULL, cols_DE = NULL)
 }
 \arguments{
-\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list 
+\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 item or \code{\link[flowCore]{flowFrame}} per sample).}
 
 \item{sample_IDs}{Vector of sample IDs.}
 
 \item{cols_markers}{Column indices indicating all protein markers.}
 
-\item{cols_clustering}{Column indices indicating protein markers to be used for 
+\item{cols_clustering}{Column indices indicating protein markers to be used for
 clustering.}
 
-\item{cols_DE}{Column indices indicating protein markers to be used for differential 
+\item{cols_DE}{Column indices indicating protein markers to be used for differential
 expression analysis.}
 }
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  containing a single matrix of data (expression values) in the \code{assays} slot, 
-  together with row meta-data (sample IDs) and column meta-data (protein marker names, 
-  logical vectors for: all markers, markers for clustering, markers for differential 
+  containing a single matrix of data (expression values) in the \code{assays} slot,
+  together with row meta-data (sample IDs) and column meta-data (protein marker names,
+  logical vectors for: all markers, markers for clustering, markers for differential
   expression analysis).
 }
 \description{
@@ -33,24 +33,22 @@ Prepare data into format required for \code{diffcyt} pipeline
 }
 \details{
 Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
-a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a 
+a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
 single matrix of data values, together with row and column meta-data.
 
-This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing 
-one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data 
+This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
+one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 tables into a single matrix, and adds row and column meta-data.
 
-Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains 
-protein marker names, and logical entries indicating whether each column is (i) a 
-marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for 
+Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains
+protein marker names, and logical entries indicating whether each column is (i) a
+marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for
 differential expression analysis within clusters.
 }
 \examples{
-# See full examples in testing functions: testDA, testDE_med, testDE_FDA, testDE_KS,
-# testDE_LM
+# See full examples in testing functions.
 
 }
 \seealso{
-\code{\link{testDA}} \code{\link{testDE_med}} \code{\link{testDE_FDA}}
-  \code{\link{testDE_KS}} \code{\link{testDE_LM}}
+to do
 }
