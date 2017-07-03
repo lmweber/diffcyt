@@ -111,7 +111,7 @@ testDA_limma <- function(d_counts, group_IDs, contrast = NULL,
   # calculate empirical Bayes moderated tests
   efit <- eBayes(vfit)
   
-  pdf("./voom_after.pdf", width = 6, height = 6)
+  pdf(file.path(path, "voom_after.pdf"), width = 6, height = 6)
   plotSA(efit)
   dev.off()
   
