@@ -71,8 +71,16 @@ testDA_limma <- function(d_counts, group_IDs, contrast = NULL,
   cluster <- cluster[ix_keep]
   
   # create design matrix
-  # note: allows batch effects and covariates (these can also be NULL)
-  design <- model.matrix(~ 0 + group_IDs + batch_IDs + covariates)
+  # note: allows batch effects and covariates
+  if (!is.null(batch_IDs) & !is.null(covariates)) {
+    design <- model.matrix(~ 0 + group_IDs + batch_IDs + covariates)
+  } else if (!is.null(batch_IDs)) {
+    design <- model.matrix(~ 0 + group_IDs + batch_IDs)
+  } else if (!is.null(covariates)) {
+    design <- model.matrix(~ 0 + group_IDs + covariates)
+  } else {
+    design <- model.matrix(~ 0 + group_IDs)
+  }
   
   # specify contrast of interest
   # (i.e. multiple conditions; select which one to compare to reference)
