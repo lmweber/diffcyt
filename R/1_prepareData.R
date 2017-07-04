@@ -10,16 +10,19 @@
 #' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 #' tables into a single matrix, and adds row and column meta-data.
 #' 
-#' Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains
-#' protein marker names, and logical entries indicating whether each column is (i) a
-#' marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for
-#' differential expression analysis within clusters.
+#' Row meta-data contains sample labels (e.g. patient IDs) and group membership labels.
+#' Column meta-data contains protein marker names, and logical entries indicating whether
+#' each column is (i) a marker, (ii) a marker to be used for clustering, and (iii) a
+#' marker to be used for differential expression analysis within clusters.
 #' 
 #' 
 #' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 #'   item or \code{\link[flowCore]{flowFrame}} per sample).
 #' 
 #' @param sample_IDs Vector of sample IDs.
+#' 
+#' @param group_IDs Vector of group IDs. The group IDs also need to be provided separately
+#'   to the differential testing functions; they are included here for plotting.
 #' 
 #' @param cols_markers Column indices indicating all protein markers.
 #' 
@@ -32,9 +35,9 @@
 #' 
 #' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 #'   containing a single matrix of data (expression values) in the \code{assays} slot,
-#'   together with row meta-data (sample IDs) and column meta-data (protein marker names,
-#'   logical vectors for: all markers, markers for clustering, markers for differential
-#'   expression analysis).
+#'   together with row meta-data (sample IDs, group IDs) and column meta-data (protein
+#'   marker names, logical vectors for: all markers, markers for clustering, markers for
+#'   differential expression analysis).
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -48,7 +51,7 @@
 #' @examples
 #' # See full examples in testing functions.
 #' 
-prepareData <- function(d_input, sample_IDs, 
+prepareData <- function(d_input, sample_IDs, group_IDs, 
                         cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
@@ -70,8 +73,17 @@ prepareData <- function(d_input, sample_IDs,
   d_combined <- do.call(rbind, d_ex)
   
   # create row meta-data
-  if (!is.factor(sample_IDs)) sample_IDs <- factor(sample_IDs, levels = unique(sample_IDs))
-  row_data <- data.frame(sample = rep(sample_IDs, n_cells))
+  if (!is.factor(sample_IDs)) {
+    sample_IDs <- factor(sample_IDs, levels = unique(sample_IDs))
+  }
+  if (!is.factor(group_IDs)) {
+    group_IDs <- factor(group_IDs, levels = unique(group_IDs))
+  }
+  
+  row_data <- data.frame(
+    sample = rep(sample_IDs, n_cells), 
+    group = rep(group_IDs, n_cells)
+  )
   
   # create column meta-data
   empty <- rep(FALSE, ncol(d_combined))

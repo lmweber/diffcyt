@@ -11,7 +11,8 @@ testDA_limma(d_counts, group_IDs, contrast = NULL, batch_IDs = NULL,
 \arguments{
 \item{d_counts}{to do}
 
-\item{group_IDs}{to do}
+\item{group_IDs}{to do. User must ensure that this is identical to 'group_IDs' provided
+in 'prepareData'.}
 
 \item{contrast}{to do}
 

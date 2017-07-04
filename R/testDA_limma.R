@@ -6,7 +6,8 @@
 #' 
 #' 
 #' @param d_counts to do
-#' @param group_IDs to do
+#' @param group_IDs to do. User must ensure that this is identical to 'group_IDs' provided
+#'   in 'prepareData'.
 #' @param contrast to do
 #' @param batch_IDs to do
 #' @param block_IDs to do

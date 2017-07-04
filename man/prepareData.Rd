@@ -4,7 +4,7 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, sample_IDs, cols_markers = NULL,
+prepareData(d_input, sample_IDs, group_IDs, cols_markers = NULL,
   cols_clustering = NULL, cols_DE = NULL)
 }
 \arguments{
@@ -12,6 +12,9 @@ prepareData(d_input, sample_IDs, cols_markers = NULL,
 item or \code{\link[flowCore]{flowFrame}} per sample).}
 
 \item{sample_IDs}{Vector of sample IDs.}
+
+\item{group_IDs}{Vector of group IDs. The group IDs also need to be provided separately
+to the differential testing functions; they are included here for plotting.}
 
 \item{cols_markers}{Column indices indicating all protein markers.}
 
@@ -24,9 +27,9 @@ expression analysis.}
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
   containing a single matrix of data (expression values) in the \code{assays} slot,
-  together with row meta-data (sample IDs) and column meta-data (protein marker names,
-  logical vectors for: all markers, markers for clustering, markers for differential
-  expression analysis).
+  together with row meta-data (sample IDs, group IDs) and column meta-data (protein
+  marker names, logical vectors for: all markers, markers for clustering, markers for
+  differential expression analysis).
 }
 \description{
 Prepare data into format required for \code{diffcyt} pipeline
@@ -40,10 +43,10 @@ This function accepts a list or \code{\link[flowCore]{flowSet}} as input (contai
 one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 tables into a single matrix, and adds row and column meta-data.
 
-Row meta-data contains sample labels (e.g. patient IDs). Column meta-data contains
-protein marker names, and logical entries indicating whether each column is (i) a
-marker, (ii) a marker to be used for clustering, and (iii) a marker to be used for
-differential expression analysis within clusters.
+Row meta-data contains sample labels (e.g. patient IDs) and group membership labels.
+Column meta-data contains protein marker names, and logical entries indicating whether
+each column is (i) a marker, (ii) a marker to be used for clustering, and (iii) a
+marker to be used for differential expression analysis within clusters.
 }
 \examples{
 # See full examples in testing functions.
