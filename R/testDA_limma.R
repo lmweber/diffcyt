@@ -21,7 +21,8 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
-#' @importFrom limma makeContrasts voom duplicateCorrelation lmFit eBayes plotSA topTable
+#' @importFrom limma makeContrasts contrasts.fit voom duplicateCorrelation lmFit eBayes
+#'   plotSA topTable
 #' @importFrom stats model.matrix
 #' @importFrom methods as is
 #' @importFrom grDevices pdf

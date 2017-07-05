@@ -24,10 +24,10 @@
 #'   clusters, columns = markers, assay = values (marker expression values).
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
+#' @importFrom SummarizedExperiment SummarizedExperiment assay rowData colData
 #' @importFrom dplyr group_by tally summarize
 #' @importFrom tidyr complete
-#' @importFrom reshape2 acast
+#' @importFrom reshape2 melt acast
 #' @importFrom magrittr '%>%'
 #' @importFrom stats median
 #' @importFrom methods is
@@ -58,7 +58,7 @@ calcMediansAll <- function(d_se) {
   # remove non-marker values
   marker_vals[, !colData(d_se)$is_marker_col] <- as.numeric(NA)
   
-  stopifnot(nrow(assaydata_mx) == nrow(rowdata_df))
+  stopifnot(nrow(marker_vals) == nrow(rowdata_df))
   
   d_all <- cbind(rowdata_df, marker_vals)
   d_all <- melt(d_all, id.vars = 1:ncol(rowdata_df), variable.name = "marker")
