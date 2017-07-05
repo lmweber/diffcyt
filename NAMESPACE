@@ -3,6 +3,7 @@
 export(calcCounts)
 export(calcECDFs)
 export(calcMedians)
+export(calcMediansAll)
 export(calcSubsetVals)
 export(generateClusters)
 export(prepareData)

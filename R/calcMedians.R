@@ -9,8 +9,7 @@
 #' meta-data (see \code{\link{prepareData}}), which indicates whether each column
 #' represents a marker. Cluster medians are calculated for these columns.
 #' 
-#' The cluster medians are required for the differential expression tests and plotting of
-#' results.
+#' The cluster medians (by sample) are required for differential expression tests.
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 #' object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
