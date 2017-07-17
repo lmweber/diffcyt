@@ -15,11 +15,11 @@
 #' The input data object \code{d_se} is assumed to contain a vector
 #' \code{is_clustering_col} in the column meta-data. This vector specifies the columns
 #' (protein markers) to be used for clustering. For example, in immunological data, this
-#' may be the lineage markers. The choice of clustering markers is an important choice for
-#' the user, and will depend on the underlying experimental design and research questions.
-#' It may be made based on prior biological knowledge or using data-driven methods. For an
-#' example of a data-driven method of marker ranking and selection, see Nowicka et al.
-#' (2017), \emph{F1000Research}.
+#' may be the lineage markers. The choice of clustering markers is an important design
+#' choice for the user, and will depend on the underlying experimental design and research
+#' questions. It may be made based on prior biological knowledge or using data-driven
+#' methods. For an example of a data-driven method of marker ranking and selection, see
+#' Nowicka et al. (2017), \emph{F1000Research}.
 #' 
 #' We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen et al. 2015,
 #' \emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We

@@ -5,37 +5,91 @@
 \title{Test for differential abundance}
 \usage{
 testDA_limma(d_counts, group_IDs, contrast = NULL, batch_IDs = NULL,
-  block_IDs = NULL, covariates = NULL, min_cells = 3,
-  min_samples = NULL, path = ".")
+  covariates = NULL, block_IDs = NULL, min_cells = 3,
+  min_samples = NULL, plot = TRUE, path = ".")
 }
 \arguments{
-\item{d_counts}{to do}
+\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
+containing cluster cell counts, from \code{\link{calcCounts}}.}
 
-\item{group_IDs}{to do. User must ensure that this is identical to 'group_IDs' provided
-in 'prepareData'.}
+\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
+diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
+internally. The user must ensure that this is identical to the \code{group_IDs}
+provided previously to \code{\link{prepareData}}.}
 
-\item{contrast}{to do}
+\item{contrast}{Contrast specifying the differential comparison of interest for
+testing. This should be constructed using \code{\link[limma]{makeContrasts}} from the
+\code{\link[limma]{limma}} package. If not provided, the default is to compare the
+second vs. first level of \code{group_IDs}.}
 
-\item{batch_IDs}{to do}
+\item{batch_IDs}{(Optional) Vector or factor of batch IDs. Batch effects are removed by
+adding the batch IDs to the linear model design matrices.}
 
-\item{block_IDs}{to do}
+\item{covariates}{(Optional) Numeric matrix of continuous covariates, to be added to
+the linear model design matrices in order to remove their effects.}
 
-\item{covariates}{to do}
+\item{block_IDs}{(Optional) Vector or factor of block IDs, for paired experimental
+designs. If provided, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
+methodology is used to account for the paired design.}
 
-\item{min_cells}{to do}
+\item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
+testing if they have at least \code{min_cells} cells in at least \code{min_samples}
+samples in at least one condition.}
 
-\item{min_samples}{to do}
+\item{min_samples}{Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
+i.e. one less than the number of samples in the smallest group. Clusters are kept for
+differential testing if they have at least \code{min_cells} cells in at least
+\code{min_samples} samples in at least one condition.}
 
-\item{path}{to do}
+\item{plot}{Whether to save diagnostic plots for the \code{limma}
+\code{\link[limma]{voom}} transformations. Default = TRUE.}
+
+\item{path}{Path for diagnostic plots. Default = current working directory.}
 }
 \value{
-returns
+Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
+  with differential test results stored in the \code{rowData} slot. Results include raw
+  p-values and adjusted p-values from the \code{limma} empirical Bayes moderated tests,
+  which can be used to rank clusters by evidence for differential abundance. The
+  results can be accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor
+  function.
 }
 \description{
 Calculate tests for differential abundance of clusters
 }
 \details{
-method: limma-voom
+Calculates tests for differential abundance of clusters, using empirical Bayes
+moderation of cluster-level variances to improve power.
+
+The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
+Research}) is used to fit linear models and calculate empirical Bayes moderated tests.
+Empirical Bayes methods improve statistical power by sharing information on variability
+(i.e. variance across samples for a single cluster) between clusters. Since count data
+are often heteroscedastic, we use the  \code{\link[limma]{voom}} method (Law et al.
+2014, \emph{Genome Biology}) to transform the raw cluster cell counts and estimate
+observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
+are shown if \code{plot = TRUE}.
+
+The \code{group_IDs} argument specifies the group membership of each sample (e.g.
+diseased vs. healthy, or treated vs. untreated), and the (optional) \code{contrast}
+argument specifies the differential comparison of interest (e.g. group 2 vs. group 1).
+If no \code{contrast} is provided, the default is to compare the second vs. first level
+of \code{group_IDs}.
+
+Since the \code{limma} package fits linear models for each cluster, it is possible to
+specify flexible experimental designs. For example, the \code{group_IDs} labels may
+contain multiple groups or conditions; in this case the \code{contrast} argument should
+be provided to ensure that the differential tests are calculated for the contrast of
+interest. Batch effects and continuous covariates can be provided with the
+\code{batch_IDs} and \code{covariates} arguments; these are then added to the design
+matrices in order to remove their effects. Paired experimental designs can be specified
+by providing the \code{block_IDs} argument; the \code{limma}
+\code{\link[limma]{duplicateCorrelation}} methodology is used in this case.
+
+Filtering: Clusters are kept for differential testing if they have at least
+\code{min_cells} cells in at least \code{min_samples} samples in at least one
+condition. This removes clusters with very low cell counts across conditions, which
+improves statistical power.
 }
 \examples{
 # to do
