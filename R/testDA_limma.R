@@ -1,6 +1,6 @@
-#' Test for differential abundance
+#' Test for differential abundance: method 'diffcyt-DA-limma'
 #' 
-#' Calculate tests for differential abundance of clusters
+#' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
 #' 
 #' Calculates tests for differential abundance of clusters, using empirical Bayes
 #' moderation of cluster-level variances to improve power.
@@ -199,12 +199,12 @@ testDA_limma <- function(d_counts, group_IDs, contrast = NULL,
   # store additional sample information in 'colData'
   col_data <- cbind(colData(d_counts), data.frame(group_IDs))
   
-  res_DA <- d_counts
+  res <- d_counts
   
-  rowData(res_DA) <- row_data
-  colData(res_DA) <- col_data
+  rowData(res) <- row_data
+  colData(res) <- col_data
   
-  res_DA
+  res
 }
 
 

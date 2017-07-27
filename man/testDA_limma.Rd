@@ -2,7 +2,7 @@
 % Please edit documentation in R/testDA_limma.R
 \name{testDA_limma}
 \alias{testDA_limma}
-\title{Test for differential abundance}
+\title{Test for differential abundance: method 'diffcyt-DA-limma'}
 \usage{
 testDA_limma(d_counts, group_IDs, contrast = NULL, batch_IDs = NULL,
   covariates = NULL, block_IDs = NULL, min_cells = 3,
@@ -55,7 +55,7 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   function.
 }
 \description{
-Calculate tests for differential abundance of clusters
+Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
 }
 \details{
 Calculates tests for differential abundance of clusters, using empirical Bayes
