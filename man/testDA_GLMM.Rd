@@ -4,31 +4,19 @@
 \alias{testDA_GLMM}
 \title{Test for differential abundance: method 'diffcyt-DA-GLMM'}
 \usage{
-testDA_GLMM(d_counts, group_IDs, contrast = NULL, batch_IDs = NULL,
-  covariates = NULL, block_IDs = NULL, min_cells = 3,
-  min_samples = NULL)
+testDA_GLMM(d_counts, formula, contrast, min_cells = 3, min_samples = NULL)
 }
 \arguments{
 \item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 containing cluster cell counts, from \code{\link{calcCounts}}.}
 
-\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
-internally. The user must ensure that this is identical to the \code{group_IDs}
-provided previously to \code{\link{prepareData}}.}
+\item{formula}{Model formula object, created with \code{\link{createFormula}}. This
+should be a list containing two elements: \code{formula} and \code{data}; the model
+formula and data frame of corresponding variables. See \code{\link{createFormula}}
+for details.}
 
-\item{contrast}{Contrast specifying the differential comparison of interest for
-testing. Each contrast should be in a separate row. If not provided, the default is
-to compare the second vs. first level of \code{group_IDs}.}
-
-\item{batch_IDs}{(Optional) Vector or factor of batch IDs. Batch effects are removed by
-adding the batch IDs to the GLMM.}
-
-\item{covariates}{(Optional) Numeric matrix of continuous covariates, to be added to
-the GLMM in order to remove their effects.}
-
-\item{block_IDs}{(Optional) Vector or factor of block IDs, for paired experimental
-designs.}
+\item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
+\code{\link{createContrast}} for details.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -61,10 +49,21 @@ results at the high-resolution cluster level, instead of relying on a manual
 cluster-merging step. We also include a filtering step to remove high-resolution
 clusters with very small numbers of cells, to improve power.
 
+The experimental design must be specified using a model formula, which can be created
+with \code{\link{createFormula}}. Flexible experimental designs are possible, including
+batch effects, continuous covariates, and blocking (e.g. for paired designs). Random
+intercept terms are included for blocks (e.g. paired designs), as well as
+'observation-level random effects' to account for overdispersion typically seen in
+high-dimensional cytometry data (Nowicka et al., 2017, \emph{F1000Research}). See
+\code{\link{createFormula}} for more details.
+
+The contrast matrix specifying the contrast of interest can be created with
+\code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
+
 Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples in at least one
 condition. This removes clusters with very low cell counts across conditions, which
-improves statistical power.
+improves power.
 }
 \examples{
 # to do

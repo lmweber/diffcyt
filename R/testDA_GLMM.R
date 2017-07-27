@@ -13,32 +13,33 @@
 #' cluster-merging step. We also include a filtering step to remove high-resolution
 #' clusters with very small numbers of cells, to improve power.
 #' 
+#' The experimental design must be specified using a model formula, which can be created
+#' with \code{\link{createFormula}}. Flexible experimental designs are possible, including
+#' batch effects, continuous covariates, and blocking (e.g. for paired designs). Random
+#' intercept terms are included for blocks (e.g. paired designs), as well as
+#' 'observation-level random effects' to account for overdispersion typically seen in
+#' high-dimensional cytometry data (Nowicka et al., 2017, \emph{F1000Research}). See
+#' \code{\link{createFormula}} for more details.
+#' 
+#' The contrast matrix specifying the contrast of interest can be created with
+#' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
+#' 
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples in at least one
 #' condition. This removes clusters with very low cell counts across conditions, which
-#' improves statistical power.
+#' improves power.
 #' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
-#' @param group_IDs Vector or factor of group membership labels for each sample (e.g.
-#'   diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
-#'   internally. The user must ensure that this is identical to the \code{group_IDs}
-#'   provided previously to \code{\link{prepareData}}.
+#' @param formula Model formula object, created with \code{\link{createFormula}}. This
+#'   should be a list containing two elements: \code{formula} and \code{data}; the model
+#'   formula and data frame of corresponding variables. See \code{\link{createFormula}}
+#'   for details.
 #' 
-#' @param contrast Contrast specifying the differential comparison of interest for
-#'   testing. Each contrast should be in a separate row. If not provided, the default is
-#'   to compare the second vs. first level of \code{group_IDs}.
-#' 
-#' @param batch_IDs (Optional) Vector or factor of batch IDs. Batch effects are removed by
-#'   adding the batch IDs to the GLMM.
-#' 
-#' @param covariates (Optional) Numeric matrix of continuous covariates, to be added to
-#'   the GLMM in order to remove their effects.
-#' 
-#' @param block_IDs (Optional) Vector or factor of block IDs, for paired experimental
-#'   designs.
+#' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
+#'   \code{\link{createContrast}} for details.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -60,8 +61,7 @@
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom lme4 glmer
 #' @importFrom multcomp glht
-#' @importFrom IHW ihw
-#' @importFrom stats formula
+#' @importFrom IHW ihw adj_pvalues
 #' @importFrom methods as is
 #' 
 #' @export
@@ -71,23 +71,10 @@
 #' @examples
 #' # to do
 #' 
-testDA_GLMM <- function(d_counts, group_IDs, contrast = NULL, 
-                        batch_IDs = NULL, covariates = NULL, block_IDs = NULL, 
+testDA_GLMM <- function(d_counts, formula, contrast, 
                         min_cells = 3, min_samples = NULL) {
   
-  if (!is.factor(group_IDs)) {
-    group_IDs <- factor(group_IDs, levels = unique(group_IDs))
-  }
-  if (!is.null(batch_IDs) & !is.factor(batch_IDs)) {
-    batch_IDs <- factor(batch_IDs, levels = unique(batch_IDs))
-  }
-  if (!is.null(block_IDs) & !is.factor(block_IDs)) {
-    block_IDs <- factor(block_IDs, levels = unique(block_IDs))
-  }
-  
-  if (!is.null(covariates) & !is.matrix(covariates) & !is.numeric(covariates)) {
-    stop("'covariates' must be provided as a numeric matrix, with one column for each covariate")
-  }
+  group_IDs <- colData(d_counts)$group
   
   if (is.null(min_samples)) {
     min_samples <- min(table(group_IDs)) - 1
@@ -96,11 +83,9 @@ testDA_GLMM <- function(d_counts, group_IDs, contrast = NULL,
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
-  sample_IDs <- colData(d_counts)$sample
-  stopifnot(all(sample_IDs == colnames(counts)))
-  
   # total cell counts per sample (for weights)
   n_cells_smp <- colSums(counts)
+  
   # total cell counts per cluster (for hypothesis weighting)
   n_cells <- rowData(d_counts)$n_cells
   
@@ -119,56 +104,32 @@ testDA_GLMM <- function(d_counts, group_IDs, contrast = NULL,
   n_cells <- n_cells[ix_keep]
   
   
-  # set up model formula
-  # (note: allows batch effects and covariates)
-  if (!is.null(batch_IDs) & !is.null(covariates)) {
-    formula <- y / n_cells_smp ~ group_IDs + (1 | sample_IDs) + (1 | block_IDs) + batch_IDs + covariates
-    ### to do: check if covariates work correctly when provided as numeric matrix
-  } else if (!is.null(batch_IDs)) {
-    formula <- y / n_cells_smp ~ group_IDs + (1 | sample_IDs) + (1 | block_IDs) + batch_IDs
-  } else if (!is.null(covariates)) {
-    formula <- y / n_cells_smp ~ group_IDs + (1 | sample_IDs) + (1 | block_IDs) + covariates
-  } else {
-    formula <- y / n_cells_smp ~ group_IDs + (1 | sample_IDs) + (1 | block_IDs)
-  }
-  
-  
-  # set up contrasts
-  # (note: if not specified, default is to compare 2nd vs. 1st level of 'group_IDs')
-  if (is.null(contrast)) {
-    levs <- paste0("group_IDs", levels(group_IDs))
-    contr_name <- paste(as.character(levs[2]), "-", as.character(levs[1]))
-    contr <- rep(0, length(levs))
-    contr[2] <- 1
-    contrast <- matrix(contr, nrow = 1)
-    rownames(contrast) <- contr_name
-    colnames(contrast) <- levs
-  }
-  
-  
   # fit models: separate model for each cluster
+  
   p_vals <- rep(NA, length(cluster))
   
   for (i in seq_along(cluster)) {
     # data for cluster i
-    y <- counts[i, ]
+    # note: divide by total cell counts per sample to enable weights
+    y <- counts[i, ] / n_cells_smp
     # fit model
     fit <- glmer(formula, family = "binomial", weights = n_cells_smp)
     # test contrast
     test <- glht(fit, contrast)
     # return p-values
     p_vals[i] <- summary(test)$test$pvalues
-    cat(".")
   }
   
   
   # calculate adjusted p-values using Independent Hypothesis Weighting (IHW), with total
   # number of cells per cluster as covariate for IHW
+  
   ihw_out <- ihw(p_vals, covariates = n_cells, alpha = 0.1)
   p_adj <- adj_pvalues(ihw_out)
   
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
+  
   stopifnot(length(p_vals) == length(p_adj))
   out <- data.frame(p_vals, p_adj)
   

@@ -14,50 +14,37 @@
 #' observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
 #' are shown if \code{plot = TRUE}.
 #' 
-#' The \code{group_IDs} argument specifies the group membership of each sample (e.g.
-#' diseased vs. healthy, or treated vs. untreated), and the (optional) \code{contrast}
-#' argument specifies the differential comparison of interest (e.g. group 2 vs. group 1).
-#' If no \code{contrast} is provided, the default is to compare the second vs. first level
-#' of \code{group_IDs}.
+#' The experimental design must be specified using a design matrix, which can be created
+#' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
+#' including batch effects and continuous covariates. See \code{\link{createDesignMatrix}}
+#' for more details.
 #' 
-#' Since the \code{limma} package fits linear models for each cluster, it is possible to
-#' specify flexible experimental designs. For example, the \code{group_IDs} labels may
-#' contain multiple groups or conditions; in this case the \code{contrast} argument should
-#' be provided to ensure that the differential tests are calculated for the contrast of
-#' interest. Batch effects and continuous covariates can be provided with the
-#' \code{batch_IDs} and \code{covariates} arguments; these are then added to the design
-#' matrices in order to remove their effects. Paired experimental designs can be specified
-#' by providing the \code{block_IDs} argument; the \code{limma}
-#' \code{\link[limma]{duplicateCorrelation}} methodology is used in this case.
+#' For paired designs, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
+#' methodology can be used, to improve power. This \code{block_IDs} argument must be
+#' provided in this case. Note that paired designs cannot be specified directly in the
+#' design matrix, due to the empirical Bayes setup.
+#' 
+#' The contrast matrix specifying the contrast of interest can be created with
+#' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 #' 
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples in at least one
 #' condition. This removes clusters with very low cell counts across conditions, which
-#' improves statistical power.
+#' improves power.
 #' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
-#' @param group_IDs Vector or factor of group membership labels for each sample (e.g.
-#'   diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
-#'   internally. The user must ensure that this is identical to the \code{group_IDs}
-#'   provided previously to \code{\link{prepareData}}.
+#' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
+#'   \code{\link{createDesignMatrix}} for details.
 #' 
-#' @param contrast Contrast specifying the differential comparison of interest for
-#'   testing. This should be constructed using \code{\link[limma]{makeContrasts}} from the
-#'   \code{\link[limma]{limma}} package. If not provided, the default is to compare the
-#'   second vs. first level of \code{group_IDs}.
-#' 
-#' @param batch_IDs (Optional) Vector or factor of batch IDs. Batch effects are removed by
-#'   adding the batch IDs to the linear model design matrices.
-#' 
-#' @param covariates (Optional) Numeric matrix of continuous covariates, to be added to
-#'   the linear model design matrices in order to remove their effects.
+#' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
+#'   \code{\link{createContrast}} for details.
 #' 
 #' @param block_IDs (Optional) Vector or factor of block IDs, for paired experimental
 #'   designs. If provided, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
-#'   methodology is used to account for the paired design.
+#'   methodology is used to account for the paired design and improve power.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -83,9 +70,7 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
-#' @importFrom limma makeContrasts contrasts.fit voom duplicateCorrelation lmFit eBayes
-#'   plotSA topTable
-#' @importFrom stats model.matrix
+#' @importFrom limma contrasts.fit voom duplicateCorrelation lmFit eBayes plotSA topTable
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
 #' @importFrom graphics plot
@@ -97,23 +82,15 @@
 #' @examples
 #' # to do
 #' 
-testDA_limma <- function(d_counts, group_IDs, contrast = NULL, 
-                         batch_IDs = NULL, covariates = NULL, block_IDs = NULL, 
-                         min_cells = 3, min_samples = NULL, plot = TRUE, path = ".") {
+testDA_limma <- function(d_counts, design, contrast, block_IDs = NULL, 
+                         min_cells = 3, min_samples = NULL, 
+                         plot = TRUE, path = ".") {
   
-  if (!is.factor(group_IDs)) {
-    group_IDs <- factor(group_IDs, levels = unique(group_IDs))
-  }
-  if (!is.null(batch_IDs) & !is.factor(batch_IDs)) {
-    batch_IDs <- factor(batch_IDs, levels = unique(batch_IDs))
-  }
   if (!is.null(block_IDs) & !is.factor(block_IDs)) {
     block_IDs <- factor(block_IDs, levels = unique(block_IDs))
   }
   
-  if (!is.null(covariates) & !is.matrix(covariates) & !is.numeric(covariates)) {
-    stop("'covariates' must be provided as a numeric matrix, with one column for each covariate")
-  }
+  group_IDs <- colData(d_counts)$group
   
   if (is.null(min_samples)) {
     min_samples <- min(table(group_IDs)) - 1
@@ -133,27 +110,6 @@ testDA_limma <- function(d_counts, group_IDs, contrast = NULL,
   
   counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
-  
-  # create design matrix
-  # note: allows batch effects and covariates
-  if (!is.null(batch_IDs) & !is.null(covariates)) {
-    design <- model.matrix(~ 0 + group_IDs + batch_IDs + covariates)
-  } else if (!is.null(batch_IDs)) {
-    design <- model.matrix(~ 0 + group_IDs + batch_IDs)
-  } else if (!is.null(covariates)) {
-    design <- model.matrix(~ 0 + group_IDs + covariates)
-  } else {
-    design <- model.matrix(~ 0 + group_IDs)
-  }
-  
-  # specify contrast of interest
-  # (i.e. multiple conditions; select which one to compare to reference)
-  # note: if not specified, default is to compare 2nd vs. 1st level of 'group_IDs'
-  if (is.null(contrast)) {
-    levs <- paste0("group_IDs", levels(group_IDs))
-    my_args <- list(paste(as.character(levs[2]), "-", as.character(levs[1])), levels = design)
-    contrast <- do.call(makeContrasts, my_args)
-  }
   
   # voom transformation and weights
   if (plot) pdf(file.path(path, "voom_before.pdf"), width = 6, height = 6)

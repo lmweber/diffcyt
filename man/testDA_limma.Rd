@@ -4,33 +4,22 @@
 \alias{testDA_limma}
 \title{Test for differential abundance: method 'diffcyt-DA-limma'}
 \usage{
-testDA_limma(d_counts, group_IDs, contrast = NULL, batch_IDs = NULL,
-  covariates = NULL, block_IDs = NULL, min_cells = 3,
+testDA_limma(d_counts, design, contrast, block_IDs = NULL, min_cells = 3,
   min_samples = NULL, plot = TRUE, path = ".")
 }
 \arguments{
 \item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 containing cluster cell counts, from \code{\link{calcCounts}}.}
 
-\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
-internally. The user must ensure that this is identical to the \code{group_IDs}
-provided previously to \code{\link{prepareData}}.}
+\item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
+\code{\link{createDesignMatrix}} for details.}
 
-\item{contrast}{Contrast specifying the differential comparison of interest for
-testing. This should be constructed using \code{\link[limma]{makeContrasts}} from the
-\code{\link[limma]{limma}} package. If not provided, the default is to compare the
-second vs. first level of \code{group_IDs}.}
-
-\item{batch_IDs}{(Optional) Vector or factor of batch IDs. Batch effects are removed by
-adding the batch IDs to the linear model design matrices.}
-
-\item{covariates}{(Optional) Numeric matrix of continuous covariates, to be added to
-the linear model design matrices in order to remove their effects.}
+\item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
+\code{\link{createContrast}} for details.}
 
 \item{block_IDs}{(Optional) Vector or factor of block IDs, for paired experimental
 designs. If provided, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
-methodology is used to account for the paired design.}
+methodology is used to account for the paired design and improve power.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -70,26 +59,23 @@ are often heteroscedastic, we use the  \code{\link[limma]{voom}} method (Law et 
 observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
 are shown if \code{plot = TRUE}.
 
-The \code{group_IDs} argument specifies the group membership of each sample (e.g.
-diseased vs. healthy, or treated vs. untreated), and the (optional) \code{contrast}
-argument specifies the differential comparison of interest (e.g. group 2 vs. group 1).
-If no \code{contrast} is provided, the default is to compare the second vs. first level
-of \code{group_IDs}.
+The experimental design must be specified using a design matrix, which can be created
+with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
+including batch effects and continuous covariates. See \code{\link{createDesignMatrix}}
+for more details.
 
-Since the \code{limma} package fits linear models for each cluster, it is possible to
-specify flexible experimental designs. For example, the \code{group_IDs} labels may
-contain multiple groups or conditions; in this case the \code{contrast} argument should
-be provided to ensure that the differential tests are calculated for the contrast of
-interest. Batch effects and continuous covariates can be provided with the
-\code{batch_IDs} and \code{covariates} arguments; these are then added to the design
-matrices in order to remove their effects. Paired experimental designs can be specified
-by providing the \code{block_IDs} argument; the \code{limma}
-\code{\link[limma]{duplicateCorrelation}} methodology is used in this case.
+For paired designs, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
+methodology can be used, to improve power. This \code{block_IDs} argument must be
+provided in this case. Note that paired designs cannot be specified directly in the
+design matrix, due to the empirical Bayes setup.
+
+The contrast matrix specifying the contrast of interest can be created with
+\code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 
 Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples in at least one
 condition. This removes clusters with very low cell counts across conditions, which
-improves statistical power.
+improves power.
 }
 \examples{
 # to do

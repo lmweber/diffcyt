@@ -80,8 +80,11 @@ calcCounts <- function(d_se) {
     n_cells = n_cells_total
   )
   
+  stopifnot(all(colnames(n_cells) == levels(rowData(d_se)$sample)))
+  
   col_data <- data.frame(
-    sample = factor(colnames(n_cells), levels = levels(rowData(d_se)$sample))
+    sample = levels(rowData(d_se)$sample), 
+    group = levels(rowData(d_se)$group)
   )
   
   d_counts <- SummarizedExperiment(n_cells, rowData = row_data, colData = col_data)
