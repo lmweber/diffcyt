@@ -113,11 +113,12 @@ testDA_GLMM <- function(d_counts, formula, contrast,
     # note: divide by total cell counts per sample to enable weights
     y <- counts[i, ] / n_cells_smp
     # fit model
-    fit <- glmer(formula, family = "binomial", weights = n_cells_smp)
+    fit <- glmer(formula$formula, data = formula$data, family = "binomial", weights = n_cells_smp)
     # test contrast
     test <- glht(fit, contrast)
     # return p-values
     p_vals[i] <- summary(test)$test$pvalues
+    cat(".")
   }
   
   

@@ -75,10 +75,18 @@ createFormula <- function(group_IDs, batch_IDs = NULL, covariates = NULL,
   }
   
   # create formula
-  terms <- c("group_IDs", "batch_IDs", "covariates", "block_IDs", "sample_IDs")
-  nulls <- c(is.null(group_IDs), is.null(batch_IDs), is.null(covariates), is.null(block_IDs), is.null(sample_IDs))
   
-  formula <- as.formula(paste("y ~", paste(terms[!nulls], collapse = " + ")))
+  # fixed effects
+  terms <- c("group_IDs", "batch_IDs", "covariates")
+  nulls <- c(is.null(group_IDs), is.null(batch_IDs), is.null(covariates))
+  
+  formula_chr <- paste("y ~", paste(terms[!nulls], collapse = " + "))
+  
+  # random effects
+  if (!is.null(block_IDs)) formula_chr <- paste0(formula_chr, " + (1 | block_IDs)")
+  if (!is.null(sample_IDs)) formula_chr <- paste0(formula_chr, " + (1 | sample_IDs)")
+  
+  formula <- as.formula(formula_chr)
   
   # create data frame of variables
   data <- data.frame(group_IDs)
