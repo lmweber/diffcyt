@@ -83,9 +83,6 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
-  # total cell counts per sample (for weights)
-  n_cells_smp <- colSums(counts)
-  
   # total cell counts per cluster (for hypothesis weighting)
   n_cells <- rowData(d_counts)$n_cells
   
@@ -103,6 +100,9 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   cluster <- cluster[ix_keep]
   n_cells <- n_cells[ix_keep]
   
+  # total cell counts per sample (after filtering) (for weights)
+  n_cells_smp <- colSums(counts)
+  
   
   # transpose contrast matrix if created with 'createContrast' (required by 'glht')
   if (ncol(contrast) == 1 & nrow(contrast) > 1) {
@@ -116,9 +116,9 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   for (i in seq_along(cluster)) {
     # data for cluster i
-    # note: divide by total cell counts per sample to enable weights
+    # note: divide by total cell counts per sample (after filtering) to enable weights
     y <- counts[i, ] / n_cells_smp
-    data_i <- cbind(y, formula$data)
+    data_i <- cbind(y, n_cells_smp, formula$data)
     # fit model
     fit <- glmer(formula$formula, data = data_i, family = "binomial", weights = n_cells_smp)
     # test contrast
