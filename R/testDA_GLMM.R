@@ -104,6 +104,12 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   n_cells <- n_cells[ix_keep]
   
   
+  # transpose contrast matrix if created with 'createContrast' (required by 'glht')
+  if (ncol(contrast) == 1 & nrow(contrast) > 1) {
+    contrast <- t(contrast)
+  }
+  
+  
   # fit models: separate model for each cluster
   
   p_vals <- rep(NA, length(cluster))
@@ -118,7 +124,6 @@ testDA_GLMM <- function(d_counts, formula, contrast,
     test <- glht(fit, contrast)
     # return p-values
     p_vals[i] <- summary(test)$test$pvalues
-    cat(".")
   }
   
   
