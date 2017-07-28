@@ -118,8 +118,9 @@ testDA_GLMM <- function(d_counts, formula, contrast,
     # data for cluster i
     # note: divide by total cell counts per sample to enable weights
     y <- counts[i, ] / n_cells_smp
+    data_i <- cbind(y, formula$data)
     # fit model
-    fit <- glmer(formula$formula, data = formula$data, family = "binomial", weights = n_cells_smp)
+    fit <- glmer(formula$formula, data = data_i, family = "binomial", weights = n_cells_smp)
     # test contrast
     test <- glht(fit, contrast)
     # return p-values
