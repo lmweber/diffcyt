@@ -97,7 +97,7 @@ calcSubsetVals <- function(d_se) {
   
   col_data <- data.frame(
     sample = factor(colnames(VALS[[1]]), levels = levels(rowData(d_se)$sample)), 
-    group = metadata(se)$group_IDs
+    group = metadata(d_se)$group_IDs
   )
   
   d_vals <- SummarizedExperiment(VALS, rowData = row_data, colData = col_data)
