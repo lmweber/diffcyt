@@ -29,7 +29,8 @@ d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
   containing a single matrix of data (expression values) in the \code{assays} slot,
   together with row meta-data (sample IDs, group IDs) and column meta-data (protein
   marker names, logical vectors for: all markers, markers for clustering, markers for
-  differential expression analysis).
+  differential expression analysis). The \code{group_IDs} vector is also stored in the
+  \code{metadata} slot, and can be accessed with \code{metadata(d_se)$group_IDs}.
 }
 \description{
 Prepare data into format required for \code{diffcyt} pipeline

@@ -38,7 +38,7 @@ Returns the \code{\link[SummarizedExperiment]{SummarizedExperiment}} input
   object, with cluster labels for each cell stored in an additional column of row
   meta-data. Row meta-data can be accessed with
   \code{\link[SummarizedExperiment]{rowData}}. The minimum spanning tree (MST) object
-  is stored in the experiment \code{metadata} slot, and can be accessed with
+  is also stored in the \code{metadata} slot, and can be accessed with
   \code{metadata(d_se)$MST}.
 }
 \description{

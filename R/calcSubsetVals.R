@@ -93,8 +93,11 @@ calcSubsetVals <- function(d_se) {
     cluster = factor(rownames(VALS[[1]]), levels = levels(rowData(d_se)$cluster))
   )
   
+  stopifnot(all(colnames(VALS[[1]]) == levels(rowData(d_se)$sample)))
+  
   col_data <- data.frame(
-    sample = factor(colnames(VALS[[1]]), levels = levels(rowData(d_se)$sample))
+    sample = factor(colnames(VALS[[1]]), levels = levels(rowData(d_se)$sample)), 
+    group = metadata(se)$group_IDs
   )
   
   d_vals <- SummarizedExperiment(VALS, rowData = row_data, colData = col_data)

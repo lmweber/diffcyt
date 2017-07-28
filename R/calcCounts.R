@@ -84,7 +84,7 @@ calcCounts <- function(d_se) {
   
   col_data <- data.frame(
     sample = levels(rowData(d_se)$sample), 
-    group = levels(rowData(d_se)$group)
+    group = metadata(d_se)$group_IDs
   )
   
   d_counts <- SummarizedExperiment(n_cells, rowData = row_data, colData = col_data)

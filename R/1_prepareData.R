@@ -37,7 +37,8 @@
 #'   containing a single matrix of data (expression values) in the \code{assays} slot,
 #'   together with row meta-data (sample IDs, group IDs) and column meta-data (protein
 #'   marker names, logical vectors for: all markers, markers for clustering, markers for
-#'   differential expression analysis).
+#'   differential expression analysis). The \code{group_IDs} vector is also stored in the
+#'   \code{metadata} slot, and can be accessed with \code{metadata(d_se)$group_IDs}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -111,7 +112,10 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   colnames(d_combined) <- NULL
   
   # create SummarizedExperiment object
-  d_out <- SummarizedExperiment(d_combined, rowData = row_data, colData = col_data)
+  d_out <- SummarizedExperiment(d_combined, 
+                                rowData = row_data, 
+                                colData = col_data, 
+                                metadata = list(group_IDs = group_IDs))
   
   d_out
 }

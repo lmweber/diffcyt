@@ -124,8 +124,11 @@ calcECDFs <- function(d_se, resolution = 30) {
     cluster = factor(rownames(ECDFs[[1]]), levels = levels(rowData(d_se)$cluster))
   )
   
+  stopifnot(all(colnames(ECDFs[[1]]) == levels(rowData(d_se)$sample)))
+  
   col_data <- data.frame(
-    sample = factor(colnames(ECDFs[[1]]), levels = levels(rowData(d_se)$sample))
+    sample = factor(colnames(ECDFs[[1]]), levels = levels(rowData(d_se)$sample)), 
+    group = metadata(se)$group_IDs
   )
   
   d_ecdfs <- SummarizedExperiment(ECDFs, rowData = row_data, colData = col_data)

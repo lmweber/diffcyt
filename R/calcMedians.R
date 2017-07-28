@@ -94,8 +94,11 @@ calcMedians <- function(d_se) {
     cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster))
   )
   
+  stopifnot(all(colnames(medians[[1]]) == levels(rowData(d_se)$sample)))
+  
   col_data <- data.frame(
-    sample = factor(colnames(medians[[1]]), levels = levels(rowData(d_se)$sample))
+    sample = factor(colnames(medians[[1]]), levels = levels(rowData(d_se)$sample)), 
+    group = metadata(se)$group_IDs
   )
   
   d_medians <- SummarizedExperiment(medians, rowData = row_data, colData = col_data)
