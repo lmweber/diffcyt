@@ -9,9 +9,10 @@ License: GPL-3
 Imports:
     flowCore, 
     FlowSOM, 
-    limma, 
     SummarizedExperiment, 
     S4Vectors, 
+    limma, 
+    edgeR, 
     lme4, 
     multcomp, 
     IHW, 

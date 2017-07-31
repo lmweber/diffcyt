@@ -141,7 +141,7 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   out <- data.frame(p_vals, p_adj)
   
   # fill in missing rows (filtered clusters) with NAs
-  row_data <- as.data.frame(matrix(NA, nrow = nlevels(cluster), ncol = ncol(out)))
+  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster), ncol = ncol(out)))
   colnames(row_data) <- colnames(out)
   cluster_num <- as.numeric(cluster)
   row_data[cluster_num, ] <- out
