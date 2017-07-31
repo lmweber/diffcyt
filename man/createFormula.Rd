@@ -5,7 +5,8 @@
 \title{Create model formula and data frame of variables}
 \usage{
 createFormula(group_IDs, batch_IDs = NULL, covariates = NULL,
-  block_IDs = NULL, sample_IDs = NULL)
+  block_IDs = NULL, block_IDs_type = c("fixed", "random"),
+  sample_IDs = NULL)
 }
 \arguments{
 \item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
@@ -25,9 +26,15 @@ estimated during model fitting and taken into account during inference on the
 parameters of interest.}
 
 \item{block_IDs}{(Optional) Vector or factor of block IDs, e.g. for paired designs
-(e.g. one diseased and one healthy sample per patient). Block IDs are included as
-random intercepts in the model formula, to improve power during inference on the
-parameters of interest.}
+(e.g. one diseased and one healthy sample per patient). Block IDs can be included as
+either fixed effects or random intercept terms; this choice is specified using the
+argument \code{block_IDs_type}. Note that some testing methods (e.g.
+'diffcyt-DA-limma') require random intercept block IDs to be provided directly
+instead.}
+
+\item{block_IDs_type}{(Optional) Whether block IDs should be included in the model
+formula as fixed effects or random effects. Options are 'fixed' and 'random'. Default
+= 'fixed'.}
 
 \item{sample_IDs}{(Optional) Vector or factor of sample IDs. Sample IDs are included as
 random intercepts in the model formula, to account for overdispersion typically seen
@@ -46,7 +53,7 @@ Create model formula and corresponding data frame of variables for model fitting
 }
 \details{
 Creates a model formula and corresponding data frame of variables for model fitting.
-Analogous to \code{\link{createDesignMatrix}}, but returns a model formula instead of a
+Similar to \code{\link{createDesignMatrix}}, but returns a model formula instead of a
 design matrix.
 
 The output is a list containing the model formula and corresponding data frame (one

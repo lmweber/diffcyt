@@ -4,8 +4,8 @@
 \alias{testDA_limma}
 \title{Test for differential abundance: method 'diffcyt-DA-limma'}
 \usage{
-testDA_limma(d_counts, design, contrast, block_IDs = NULL, min_cells = 3,
-  min_samples = NULL, plot = TRUE, path = ".")
+testDA_limma(d_counts, design, contrast, block_IDs_random = NULL,
+  min_cells = 3, min_samples = NULL, plot = TRUE, path = ".")
 }
 \arguments{
 \item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -17,9 +17,12 @@ containing cluster cell counts, from \code{\link{calcCounts}}.}
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
 
-\item{block_IDs}{(Optional) Vector or factor of block IDs, for paired experimental
-designs. If provided, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
-methodology is used to account for the paired design and improve power.}
+\item{block_IDs_random}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for
+paired experimental designs, to be included as random effects. If provided, the block
+IDs will be included as random effects using the \code{limma}
+\code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
+be included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
+See details.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -61,13 +64,16 @@ are shown if \code{plot = TRUE}.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-including batch effects and continuous covariates. See \code{\link{createDesignMatrix}}
-for more details.
+including batch effects, continuous covariates, and paired designs. See
+\code{\link{createDesignMatrix}} for more details.
 
-For paired designs, the \code{limma} \code{\link[limma]{duplicateCorrelation}}
-methodology can be used, to improve power. This \code{block_IDs} argument must be
-provided in this case. Note that paired designs cannot be specified directly in the
-design matrix, due to the empirical Bayes setup.
+For paired designs, either fixed effects or random effects can be used. Fixed effects
+are simpler, but random effects may improve power for unbalanced designs. To use fixed
+effects, provide the block IDs (e.g. patient IDs) to \code{\link{createDesignMatrix}}.
+To use random effects, provide the \code{block_IDs_random} argument here instead. This
+will make use of the \code{limma} \code{\link[limma]{duplicateCorrelation}}
+methodology; note that block IDs should not be included in the design matrix in this
+case.
 
 The contrast matrix specifying the contrast of interest can be created with
 \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.

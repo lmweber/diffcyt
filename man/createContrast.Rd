@@ -15,8 +15,9 @@ levels, use \code{\link[stats]{relevel}} or \code{\link[base]{factor}}.}
 
 \item{contrast}{Vector defining the contrast of interest. For example, \code{c(0, 1)}
 to compare the second level against the first level for a \code{group_IDs} vector of
-length 2. See details for additional explanation. Default is to compare the second
-level against the first level of \code{group_IDs}.}
+length 2, with no other columns in the design matrix. See details for additional
+explanation. Default is to compare the second level against the first level of
+\code{group_IDs}, assuming no other columns in the design matrix.}
 }
 \value{
 Returns a contrast matrix containing the contrast of interest, formatted as a
@@ -39,9 +40,12 @@ the subsequent terms in the design matrix represent the difference compared to t
 reference.
 
 For example, to compare the second level against the first level for a \code{group_IDs}
-vector of length 2, the \code{contrast} argument would be \code{c(0, 1)}. To compare
-the second level against the first level for a \code{group_IDs} vector of length 3, it
-would be \code{c(0, 1, 0)}.
+vector of length 2, with no other columns in the design matrix, the \code{contrast}
+argument would be \code{c(0, 1)}. To compare the second level against the first level
+for a \code{group_IDs} vector of length 3, it would be \code{c(0, 1, 0)}. If there are
+additional terms in the design matrix (such as block IDs), which are not of interest
+for inference, extra zeros should be included for the corresponding columns of the
+design matrix.
 
 The contrast matrix is formatted as a matrix with a single column containing the
 contrast of interest. To perform tests for multiple contrasts, run this function and

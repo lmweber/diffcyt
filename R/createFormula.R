@@ -3,7 +3,7 @@
 #' Create model formula and corresponding data frame of variables for model fitting
 #' 
 #' Creates a model formula and corresponding data frame of variables for model fitting.
-#' Analogous to \code{\link{createDesignMatrix}}, but returns a model formula instead of a
+#' Similar to \code{\link{createDesignMatrix}}, but returns a model formula instead of a
 #' design matrix.
 #' 
 #' The output is a list containing the model formula and corresponding data frame (one
@@ -28,9 +28,15 @@
 #'   parameters of interest.
 #' 
 #' @param block_IDs (Optional) Vector or factor of block IDs, e.g. for paired designs
-#'   (e.g. one diseased and one healthy sample per patient). Block IDs are included as
-#'   random intercepts in the model formula, to improve power during inference on the
-#'   parameters of interest.
+#'   (e.g. one diseased and one healthy sample per patient). Block IDs can be included as
+#'   either fixed effects or random intercept terms; this choice is specified using the
+#'   argument \code{block_IDs_type}. Note that some testing methods (e.g.
+#'   'diffcyt-DA-limma') require random intercept block IDs to be provided directly
+#'   instead.
+#' 
+#' @param block_IDs_type (Optional) Whether block IDs should be included in the model
+#'   formula as fixed effects or random effects. Options are 'fixed' and 'random'. Default
+#'   = 'fixed'.
 #' 
 #' @param sample_IDs (Optional) Vector or factor of sample IDs. Sample IDs are included as
 #'   random intercepts in the model formula, to account for overdispersion typically seen
@@ -55,8 +61,10 @@
 #' @examples
 #' # to do
 #' 
-createFormula <- function(group_IDs, batch_IDs = NULL, covariates = NULL, 
-                          block_IDs = NULL, sample_IDs = NULL) {
+createFormula <- function(group_IDs, 
+                          batch_IDs = NULL, covariates = NULL, 
+                          block_IDs = NULL, block_IDs_type = c("fixed", "random"), 
+                          sample_IDs = NULL) {
   
   if (!is.factor(group_IDs)) {
     group_IDs <- factor(group_IDs, levels = unique(group_IDs))
@@ -77,14 +85,20 @@ createFormula <- function(group_IDs, batch_IDs = NULL, covariates = NULL,
   # create formula
   
   # fixed effects
-  terms <- c("group_IDs", "batch_IDs", "covariates")
-  nulls <- c(is.null(group_IDs), is.null(batch_IDs), is.null(covariates))
+  terms <- c("group_IDs", "batch_IDs", "covariates", "block_IDs")
+  nulls <- c(is.null(group_IDs), 
+             is.null(batch_IDs), is.null(covariates), 
+             is.null(block_IDs) | block_IDs_type == "random")
   
   formula_chr <- paste("y ~", paste(terms[!nulls], collapse = " + "))
   
   # random effects
-  if (!is.null(block_IDs)) formula_chr <- paste0(formula_chr, " + (1 | block_IDs)")
-  if (!is.null(sample_IDs)) formula_chr <- paste0(formula_chr, " + (1 | sample_IDs)")
+  if (!is.null(block_IDs) & block_IDs_type == "random") {
+    formula_chr <- paste0(formula_chr, " + (1 | block_IDs)")
+  }
+  if (!is.null(sample_IDs)) {
+    formula_chr <- paste0(formula_chr, " + (1 | sample_IDs)")
+  }
   
   formula <- as.formula(formula_chr)
   

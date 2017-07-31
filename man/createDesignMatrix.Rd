@@ -4,7 +4,8 @@
 \alias{createDesignMatrix}
 \title{Create design matrix}
 \usage{
-createDesignMatrix(group_IDs, batch_IDs = NULL, covariates = NULL)
+createDesignMatrix(group_IDs, batch_IDs = NULL, covariates = NULL,
+  block_IDs = NULL)
 }
 \arguments{
 \item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
@@ -22,6 +23,13 @@ ID parameters of interest.}
 included as columns in the design matrix. This allows their effects to be estimated
 during model fitting, and taken into account during inference on the group ID
 parameters of interest.}
+
+\item{block_IDs}{(Optional) Vector or factor of block IDs, e.g. for paired designs
+(e.g. one diseased and one healthy sample per patient). If provided, block IDs are
+included as fixed effects in the design matrix. Note that block IDs can also be
+included as random effects by using \code{\link{createFormula}} instead; or, for some
+methods, by providing them directly to the testing function (e.g.
+'diffcyt-DA-limma').}
 }
 \value{
 Returns a design matrix (numeric matrix), with one row per sample, and one
@@ -31,8 +39,8 @@ Returns a design matrix (numeric matrix), with one row per sample, and one
 Create design matrix for model fitting
 }
 \details{
-Creates a design matrix for model fitting. Analogous to \code{\link{createFormula}},
-but returns a design matrix instead of model formula.
+Creates a design matrix for model fitting. Similar to \code{\link{createFormula}}, but
+returns a design matrix instead of model formula.
 
 The design matrix can then be provided to differential testing functions that require a
 design matrix, together with the data object and contrast matrix.
@@ -42,12 +50,6 @@ provided as a vector or factor. The first level of the factor or first entry of 
 vector is used as the 'reference level' for differential testing. To set a different
 reference level, re-order the levels using \code{\link[stats]{relevel}} or
 \code{\link[base]{factor}}.
-
-Note that block IDs (e.g. for paired designs) cannot be provided here, since they would
-then be included in the models as fixed effects. They can instead be provided to
-\code{\link{createFormula}} to create a model formula instead of a design matrix, or
-directly to the model fitting function (for some methods only, e.g.
-'diffcyt-DA-limma').
 }
 \examples{
 # to do

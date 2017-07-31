@@ -2,8 +2,8 @@
 #' 
 #' Create design matrix for model fitting
 #' 
-#' Creates a design matrix for model fitting. Analogous to \code{\link{createFormula}},
-#' but returns a design matrix instead of model formula.
+#' Creates a design matrix for model fitting. Similar to \code{\link{createFormula}}, but
+#' returns a design matrix instead of model formula.
 #' 
 #' The design matrix can then be provided to differential testing functions that require a
 #' design matrix, together with the data object and contrast matrix.
@@ -13,12 +13,6 @@
 #' vector is used as the 'reference level' for differential testing. To set a different
 #' reference level, re-order the levels using \code{\link[stats]{relevel}} or
 #' \code{\link[base]{factor}}.
-#' 
-#' Note that block IDs (e.g. for paired designs) cannot be provided here, since they would
-#' then be included in the models as fixed effects. They can instead be provided to
-#' \code{\link{createFormula}} to create a model formula instead of a design matrix, or
-#' directly to the model fitting function (for some methods only, e.g.
-#' 'diffcyt-DA-limma').
 #' 
 #' 
 #' @param group_IDs Vector or factor of group membership labels for each sample (e.g.
@@ -37,6 +31,13 @@
 #'   during model fitting, and taken into account during inference on the group ID
 #'   parameters of interest.
 #' 
+#' @param block_IDs (Optional) Vector or factor of block IDs, e.g. for paired designs
+#'   (e.g. one diseased and one healthy sample per patient). If provided, block IDs are
+#'   included as fixed effects in the design matrix. Note that block IDs can also be
+#'   included as random effects by using \code{\link{createFormula}} instead; or, for some
+#'   methods, by providing them directly to the testing function (e.g.
+#'   'diffcyt-DA-limma').
+#' 
 #' 
 #' @return Returns a design matrix (numeric matrix), with one row per sample, and one
 #'   model parameter per column.
@@ -52,7 +53,9 @@
 #' @examples
 #' # to do
 #' 
-createDesignMatrix <- function(group_IDs, batch_IDs = NULL, covariates = NULL) {
+createDesignMatrix <- function(group_IDs, 
+                               batch_IDs = NULL, covariates = NULL, 
+                               block_IDs = NULL) {
   
   if (!is.factor(group_IDs)) {
     group_IDs <- factor(group_IDs, levels = unique(group_IDs))
@@ -63,10 +66,13 @@ createDesignMatrix <- function(group_IDs, batch_IDs = NULL, covariates = NULL) {
   if (!is.null(covariates) & !(is.matrix(covariates) & is.numeric(covariates))) {
     stop("'covariates' must be provided as a numeric matrix, with one column for each covariate")
   }
+  if (!is.null(block_IDs) & !is.factor(block_IDs)) {
+    block_IDs <- factor(block_IDs, levels = unique(block_IDs))
+  }
   
   # create design matrix
-  terms <- c("group_IDs", "batch_IDs", "covariates")
-  nulls <- c(is.null(group_IDs), is.null(batch_IDs), is.null(covariates))
+  terms <- c("group_IDs", "batch_IDs", "covariates", "block_IDs")
+  nulls <- c(is.null(group_IDs), is.null(batch_IDs), is.null(covariates), is.null(block_IDs))
   
   formula <- as.formula(paste("~", paste(terms[!nulls], collapse = " + ")))
   
