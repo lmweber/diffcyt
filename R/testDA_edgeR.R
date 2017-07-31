@@ -94,11 +94,13 @@ testDA_edgeR <- function(d_counts, design, contrast,
   
   # prepare object
   y <- DGEList(counts)
+  
   # normalization factors not required in this context (cluster cell counts)
   #y <- calcNormFactors(y)
+  
   # estimate dispersions
-  y <- estimateDisp(y, design)
-  ## also try with 'trend.method = "none"'
+  # (note: using 'trend.method = "none"')
+  y <- estimateDisp(y, design, trend.method = "none")
   
   # fit models
   fit <- glmFit(y, design)
