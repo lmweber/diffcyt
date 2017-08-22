@@ -5,7 +5,7 @@ Description: Statistical methods for differential discovery and analysis in high
 Authors@R: person("Lukas M.", "Weber", email = "lukmweber@gmail.com", role = c("aut", "cre"))
 URL: https://github.com/lmweber/diffcyt
 BugReports: https://github.com/lmweber/diffcyt/issues
-License: GPL-3
+License: MIT + file LICENSE
 Imports:
     flowCore, 
     FlowSOM, 
