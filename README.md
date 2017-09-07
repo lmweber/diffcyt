@@ -12,7 +12,7 @@ Bioconductor dependencies need to be installed manually (since `install_github` 
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
-biocLite(c("flowCore", "FlowSOM", "limma", "IHW", "SummarizedExperiment", "BiocParallel"))
+biocLite(c("BiocParallel", "edgeR", "flowCore", "FlowSOM", "IHW", "limma", "S4Vectors", "SummarizedExperiment"))
 ```
 
 After the Bioconductor dependencies are installed, the package can be installed from GitHub. Note that an authentication token is required since this is a private repository.
