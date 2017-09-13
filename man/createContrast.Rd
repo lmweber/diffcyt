@@ -27,9 +27,10 @@ Returns a contrast matrix containing the contrast of interest, formatted as a
 Create contrast matrix for differential testing
 }
 \details{
-Creates a contrast matrix in the correct format for differential testing. This can then
-be provided to the differential testing functions, together with either a design matrix
-or model formula, and the data object.
+Creates a contrast matrix specifying the comparison of interest, in the correct format
+for the differential testing functions. This can then be provided to the differential
+testing functions, together with either a design matrix or model formula, and the data
+object.
 
 The argument \code{contrast} defines the contrast of interest for the levels of
 \code{group_IDs}. Note that the model formula (\code{\link{createFormula}}) or design

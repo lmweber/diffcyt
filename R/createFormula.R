@@ -2,9 +2,9 @@
 #' 
 #' Create model formula and corresponding data frame of variables for model fitting
 #' 
-#' Creates a model formula and corresponding data frame of variables for model fitting.
-#' Similar to \code{\link{createDesignMatrix}}, but returns a model formula instead of a
-#' design matrix.
+#' Creates a model formula and corresponding data frame of variables specifying the models
+#' to be fitted. Similar to \code{\link{createDesignMatrix}}, but returns a model formula
+#' instead of a design matrix.
 #' 
 #' The output is a list containing the model formula and corresponding data frame (one
 #' column per formula term). These can then be provided to differential testing functions

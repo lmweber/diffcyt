@@ -81,6 +81,8 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     group_IDs <- factor(group_IDs, levels = unique(group_IDs))
   }
   
+  stopifnot(length(sample_IDs) == length(n_cells), length(group_IDs) == length(n_cells))
+  
   row_data <- data.frame(
     sample = rep(sample_IDs, n_cells), 
     group = rep(group_IDs, n_cells)

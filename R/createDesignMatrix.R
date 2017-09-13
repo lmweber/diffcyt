@@ -2,11 +2,11 @@
 #' 
 #' Create design matrix for model fitting
 #' 
-#' Creates a design matrix for model fitting. Similar to \code{\link{createFormula}}, but
-#' returns a design matrix instead of model formula.
+#' Creates a design matrix specifying the models to be fitted. Similar to
+#' \code{\link{createFormula}}, but returns a design matrix instead of model formula.
 #' 
-#' The design matrix can then be provided to differential testing functions that require a
-#' design matrix, together with the data object and contrast matrix.
+#' The design matrix can then be provided to the differential testing functions, together
+#' with the data object and contrast matrix.
 #' 
 #' The \code{group_IDs} input specifies the groups for differential testing. This can be
 #' provided as a vector or factor. The first level of the factor or first entry of the
