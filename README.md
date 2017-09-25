@@ -1,41 +1,34 @@
 # diffcyt
 
-R package: Statistical methods for differential discovery in high-dimensional flow cytometry and mass cytometry (CyTOF) data.
+R package: Statistical methods for differential discovery in high-dimensional cytometry data.
 
 Under development.
 
 
 
+## Details and examples
+
+For details on the statistical methodology and comparisons with existing approaches, see the paper (in progress).
+
+For tutorial and examples of usage, see the Bioconductor vignette (in progress).
+
+
+
 ## How to install
 
-Bioconductor dependencies need to be installed manually (since `install_github` can only install CRAN dependencies automatically):
+Since there are dependencies from both CRAN and Bioconductor, the Bioconductor installer (`biocLite`) should be used. This will install all dependencies automatically.
+
+Ensure the Bioconductor installer and `devtools` are installed:
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
-biocLite(c("BiocParallel", "edgeR", "flowCore", "FlowSOM", "IHW", "limma", "S4Vectors", "SummarizedExperiment"))
+install.packages("devtools")
 ```
 
-After the Bioconductor dependencies are installed, the package can be installed from GitHub. Note that an authentication token is required since this is a private repository.
+Install the `diffcyt` package from GitHub using `biocLite`, with the option `dependencies = TRUE`. (Currently, an authentication token is also required with `auth_token = ...`, since this is a private repository.)
 
 ```{r}
-library(devtools)
-install_github("lmweber/diffcyt", auth_token = "...")
+biocLite("lmweber/diffcyt", dependencies = TRUE, auth_token = "...")
 ```
-
-
-
-## Types of differential discovery
-
-We consider two main types of differential discovery:
-
-- **Differential abundance** of cell populations. Cell populations are defined using high-resolution clustering.
-
-- **Differential expression of functional markers** within cell populations. Cell populations are defined using high-resolution clustering on a subset of protein markers (e.g. surface markers in immunology). Additional functional markers are then analyzed for differential expression within the clusters. The two sets of markers (clustering and functional) must be specified by the user.
-
-
-
-## Statistical approaches
-
-Several different statistical approaches are under development. More details later.
 
 
