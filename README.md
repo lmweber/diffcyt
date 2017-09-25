@@ -18,7 +18,7 @@ For a tutorial and examples of usage, see the Bioconductor vignette (in progress
 
 Since there are dependencies from both CRAN and Bioconductor, the Bioconductor installer (`biocLite`) should be used. This will install all dependencies automatically.
 
-Ensure the Bioconductor installer and `devtools` are installed:
+Ensure the Bioconductor installer and `devtools` package are installed:
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
