@@ -10,7 +10,7 @@ Under development.
 
 For details on the statistical methodology and comparisons with existing approaches, see the paper (in progress).
 
-For tutorial and examples of usage, see the Bioconductor vignette (in progress).
+For a tutorial and examples of usage, see the Bioconductor vignette (in progress).
 
 
 
