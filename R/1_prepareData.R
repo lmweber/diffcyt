@@ -15,6 +15,13 @@
 #' each column is (i) a marker, (ii) a marker to be used for clustering, and (iii) a
 #' marker to be used for differential expression analysis within clusters.
 #' 
+#' Optionally, random subsampling can be used to select an equal number of cells from each
+#' sample (\code{subsampling = TRUE}). This can be useful when there are large differences
+#' in total numbers of cells per sample, since it ensures that samples with relatively
+#' large numbers of cells do not dominate the clustering. However, subsampling should not
+#' be used when rare cell populations are of interest, due to the significant loss of
+#' information if cells from the rare population are discarded.
+#' 
 #' 
 #' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 #'   item or \code{\link[flowCore]{flowFrame}} per sample).
@@ -31,6 +38,12 @@
 #' 
 #' @param cols_DE Column indices indicating protein markers to be used for differential
 #'   expression analysis.
+#' 
+#' @param subsampling Whether to use random subsampling to select an equal number of cells
+#'   from each sample. Default = FALSE.
+#' 
+#' @param n_sub Number of cells to select from each sample by random subsampling, if
+#'   \code{subsampling = TRUE}. Default = number of cells in smallest sample.
 #' 
 #' 
 #' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
@@ -53,7 +66,8 @@
 #' # See full examples in testing functions.
 #' 
 prepareData <- function(d_input, sample_IDs, group_IDs, 
-                        cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL) {
+                        cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL, 
+                        subsampling = FALSE, n_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
@@ -70,6 +84,12 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   }
   
   n_cells <- sapply(d_ex, nrow)
+  
+  if (subsampling) {
+    if (is.null(n_sub)) n_sub <- min(n_cells)
+    d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), n_sub), ])
+    n_cells <- sapply(d_ex, nrow)
+  }
   
   d_combined <- do.call(rbind, d_ex)
   

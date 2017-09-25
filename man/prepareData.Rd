@@ -5,7 +5,8 @@
 \title{Prepare data}
 \usage{
 prepareData(d_input, sample_IDs, group_IDs, cols_markers = NULL,
-  cols_clustering = NULL, cols_DE = NULL)
+  cols_clustering = NULL, cols_DE = NULL, subsampling = FALSE,
+  n_sub = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
@@ -23,6 +24,12 @@ clustering.}
 
 \item{cols_DE}{Column indices indicating protein markers to be used for differential
 expression analysis.}
+
+\item{subsampling}{Whether to use random subsampling to select an equal number of cells
+from each sample. Default = FALSE.}
+
+\item{n_sub}{Number of cells to select from each sample by random subsampling, if
+\code{subsampling = TRUE}. Default = number of cells in smallest sample.}
 }
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
@@ -48,6 +55,13 @@ Row meta-data contains sample labels (e.g. patient IDs) and group membership lab
 Column meta-data contains protein marker names, and logical entries indicating whether
 each column is (i) a marker, (ii) a marker to be used for clustering, and (iii) a
 marker to be used for differential expression analysis within clusters.
+
+Optionally, random subsampling can be used to select an equal number of cells from each
+sample (\code{subsampling = TRUE}). This can be useful when there are large differences
+in total numbers of cells per sample, since it ensures that samples with relatively
+large numbers of cells do not dominate the clustering. However, subsampling should not
+be used when rare cell populations are of interest, due to the significant loss of
+information if cells from the rare population are discarded.
 }
 \examples{
 # See full examples in testing functions.
