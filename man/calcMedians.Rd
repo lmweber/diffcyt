@@ -30,7 +30,9 @@ The cluster medians (by sample) are required for differential expression tests.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
-Note that there is a separate table of values ('assay') for each marker.
+Note that there is a separate table of values ('assay') for each marker. The set of
+functional markers can be identified using the variable 'id_func_markers' saved in the
+'metadata' slot.
 }
 \examples{
 # See full examples in testing functions.
