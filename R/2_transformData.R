@@ -43,11 +43,10 @@
 #' @importFrom SummarizedExperiment assays colData 'assays<-'
 #' 
 #' @export
-#'
-#' @seealso to do
-#'
+#' 
 #' @examples
-#' # See full examples in testing functions.
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 transformData <- function(d_se, cofactor = 5) {
   

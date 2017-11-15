@@ -54,12 +54,12 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
 }
 \description{
 Calculate tests for differential functional states (i.e. differential expression of
-functional markers within clusters) using method 'diffcyt-DS-med'.
+functional markers within clusters) using method 'diffcyt-DS-med'
 }
 \details{
-This method uses the median expression of functional markers within clusters to
-characterize the functional states of cell populations. Clusters are defined using
-identity markers only.
+This method characterizes the functional states of cell populations using the median
+expression of functional markers within clusters. Clusters are defined using identity
+markers only.
 
 The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 Research}) is used to fit linear models and calculate empirical Bayes moderated tests
@@ -91,9 +91,7 @@ condition. This removes clusters with very low cell counts across conditions, wh
 improves power.
 }
 \examples{
-# to do
+# A full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline on an experimental data set is available in the package vignette.
 
-}
-\seealso{
-to do
 }

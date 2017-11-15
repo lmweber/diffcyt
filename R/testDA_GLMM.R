@@ -66,10 +66,9 @@
 #' 
 #' @export
 #' 
-#' @seealso to do
-#' 
 #' @examples
-#' # to do
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 testDA_GLMM <- function(d_counts, formula, contrast, 
                         min_cells = 3, min_samples = NULL) {

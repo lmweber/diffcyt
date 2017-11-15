@@ -23,7 +23,7 @@ Calculate number of cells per cluster-sample combination (referred to as cluster
 'counts', 'abundances', or 'frequencies').
 
 The cluster cell counts are required for the differential abundance tests, and are also
-used as weights to improve statistical performance of the differential expression
+used as weights to improve statistical power for the differential functional state
 tests.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
@@ -32,9 +32,7 @@ this structure differs from the input data object, where rows = cells, and colum
 markers.)
 }
 \examples{
-# See full examples in testing functions.
+# A full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline on an experimental data set is available in the package vignette.
 
-}
-\seealso{
-to do
 }

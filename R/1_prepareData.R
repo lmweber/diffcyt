@@ -12,8 +12,9 @@
 #' 
 #' Row meta-data contains sample labels (e.g. patient IDs) and group membership labels.
 #' Column meta-data contains protein marker names, and logical entries indicating whether
-#' each column is (i) a marker, (ii) a marker to be used for clustering, and (iii) a
-#' marker to be used for differential expression analysis within clusters.
+#' each column is (i) a marker, (ii) an identity marker (to be used for clustering), and
+#' (iii) a functional marker (for differential analysis of functional states within
+#' clusters).
 #' 
 #' Optionally, random subsampling can be used to select an equal number of cells from each
 #' sample (\code{subsampling = TRUE}). This can be useful when there are large differences
@@ -28,16 +29,16 @@
 #' 
 #' @param sample_IDs Vector of sample IDs.
 #' 
-#' @param group_IDs Vector of group IDs. The group IDs also need to be provided separately
-#'   to the differential testing functions; they are included here for plotting.
+#' @param group_IDs Vector of group IDs. Note that the group IDs also need to be provided
+#'   separately to the differential testing functions.
 #' 
 #' @param cols_markers Column indices indicating all protein markers.
 #' 
-#' @param cols_clustering Column indices indicating protein markers to be used for
+#' @param cols_identity Column indices indicating 'identity markers', to be used for
 #'   clustering.
 #' 
-#' @param cols_DE Column indices indicating protein markers to be used for differential
-#'   expression analysis.
+#' @param cols_func Column indices indicating 'functional markers', to be used for
+#'   differential analysis of functional states within clusters.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.
@@ -49,9 +50,9 @@
 #' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 #'   containing a single matrix of data (expression values) in the \code{assays} slot,
 #'   together with row meta-data (sample IDs, group IDs) and column meta-data (protein
-#'   marker names, logical vectors for: all markers, markers for clustering, markers for
-#'   differential expression analysis). The \code{group_IDs} vector is also stored in the
-#'   \code{metadata} slot, and can be accessed with \code{metadata(d_se)$group_IDs}.
+#'   marker names, logical vectors for: all markers, identity markers, and functional
+#'   markers). The \code{group_IDs} vector is also stored in the \code{metadata} slot, and
+#'   can be accessed with \code{metadata(d_se)$group_IDs}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -60,13 +61,12 @@
 #' 
 #' @export
 #' 
-#' @seealso to do
-#'
 #' @examples
-#' # See full examples in testing functions.
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 prepareData <- function(d_input, sample_IDs, group_IDs, 
-                        cols_markers = NULL, cols_clustering = NULL, cols_DE = NULL, 
+                        cols_markers = NULL, cols_identity = NULL, cols_func = NULL, 
                         subsampling = FALSE, n_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
@@ -114,20 +114,20 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     is_marker_col <- empty
     is_marker_col[cols_markers] <- TRUE
   }
-  if (!is.null(cols_clustering)) {
-    is_clustering_col <- empty
-    is_clustering_col[cols_clustering] <- TRUE
+  if (!is.null(cols_identity)) {
+    is_identity_col <- empty
+    is_identity_col[cols_identity] <- TRUE
   }
-  if (!is.null(cols_DE)) {
-    is_DE_col <- empty
-    is_DE_col[cols_DE] <- TRUE
+  if (!is.null(cols_func)) {
+    is_func_col <- empty
+    is_func_col[cols_func] <- TRUE
   }
   
   col_data <- data.frame(
     markers = colnames(d_combined), 
     is_marker_col = is_marker_col, 
-    is_clustering_col = is_clustering_col, 
-    is_DE_col = is_DE_col, 
+    is_identity_col = is_identity_col, 
+    is_func_col = is_func_col, 
     row.names = colnames(d_combined)
   )
   

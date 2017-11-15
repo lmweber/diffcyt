@@ -1,11 +1,11 @@
 #' Test for differential functional states: method 'diffcyt-DS-med'
 #' 
 #' Calculate tests for differential functional states (i.e. differential expression of
-#' functional markers within clusters) using method 'diffcyt-DS-med'.
+#' functional markers within clusters) using method 'diffcyt-DS-med'
 #' 
-#' This method uses the median expression of functional markers within clusters to
-#' characterize the functional states of cell populations. Clusters are defined using
-#' identity markers only.
+#' This method characterizes the functional states of cell populations using the median
+#' expression of functional markers within clusters. Clusters are defined using identity
+#' markers only.
 #' 
 #' The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 #' Research}) is used to fit linear models and calculate empirical Bayes moderated tests
@@ -90,10 +90,9 @@
 #' 
 #' @export
 #' 
-#' @seealso to do
-#' 
 #' @examples
-#' # to do
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 testDS_med <- function(d_counts, d_medians, design, contrast, 
                        block_IDs = NULL, 

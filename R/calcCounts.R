@@ -6,7 +6,7 @@
 #' 'counts', 'abundances', or 'frequencies').
 #' 
 #' The cluster cell counts are required for the differential abundance tests, and are also
-#' used as weights to improve statistical performance of the differential expression
+#' used as weights to improve statistical power for the differential functional state
 #' tests.
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
@@ -33,10 +33,9 @@
 #' 
 #' @export
 #' 
-#' @seealso to do
-#'
 #' @examples
-#' # See full examples in testing functions.
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 calcCounts <- function(d_se) {
   
@@ -45,8 +44,7 @@ calcCounts <- function(d_se) {
   }
   
   if (!("cluster" %in% (colnames(rowData(d_se))))) {
-    stop("Data object does not contain cluster labels. Run 'generateClusters' to ", 
-         "generate cluster labels.")
+    stop("Data object does not contain cluster labels. Run 'generateClusters' to generate cluster labels.")
   }
   
   # calculate cluster cell counts
@@ -87,7 +85,9 @@ calcCounts <- function(d_se) {
     group = metadata(d_se)$group_IDs
   )
   
-  d_counts <- SummarizedExperiment(n_cells, rowData = row_data, colData = col_data)
+  d_counts <- SummarizedExperiment(n_cells, 
+                                   rowData = row_data, 
+                                   colData = col_data)
   
   d_counts
 }

@@ -5,26 +5,39 @@
 #' 
 #' Calculate median expression of each marker for each cluster-sample combination.
 #' 
-#' The data object is assumed to contain a vector \code{is_marker_col} in the column
-#' meta-data (see \code{\link{prepareData}}), which indicates whether each column
-#' represents a marker. Cluster medians are calculated for these columns.
+#' The data object is assumed to contain vectors \code{is_marker_col},
+#' \code{is_identity_col}, and \code{is_func_col} in the column meta-data (see
+#' \code{\link{prepareData}}). These indicate the sets of all marker columns, identity
+#' marker columns, and functional marker columns. Cluster medians are calculated for all
+#' markers.
 #' 
-#' The cluster medians (by sample) are required for differential expression tests.
+#' The cluster medians (by sample) are required to calculate differential functional state
+#' tests, and for plotting.
+#' 
+#' Variables \code{id_identity_markers} and \code{id_func_markers} are saved in the
+#' \code{metadata} slot of the output object. These can be used to identify the identity
+#' and functional markers in later steps of the 'diffcyt' pipeline.
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 #' object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
-#' Note that there is a separate table of values ('assay') for each marker. The set of
-#' functional markers can be identified using the variable 'id_func_markers' saved in the
-#' 'metadata' slot.
+#' Note that there is a separate table of values ('assay') for each marker. The
+#' \code{metadata} slot also contains variables \code{id_identity_markers} and
+#' \code{id_func_markers}, which can be used to identify the sets of identity and
+#' functional markers.
 #' 
 #' 
 #' @param d_se Data object from previous steps, in
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
-#'   labels as a column in the row meta-data (from \code{\link{generateClusters}}).
+#'   labels as a column in the row meta-data (from \code{\link{generateClusters}}). Column
+#'   meta-data is assumed to contain vectors \code{is_marker_col}, \code{is_identity_col},
+#'   and \code{is_func_col}.
 #' 
 #' 
 #' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
-#'   clusters, columns = samples, sheets ('assay' slots) = markers.
+#'   clusters, columns = samples, sheets ('assay' slots) = markers. The \code{metadata}
+#'   slot contains variables \code{id_identity_markers} and \code{id_func_markers}, which
+#'   can be accessed with \code{metadata(d_medians)$id_identity_markers} and
+#'   \code{metadata(d_medians)$id_func_markers}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
@@ -37,10 +50,9 @@
 #' 
 #' @export
 #' 
-#' @seealso to do
-#'
 #' @examples
-#' # See full examples in testing functions.
+#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline on an experimental data set is available in the package vignette.
 #' 
 calcMedians <- function(d_se) {
   
@@ -49,9 +61,12 @@ calcMedians <- function(d_se) {
   }
   
   if (!("cluster" %in% (colnames(rowData(d_se))))) {
-    stop("Data object does not contain cluster labels. Run 'generateClusters' to ", 
-         "generate cluster labels.")
+    stop("Data object does not contain cluster labels. Run 'generateClusters' to generate cluster labels.")
   }
+  
+  # identity and functional markers
+  id_identity_markers <- colData(d_se)$is_identity_col[colData(d_se)$is_marker_col]
+  id_func_markers <- colData(d_se)$is_func_col[colData(d_se)$is_marker_col]
   
   # calculate cluster medians for each marker
   
@@ -60,8 +75,6 @@ calcMedians <- function(d_se) {
   medians <- vector("list", sum(colData(d_se)$is_marker_col))
   marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker_col])
   names(medians) <- marker_names
-  # identify functional markers
-  id_func_markers <- colData(d_se)$is_DE_col[colData(d_se)$is_marker_col]
   
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
@@ -105,7 +118,8 @@ calcMedians <- function(d_se) {
     group = metadata(d_se)$group_IDs
   )
   
-  metadata <- list(id_func_markers = id_func_markers)
+  metadata <- list(id_identity_markers = id_identity_markers, 
+                   id_func_markers = id_func_markers)
   
   d_medians <- SummarizedExperiment(medians, 
                                     rowData = row_data, 

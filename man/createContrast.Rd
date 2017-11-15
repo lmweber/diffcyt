@@ -53,9 +53,7 @@ contrast of interest. To perform tests for multiple contrasts, run this function
 the corresponding differential testing function multiple times.
 }
 \examples{
-# to do
+# A full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline on an experimental data set is available in the package vignette.
 
-}
-\seealso{
-to do
 }
