@@ -7,21 +7,22 @@
 #' testing functions, together with either a design matrix or model formula, and the data
 #' object.
 #' 
-#' The argument \code{contrast} defines the contrast of interest for the levels of
-#' \code{group_IDs}. Note that the model formula (\code{\link{createFormula}}) or design
-#' matrix (\code{\link{createDesignMatrix}}) assumes that the first level of
-#' \code{group_IDs} is the reference level, and the model formula or design matrix are
-#' specified so that the first column of the design matrix is an intercept. In this setup,
-#' the subsequent terms in the design matrix represent the difference compared to the
-#' reference.
+#' The argument \code{contrast} defines the contrast of interest, given the levels of
+#' \code{group_IDs} and any other fixed effect terms in the design matrix or model
+#' formula. Note that the design matrix (\code{\link{createDesignMatrix}}) or model
+#' formula (\code{\link{createFormula}}) is constructed assuming that the first level of
+#' \code{group_IDs} is the reference level. The design matrix is specified with an
+#' intercept term, so that the first column represents the intercept, and the following
+#' columns represent the difference between levels of \code{group_IDs} and the reference
+#' level.
 #' 
 #' For example, to compare the second level against the first level for a \code{group_IDs}
 #' vector of length 2, with no other columns in the design matrix, the \code{contrast}
 #' argument would be \code{c(0, 1)}. To compare the second level against the first level
 #' for a \code{group_IDs} vector of length 3, it would be \code{c(0, 1, 0)}. If there are
-#' additional terms in the design matrix (such as block IDs), which are not of interest
-#' for inference, extra zeros should be included for the corresponding columns of the
-#' design matrix.
+#' additional fixed effect terms in the design matrix (such as block IDs), which are not
+#' of interest for inference, extra zeros should be included for the corresponding
+#' additional columns of the design matrix.
 #' 
 #' The contrast matrix is formatted as a matrix with a single column containing the
 #' contrast of interest. To perform tests for multiple contrasts, run this function and
@@ -67,9 +68,6 @@ createContrast <- function(group_IDs, contrast = NULL) {
   
   # create contrast matrix
   contrast_matrix <- matrix(contrast, ncol = 1)
-  row_nms <- seq_along(contrast)
-  row_nms[seq_len(nlevels(group_IDs))] <- levels(group_IDs)
-  rownames(contrast_matrix) <- row_nms
   
   contrast_matrix
 }

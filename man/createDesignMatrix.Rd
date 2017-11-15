@@ -15,25 +15,27 @@ will be used as the reference level for differential testing. To re-order factor
 levels, use \code{\link[stats]{relevel}} or \code{\link[base]{factor}}.}
 
 \item{batch_IDs}{(Optional) Vector or factor of batch IDs. Batch IDs are included as
-columns of indicator variables in the design matrix. This allows batch effects to be
+columns of indicator variables representing fixed effect terms in the design matrix.
+This allows batch effects to be estimated during model fitting, and taken into
+account during inference on the group ID parameters of interest.}
+
+\item{covariates}{(Optional) Numeric matrix of continuous covariates. Covariates are
+included as columns of values in the design matrix. This allows their effects to be
 estimated during model fitting, and taken into account during inference on the group
 ID parameters of interest.}
 
-\item{covariates}{(Optional) Numeric matrix of continuous covariates. Covariates are
-included as columns in the design matrix. This allows their effects to be estimated
-during model fitting, and taken into account during inference on the group ID
-parameters of interest.}
-
 \item{block_IDs}{(Optional) Vector or factor of block IDs, e.g. for paired designs
 (e.g. one diseased and one healthy sample per patient). If provided, block IDs are
-included as fixed effects in the design matrix. Note that block IDs can also be
-included as random effects by using \code{\link{createFormula}} instead; or, for some
-methods, by providing them directly to the testing function (e.g.
-'diffcyt-DA-limma').}
+included as columns of indicator variables representing fixed effect terms in the
+design matrix. This allows their effects to be estimated during model fitting, and
+taken into account during inference on the group ID parameters of interest. Note that
+block IDs can also be included as random effects by using \code{\link{createFormula}}
+instead; or, for some methods, by providing them directly to the testing function
+(e.g. 'diffcyt-DA-limma' and 'diffcyt-DS-med').}
 }
 \value{
 Returns a design matrix (numeric matrix), with one row per sample, and one
-  model parameter per column.
+  column per model parameter.
 }
 \description{
 Create design matrix for model fitting
