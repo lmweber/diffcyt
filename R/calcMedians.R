@@ -13,7 +13,9 @@
 #' 
 #' Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 #' object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
-#' Note that there is a separate table of values ('assay') for each marker.
+#' Note that there is a separate table of values ('assay') for each marker. The set of
+#' functional markers can be identified using the variable 'id_func_markers' saved in the
+#' 'metadata' slot.
 #' 
 #' 
 #' @param d_se Data object from previous steps, in
@@ -58,6 +60,8 @@ calcMedians <- function(d_se) {
   medians <- vector("list", sum(colData(d_se)$is_marker_col))
   marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker_col])
   names(medians) <- marker_names
+  # identify functional markers
+  id_func_markers <- colData(d_se)$is_DE_col[colData(d_se)$is_marker_col]
   
   clus <- rowData(d_se)$cluster
   smp <- rowData(d_se)$sample
@@ -101,7 +105,12 @@ calcMedians <- function(d_se) {
     group = metadata(d_se)$group_IDs
   )
   
-  d_medians <- SummarizedExperiment(medians, rowData = row_data, colData = col_data)
+  metadata <- list(id_func_markers = id_func_markers)
+  
+  d_medians <- SummarizedExperiment(medians, 
+                                    rowData = row_data, 
+                                    colData = col_data, 
+                                    metadata = metadata)
   
   d_medians
 }

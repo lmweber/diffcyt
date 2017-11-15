@@ -1,18 +1,20 @@
-#' Test for differential expression within clusters: method 'diffcyt-med'
+#' Test for differential functional states: method 'diffcyt-DS-med'
 #' 
-#' Calculate tests for differential expression of functional markers within clusters using
-#' method 'diffcyt-med'.
+#' Calculate tests for differential functional states (i.e. differential expression of
+#' functional markers within clusters) using method 'diffcyt-DS-med'.
 #' 
-#' This method uses median marker expression values to characterize the functional marker
-#' expression profiles within each cluster (i.e. the signal of interest). In addition,
-#' empirical Bayes methods are used to improve statistical power by sharing information on
-#' variability (i.e. variance across samples for a single cluster) between clusters. The
-#' \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids Research})
-#' is used to fit linear models and calculate empirical Bayes moderated tests. Since count
-#' data are often heteroscedastic, we use the  \code{\link[limma]{voom}} method (Law et
-#' al. 2014, \emph{Genome Biology}) to transform the raw cluster cell counts and estimate
-#' observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
-#' are shown if \code{plot = TRUE}.
+#' This method uses the median expression of functional markers within clusters to
+#' characterize the functional states of cell populations. Clusters are defined using
+#' identity markers only.
+#' 
+#' The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
+#' Research}) is used to fit linear models and calculate empirical Bayes moderated tests
+#' at the cluster level. The empirical Bayes methods improve statistical power by sharing
+#' information on variability (i.e. variance across samples for a single cluster) between
+#' clusters. We use the  \code{\link[limma]{voom}} method (Law et al. 2014, \emph{Genome
+#' Biology}) to transform the median expression values and estimate observation-level
+#' weights, in order to stabilize the mean-variance relationship. Diagnostic plots are
+#' shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -32,20 +34,15 @@
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples in at least one
 #' condition. This removes clusters with very low cell counts across conditions, which
-#' improves power. In addition, clusters containing zero cells for any sample are removed,
-#' due to the requirements of \code{voom}.
+#' improves power.
 #' 
-#' 
-#' @param d_se Data object from previous steps, in
-#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing marker
-#'   information in column meta-data.
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
 #' @param d_medians \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster medians (median expression of functional markers), from
-#'   \code{\link{calcMedians}}.
+#'   containing cluster medians (median expression of each marker for each cluster-sample
+#'   combination), from \code{\link{calcMedians}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -62,15 +59,12 @@
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-#'   samples in at least one condition. In addition, clusters containing zero cells for
-#'   any sample are removed, due to the requirements of \code{voom}.
+#'   samples in at least one condition.
 #' 
 #' @param min_samples Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
 #'   i.e. one less than the number of samples in the smallest group. Clusters are kept for
 #'   differential testing if they have at least \code{min_cells} cells in at least
-#'   \code{min_samples} samples in at least one condition. In addition, clusters
-#'   containing zero cells for any sample are removed, due to the requirements of
-#'   \code{voom}.
+#'   \code{min_samples} samples in at least one condition.
 #' 
 #' @param plot Whether to save diagnostic plots for the \code{limma}
 #'   \code{\link[limma]{voom}} transformations. Default = TRUE.
@@ -82,14 +76,13 @@
 #'   where rows = cluster-marker combinations, columns = samples. In the rows, clusters
 #'   are repeated for each functional marker (i.e. the sheets or 'assays' from the
 #'   previous \code{d_medians} object are stacked into a single matrix). Differential test
-#'   results are stored in the 'rowData' slot. Results include raw p-values and adjusted
-#'   p-values from the \code{\link[limma]{limma}} empirical Bayes moderated tests, which
-#'   can be used to rank cluster-marker combinations by evidence for differential
-#'   expression. The results can be accessed with the
-#'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
+#'   results are stored in the \code{rowData} slot. Results include raw p-values and
+#'   adjusted p-values from the \code{limma} empirical Bayes moderated tests, which can be
+#'   used to rank clusters by evidence for differential functional states. The results can
+#'   be accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assays rowData colData
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom limma contrasts.fit voom duplicateCorrelation lmFit eBayes plotSA topTable
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
@@ -97,10 +90,12 @@
 #' 
 #' @export
 #' 
+#' @seealso to do
+#' 
 #' @examples
 #' # to do
 #' 
-testDE_med <- function(d_se, d_counts, d_medians, design, contrast, 
+testDS_med <- function(d_counts, d_medians, design, contrast, 
                        block_IDs = NULL, 
                        min_cells = 3, min_samples = NULL, 
                        plot = TRUE, path = ".") {
@@ -115,6 +110,9 @@ testDE_med <- function(d_se, d_counts, d_medians, design, contrast,
     min_samples <- min(table(group_IDs)) - 1
   }
   
+  id_func_markers <- metadata(d_medians)$id_func_markers
+  
+  # note counts are only required for filtering for this method
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
@@ -127,22 +125,22 @@ testDE_med <- function(d_se, d_counts, d_medians, design, contrast,
     ix_keep[rowSums(tf[, grp, drop = FALSE]) >= min_samples] <- TRUE
   }
   
-  counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
   
-  # remove any remaining rows with zeros (required by voom)
-  ix_zeros <- apply(counts, 1, function(r) any(r == 0))
-  
-  counts <- counts[!ix_zeros, ]
-  cluster <- cluster[!ix_zeros]
-  
   # extract medians and create concatenated matrix
-  func_names <- as.character(colData(d_se)$markers[colData(d_se)$is_DE_col])
+  func_names <- names(assays(d_medians))[id_func_markers]
   meds <- do.call("rbind", {
     lapply(as.list(assays(d_medians)[func_names]), function(a) a[cluster, ])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[func_names]))
+  
+  # remove any clusters containing missing values (required by voom)
+  ix_complete <- apply(meds, 1, function(s) !any(is.na(s)))
+  meds <- meds[ix_complete, ]
+  cluster <- cluster[ix_complete[seq_along(cluster)]]
+  
+  # limma/voom pipeline
   
   # voom transformation and weights
   if (plot) pdf(file.path(path, "voom_before.pdf"), width = 6, height = 6)
@@ -172,6 +170,10 @@ testDE_med <- function(d_se, d_counts, d_medians, design, contrast,
   
   # results
   top <- topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
+  
+  if (!all(top$ID %in% cluster)) {
+    stop("cluster labels do not match")
+  }
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
