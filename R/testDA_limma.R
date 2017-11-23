@@ -162,6 +162,8 @@ testDA_limma <- function(d_counts, design, contrast,
   # store additional sample information in 'colData'
   if (!is.null(block_IDs)) {
     col_data <- cbind(colData(d_counts), block = data.frame(block_IDs))
+  } else {
+    col_data <- colData(d_counts)
   }
   
   res <- d_counts

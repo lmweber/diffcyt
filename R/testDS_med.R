@@ -203,6 +203,8 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   # store additional sample information in 'colData'
   if (!is.null(block_IDs)) {
     col_data <- cbind(colData(d_medians), block = data.frame(block_IDs))
+  } else {
+    col_data <- colData(d_medians)
   }
   
   # return object
