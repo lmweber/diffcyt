@@ -129,6 +129,7 @@ testDA_limma <- function(d_counts, design, contrast,
   
   # fit linear models
   if (!is.null(block_IDs)) {
+    message("Fitting linear models with random effects term for 'block_IDs'.")
     vfit <- lmFit(v, design, block = block_IDs, correlation = dupcor$consensus.correlation)
   } else {
     vfit <- lmFit(v, design)
