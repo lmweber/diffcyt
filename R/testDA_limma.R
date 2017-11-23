@@ -160,7 +160,9 @@ testDA_limma <- function(d_counts, design, contrast,
   row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster))), row_data)
   
   # store additional sample information in 'colData'
-  col_data <- cbind(colData(d_counts), data.frame(group_IDs))
+  if (!is.null(block_IDs)) {
+    col_data <- cbind(colData(d_counts), block = data.frame(block_IDs))
+  }
   
   res <- d_counts
   

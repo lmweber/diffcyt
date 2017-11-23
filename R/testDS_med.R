@@ -201,7 +201,9 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   row_data <- cbind(data.frame(cluster = clus, marker = func), row_data)
   
   # store additional sample information in 'colData'
-  col_data <- cbind(colData(d_medians), data.frame(block_IDs))
+  if (!is.null(block_IDs)) {
+    col_data <- cbind(colData(d_medians), block = data.frame(block_IDs))
+  }
   
   # return object
   res <- SummarizedExperiment(meds_all, rowData = row_data, colData = col_data)
