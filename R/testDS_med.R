@@ -9,11 +9,10 @@
 #' 
 #' The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 #' Research}) is used to fit linear models and calculate empirical Bayes moderated tests
-#' at the cluster level. The empirical Bayes methods improve statistical power by sharing
-#' information on variability (i.e. variance across samples for a single cluster) between
-#' clusters. We use the  \code{\link[limma]{voom}} method (Law et al. 2014, \emph{Genome
-#' Biology}) to transform the median expression values and estimate observation-level
-#' weights, in order to stabilize the mean-variance relationship. Diagnostic plots are
+#' at the cluster level. We use the option \code{trend = TRUE} in the \code{eBayes}
+#' fitting function, in order to stabilize the mean-variance relationship. The empirical
+#' Bayes methods improve statistical power by sharing information on variability (i.e.
+#' variance across samples for a single cluster) between clusters. Diagnostic plots are
 #' shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
@@ -139,32 +138,27 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   meds <- meds[ix_complete, ]
   cluster <- cluster[ix_complete[seq_along(cluster)]]
   
-  # limma/voom pipeline
-  
-  # voom transformation and weights
-  if (plot) pdf(file.path(path, "voom_before.pdf"), width = 6, height = 6)
-  v <- voom(meds, design, plot = TRUE)
-  if (plot) dev.off()
+  # limma pipeline
   
   # estimate correlation between paired samples
   # (note: paired designs only; >2 measurements per sample not allowed)
   if (!is.null(block_IDs)) {
-    dupcor <- duplicateCorrelation(v, design, block = block_IDs)
+    dupcor <- duplicateCorrelation(meds, design, block = block_IDs)
   }
   
   # fit linear models
   if (!is.null(block_IDs)) {
     message("Fitting linear models with random effects term for 'block_IDs'.")
-    vfit <- lmFit(v, design, block = block_IDs, correlation = dupcor$consensus.correlation)
+    fit <- lmFit(meds, design, block = block_IDs, correlation = dupcor$consensus.correlation)
   } else {
-    vfit <- lmFit(v, design)
+    fit <- lmFit(meds, design)
   }
-  vfit <- contrasts.fit(vfit, contrast)
+  fit <- contrasts.fit(fit, contrast)
   
   # calculate empirical Bayes moderated tests
-  efit <- eBayes(vfit)
+  efit <- eBayes(fit, trend = TRUE)
   
-  if (plot) pdf(file.path(path, "voom_after.pdf"), width = 6, height = 6)
+  if (plot) pdf(file.path(path, "SA_plot_after.pdf"), width = 6, height = 6)
   plotSA(efit)
   if (plot) dev.off()
   

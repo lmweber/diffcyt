@@ -63,11 +63,10 @@ markers only.
 
 The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
 Research}) is used to fit linear models and calculate empirical Bayes moderated tests
-at the cluster level. The empirical Bayes methods improve statistical power by sharing
-information on variability (i.e. variance across samples for a single cluster) between
-clusters. We use the  \code{\link[limma]{voom}} method (Law et al. 2014, \emph{Genome
-Biology}) to transform the median expression values and estimate observation-level
-weights, in order to stabilize the mean-variance relationship. Diagnostic plots are
+at the cluster level. We use the option \code{trend = TRUE} in the \code{eBayes}
+fitting function, in order to stabilize the mean-variance relationship. The empirical
+Bayes methods improve statistical power by sharing information on variability (i.e.
+variance across samples for a single cluster) between clusters. Diagnostic plots are
 shown if \code{plot = TRUE}.
 
 The experimental design must be specified using a design matrix, which can be created
