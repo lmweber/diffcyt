@@ -8,10 +8,10 @@ createContrast(group_IDs, contrast = NULL)
 }
 \arguments{
 \item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). Vectors are converted to factors
-internally. The first level of the factor (e.g. healthy) or first entry of the vector
-will be used as the reference level for differential testing. To re-order factor
-levels, use \code{\link[stats]{relevel}} or \code{\link[base]{factor}}.}
+diseased vs. healthy, or treated vs. untreated). The first level of the factor (e.g.
+healthy) or first entry of the vector will be used as the reference level for
+differential testing. To re-order factor levels, use \code{\link[stats]{relevel}} or
+\code{\link[base]{factor}}.}
 
 \item{contrast}{Vector defining the contrast of interest. For example, \code{c(0, 1)}
 to compare the second level against the first level for a \code{group_IDs} vector of

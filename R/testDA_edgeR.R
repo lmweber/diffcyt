@@ -2,8 +2,9 @@
 #' 
 #' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-edgeR'
 #' 
-#' Calculates tests for differential abundance of clusters, using empirical Bayes
-#' moderation of cluster-level variances to improve power.
+#' Calculates tests for differential abundance of clusters, using functions from the
+#' \code{\link[edgeR]{edgeR}} package. Uses empirical Bayes moderation of cluster-level
+#' variances to improve statistical power.
 #' 
 #' This method uses the \code{\link[edgeR]{edgeR}} package (Robinson et al. 2010,
 #' \emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
@@ -11,12 +12,12 @@
 #' Empirical Bayes methods improve statistical power by sharing information on variability
 #' (i.e. variance across samples for a single cluster) between clusters. The statistical
 #' methods implemented in the \code{edgeR} package were originally designed for the
-#' analysis of digital gene expression data such as RNA-sequencing counts. Here, we apply
-#' these methods to cluster cell counts.
+#' analysis of gene expression data such as RNA-sequencing counts. Here, we apply these
+#' methods to cluster cell counts.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-#' including batch effects, continuous covariates, and paired designs. See
+#' including blocking (e.g. paired designs), batch effects, and continuous covariates. See
 #' \code{\link{createDesignMatrix}} for more details.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
@@ -68,7 +69,7 @@
 testDA_edgeR <- function(d_counts, design, contrast, 
                          min_cells = 3, min_samples = NULL) {
   
-  group_IDs <- colData(d_counts)$group
+  group_IDs <- colData(d_counts)$group_IDs
   
   if (is.null(min_samples)) {
     min_samples <- min(table(group_IDs)) - 1
@@ -124,13 +125,9 @@ testDA_edgeR <- function(d_counts, design, contrast,
   
   row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster))), row_data)
   
-  # store additional sample information in 'colData'
-  col_data <- cbind(colData(d_counts), data.frame(group_IDs))
-  
   res <- d_counts
   
   rowData(res) <- row_data
-  colData(res) <- col_data
   
   res
 }

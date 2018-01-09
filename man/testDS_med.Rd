@@ -37,41 +37,43 @@ i.e. one less than the number of samples in the smallest group. Clusters are kep
 differential testing if they have at least \code{min_cells} cells in at least
 \code{min_samples} samples in at least one condition.}
 
-\item{plot}{Whether to save diagnostic plots for the \code{limma}
-\code{\link[limma]{voom}} transformations. Default = TRUE.}
+\item{plot}{Whether to save diagnostic plot. Default = TRUE.}
 
-\item{path}{Path for diagnostic plots. Default = current working directory.}
+\item{path}{Path for diagnostic plot. Default = current working directory.}
 }
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
-  where rows = cluster-marker combinations, columns = samples. In the rows, clusters
-  are repeated for each functional marker (i.e. the sheets or 'assays' from the
-  previous \code{d_medians} object are stacked into a single matrix). Differential test
-  results are stored in the \code{rowData} slot. Results include raw p-values and
-  adjusted p-values from the \code{limma} empirical Bayes moderated tests, which can be
-  used to rank clusters by evidence for differential functional states. The results can
-  be accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
+  where rows = cluster-marker combinations, and columns = samples. In the rows,
+  clusters are repeated for each functional state marker (i.e. the sheets or 'assays'
+  from the previous \code{d_medians} object are stacked into a single matrix).
+  Differential test results are stored in the \code{rowData} slot. Results include raw
+  p-values and adjusted p-values from the \code{limma} empirical Bayes moderated tests,
+  which can be used to rank cluster-marker combinations by evidence for differential
+  functional states. The results can be accessed with the
+  \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential functional states (i.e. differential expression of
-functional markers within clusters) using method 'diffcyt-DS-med'
+Calculate tests for differential functional states of clusters using method
+'diffcyt-DS-med'
 }
 \details{
-This method characterizes the functional states of cell populations using the median
-expression of functional markers within clusters. Clusters are defined using identity
-markers only.
+Calculates tests for differential functional states of clusters; i.e. differential
+expression of functional state markers within clusters. Clusters are defined using cell
+type markers, and functional states are characterized by the median expression of
+functional state markers within clusters. Uses empirical Bayes moderation of
+cluster-level variances to improve statistical power.
 
-The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
-Research}) is used to fit linear models and calculate empirical Bayes moderated tests
-at the cluster level. We use the option \code{trend = TRUE} in the \code{eBayes}
-fitting function, in order to stabilize the mean-variance relationship. The empirical
-Bayes methods improve statistical power by sharing information on variability (i.e.
-variance across samples for a single cluster) between clusters. Diagnostic plots are
-shown if \code{plot = TRUE}.
+This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
+\emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
+moderated tests at the cluster level. Empirical Bayes methods improve statistical power
+by sharing information on variability (i.e. variance across samples for a single
+cluster) between clusters. We use the option \code{trend = TRUE} in the \code{eBayes}
+fitting function in order to stabilize the mean-variance relationship. Diagnostic plots
+are shown if \code{plot = TRUE}.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-including batch effects, continuous covariates, and paired designs. See
+including blocking (e.g. paired designs), batch effects, and continuous covariates. See
 \code{\link{createDesignMatrix}} for more details.
 
 For paired designs, either fixed effects or random effects can be used. Fixed effects

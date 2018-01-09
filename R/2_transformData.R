@@ -5,7 +5,8 @@
 #' Flow and mass cytometry data should be transformed prior to clustering. The raw data
 #' follows an approximately log-normal distribution. Transforming with a log (or similar)
 #' function brings the data closer to a normal distribution, which improves clustering
-#' performance and allows positive and negative populations to be visualized more clearly.
+#' performance and allows positive and negative populations to be distinguished more
+#' clearly.
 #' 
 #' This function implements an inverse hyperbolic sine ('arcsinh') transform with
 #' adjustable 'cofactor' parameter. The arcsinh transform is widely used for CyTOF data.

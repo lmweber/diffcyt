@@ -2,21 +2,22 @@
 #' 
 #' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
 #' 
-#' Calculates tests for differential abundance of clusters, using empirical Bayes
-#' moderation of cluster-level variances to improve power.
+#' Calculates tests for differential abundance of clusters, using functions from the
+#' \code{\link[limma]{limma}} package. Uses empirical Bayes moderation of cluster-level
+#' variances to improve statistical power.
 #' 
-#' The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
-#' Research}) is used to fit linear models and calculate empirical Bayes moderated tests.
-#' Empirical Bayes methods improve statistical power by sharing information on variability
-#' (i.e. variance across samples for a single cluster) between clusters. Since count data
-#' are often heteroscedastic, we use the  \code{\link[limma]{voom}} method (Law et al.
-#' 2014, \emph{Genome Biology}) to transform the raw cluster cell counts and estimate
-#' observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
-#' are shown if \code{plot = TRUE}.
+#' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
+#' \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
+#' moderated tests at the cluster level. Empirical Bayes methods improve statistical power
+#' by sharing information on variability (i.e. variance across samples for a single
+#' cluster) between clusters. Since count data are often heteroscedastic, we use the
+#' \code{\link[limma]{voom}} method (Law et al. 2014, \emph{Genome Biology}) to transform
+#' the raw cluster cell counts and estimate observation-level weights to stabilize the
+#' mean-variance relationship. Diagnostic plots are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-#' including batch effects, continuous covariates, and paired designs. See
+#' including blocking (e.g. paired designs), batch effects, and continuous covariates. See
 #' \code{\link{createDesignMatrix}} for more details.
 #' 
 #' For paired designs, either fixed effects or random effects can be used. Fixed effects
@@ -95,7 +96,7 @@ testDA_limma <- function(d_counts, design, contrast,
     block_IDs <- factor(block_IDs, levels = unique(block_IDs))
   }
   
-  group_IDs <- colData(d_counts)$group
+  group_IDs <- colData(d_counts)$group_IDs
   
   if (is.null(min_samples)) {
     min_samples <- min(table(group_IDs)) - 1
@@ -116,13 +117,15 @@ testDA_limma <- function(d_counts, design, contrast,
   counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
   
+  # limma-voom pipeline
+  
   # voom transformation and weights
   if (plot) pdf(file.path(path, "voom_before.pdf"), width = 6, height = 6)
   v <- voom(counts, design, plot = TRUE)
   if (plot) dev.off()
   
   # estimate correlation between paired samples
-  # (note: paired designs only; >2 measurements per sample not allowed)
+  # (note: paired designs only; >2 measures per sample not allowed)
   if (!is.null(block_IDs)) {
     dupcor <- duplicateCorrelation(v, design, block = block_IDs)
   }
@@ -160,17 +163,9 @@ testDA_limma <- function(d_counts, design, contrast,
   
   row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster))), row_data)
   
-  # store additional sample information in 'colData'
-  if (!is.null(block_IDs)) {
-    col_data <- cbind(colData(d_counts), block = data.frame(block_IDs))
-  } else {
-    col_data <- colData(d_counts)
-  }
-  
   res <- d_counts
   
   rowData(res) <- row_data
-  colData(res) <- col_data
   
   res
 }

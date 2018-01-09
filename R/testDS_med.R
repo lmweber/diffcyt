@@ -1,23 +1,25 @@
 #' Test for differential functional states: method 'diffcyt-DS-med'
 #' 
-#' Calculate tests for differential functional states (i.e. differential expression of
-#' functional markers within clusters) using method 'diffcyt-DS-med'
+#' Calculate tests for differential functional states of clusters using method
+#' 'diffcyt-DS-med'
 #' 
-#' This method characterizes the functional states of cell populations using the median
-#' expression of functional markers within clusters. Clusters are defined using identity
-#' markers only.
+#' Calculates tests for differential functional states of clusters; i.e. differential
+#' expression of functional state markers within clusters. Clusters are defined using cell
+#' type markers, and functional states are characterized by the median expression of
+#' functional state markers within clusters. Uses empirical Bayes moderation of
+#' cluster-level variances to improve statistical power.
 #' 
-#' The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
-#' Research}) is used to fit linear models and calculate empirical Bayes moderated tests
-#' at the cluster level. We use the option \code{trend = TRUE} in the \code{eBayes}
-#' fitting function, in order to stabilize the mean-variance relationship. The empirical
-#' Bayes methods improve statistical power by sharing information on variability (i.e.
-#' variance across samples for a single cluster) between clusters. Diagnostic plots are
-#' shown if \code{plot = TRUE}.
+#' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
+#' \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
+#' moderated tests at the cluster level. Empirical Bayes methods improve statistical power
+#' by sharing information on variability (i.e. variance across samples for a single
+#' cluster) between clusters. We use the option \code{trend = TRUE} in the \code{eBayes}
+#' fitting function in order to stabilize the mean-variance relationship. Diagnostic plots
+#' are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-#' including batch effects, continuous covariates, and paired designs. See
+#' including blocking (e.g. paired designs), batch effects, and continuous covariates. See
 #' \code{\link{createDesignMatrix}} for more details.
 #' 
 #' For paired designs, either fixed effects or random effects can be used. Fixed effects
@@ -65,24 +67,24 @@
 #'   differential testing if they have at least \code{min_cells} cells in at least
 #'   \code{min_samples} samples in at least one condition.
 #' 
-#' @param plot Whether to save diagnostic plots for the \code{limma}
-#'   \code{\link[limma]{voom}} transformations. Default = TRUE.
+#' @param plot Whether to save diagnostic plot. Default = TRUE.
 #' 
-#' @param path Path for diagnostic plots. Default = current working directory.
+#' @param path Path for diagnostic plot. Default = current working directory.
 #' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
-#'   where rows = cluster-marker combinations, columns = samples. In the rows, clusters
-#'   are repeated for each functional marker (i.e. the sheets or 'assays' from the
-#'   previous \code{d_medians} object are stacked into a single matrix). Differential test
-#'   results are stored in the \code{rowData} slot. Results include raw p-values and
-#'   adjusted p-values from the \code{limma} empirical Bayes moderated tests, which can be
-#'   used to rank clusters by evidence for differential functional states. The results can
-#'   be accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
+#'   where rows = cluster-marker combinations, and columns = samples. In the rows,
+#'   clusters are repeated for each functional state marker (i.e. the sheets or 'assays'
+#'   from the previous \code{d_medians} object are stacked into a single matrix).
+#'   Differential test results are stored in the \code{rowData} slot. Results include raw
+#'   p-values and adjusted p-values from the \code{limma} empirical Bayes moderated tests,
+#'   which can be used to rank cluster-marker combinations by evidence for differential
+#'   functional states. The results can be accessed with the
+#'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
-#' @importFrom limma contrasts.fit voom duplicateCorrelation lmFit eBayes plotSA topTable
+#' @importFrom limma contrasts.fit duplicateCorrelation lmFit eBayes plotSA topTable
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
 #' @importFrom graphics plot
@@ -102,15 +104,16 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
     block_IDs <- factor(block_IDs, levels = unique(block_IDs))
   }
   
-  group_IDs <- colData(d_counts)$group
+  group_IDs <- colData(d_counts)$group_IDs
   
   if (is.null(min_samples)) {
     min_samples <- min(table(group_IDs)) - 1
   }
   
-  id_func_markers <- metadata(d_medians)$id_func_markers
+  # vector identifying functional state markers
+  id_state_markers <- metadata(d_medians)$id_state_markers
   
-  # note counts are only required for filtering for this method
+  # note: counts are only required for filtering
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
@@ -126,22 +129,22 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   cluster <- cluster[ix_keep]
   
   # extract medians and create concatenated matrix
-  func_names <- names(assays(d_medians))[id_func_markers]
+  state_names <- names(assays(d_medians))[id_state_markers]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[func_names]), function(a) a[cluster, ])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, ])
   })
   
-  meds_all <- do.call("rbind", as.list(assays(d_medians)[func_names]))
+  meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
   
-  # remove any clusters containing missing values (required by voom)
-  ix_complete <- apply(meds, 1, function(s) !any(is.na(s)))
-  meds <- meds[ix_complete, ]
-  cluster <- cluster[ix_complete[seq_along(cluster)]]
+  # remove any clusters containing missing values (required by voom) (note: not using voom any more)
+  #ix_complete <- apply(meds, 1, function(s) !any(is.na(s)))
+  #meds <- meds[ix_complete, ]
+  #cluster <- cluster[ix_complete[seq_along(cluster)]]
   
   # limma pipeline
   
   # estimate correlation between paired samples
-  # (note: paired designs only; >2 measurements per sample not allowed)
+  # (note: paired designs only; >2 measures per sample not allowed)
   if (!is.null(block_IDs)) {
     dupcor <- duplicateCorrelation(meds, design, block = block_IDs)
   }
@@ -155,10 +158,10 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   }
   fit <- contrasts.fit(fit, contrast)
   
-  # calculate empirical Bayes moderated tests
+  # calculate empirical Bayes moderated tests (note: using 'trend = TRUE' for mean-variance relationship)
   efit <- eBayes(fit, trend = TRUE)
   
-  if (plot) pdf(file.path(path, "SA_plot_after.pdf"), width = 6, height = 6)
+  if (plot) pdf(file.path(path, "SA_plot.pdf"), width = 6, height = 6)
   plotSA(efit)
   if (plot) dev.off()
   
@@ -173,37 +176,36 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), 
-                                   nrow = nlevels(cluster) * length(func_names), 
+                                   nrow = nlevels(cluster) * length(state_names), 
                                    ncol = ncol(top)))
   colnames(row_data) <- colnames(top)
   
   cluster_nm <- as.numeric(cluster)
-  s <- seq(0, nlevels(cluster) * (length(func_names) - 1), by = nlevels(cluster))
-  r1 <- rep(cluster_nm, length(func_names))
+  s <- seq(0, nlevels(cluster) * (length(state_names) - 1), by = nlevels(cluster))
+  r1 <- rep(cluster_nm, length(state_names))
   r2 <- rep(s, each = length(cluster_nm))
   
-  stopifnot(length(s) == length(func_names))
+  stopifnot(length(s) == length(state_names))
   stopifnot(length(r1) == length(r2))
   
   rows <- r1 + r2
   row_data[rows, ] <- top
   
   # include cluster IDs and marker names
-  clus <- factor(rep(levels(cluster), length(func_names)), levels = levels(cluster))
-  func <- factor(rep(func_names, each = length(levels(cluster))), levels = func_names)
-  stopifnot(length(clus) == nrow(row_data), length(func) == nrow(row_data))
+  clus <- factor(rep(levels(cluster), length(state_names)), levels = levels(cluster))
+  stat <- factor(rep(state_names, each = length(levels(cluster))), levels = state_names)
+  stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster = clus, marker = func), row_data)
+  row_data <- cbind(data.frame(cluster = clus, marker = stat), row_data)
   
-  # store additional sample information in 'colData'
-  if (!is.null(block_IDs)) {
-    col_data <- cbind(colData(d_medians), block = data.frame(block_IDs))
-  } else {
-    col_data <- colData(d_medians)
-  }
+  col_data <- colData(d_medians)
   
   # return object
-  res <- SummarizedExperiment(meds_all, rowData = row_data, colData = col_data)
+  res <- SummarizedExperiment(
+    meds_all, 
+    rowData = row_data, 
+    colData = col_data
+  )
   
   res
 }

@@ -16,15 +16,15 @@ labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
   clusters, columns = samples, assay = values (counts).
 }
 \description{
-Calculate number of cells per cluster-sample combination
+Calculate number of cells per cluster per sample
 }
 \details{
-Calculate number of cells per cluster-sample combination (referred to as cluster cell
-'counts', 'abundances', or 'frequencies').
+Calculate number of cells per cluster per sample (referred to as cluster cell 'counts',
+'abundances', or 'frequencies').
 
-The cluster cell counts are required for the differential abundance tests, and are also
-used as weights to improve statistical power for the differential functional state
-tests.
+The cluster cell counts are required for testing for differential abundance, and are
+also used for filtering to improve statistical power when testing for differential
+functional states.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = samples, assay = values (counts). (Note that

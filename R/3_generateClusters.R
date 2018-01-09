@@ -1,25 +1,25 @@
 #' Generate clusters
 #' 
-#' Generate clusters for \code{diffcyt} analysis
+#' Generate high-resolution clusters for \code{diffcyt} analysis
 #' 
-#' Performs clustering to divide cells into clusters representing populations or subsets,
-#' which can then be further analyzed for differential abundance, or differential
-#' expression within clusters. By default, a large number of small clusters is generated
-#' (i.e. over-clustering), to ensure that rare populations are adequately separated from
-#' larger ones.
+#' Performs clustering to group cells into clusters representing cell populations or
+#' subsets, which can then be further analyzed for differential abundance or differential
+#' functional states. By default, we use high-resolution clustering or over-clustering
+#' (i.e. we generate a large number of small clusters), which helps ensure that rare
+#' populations are adequately separated from larger ones.
 #' 
 #' Data is assumed to be in the form of a
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
 #' \code{\link{prepareData}} and transformed with \code{\link{transformData}}.
 #' 
-#' The input data object \code{d_se} is assumed to contain a vector \code{is_identity_col}
-#' in the column meta-data. This vector specifies the columns that contain protein markers
-#' used to define cell population identity; these markers will be used for clustering. For
-#' example, in immunological data, this may be the lineage markers. The choice of identity
-#' markers is an important design choice for the user, and will depend on the underlying
-#' experimental design and research questions. It may be made based on prior biological
-#' knowledge or using data-driven methods. For an example of a data-driven method of
-#' marker ranking and selection, see Nowicka et al. (2017), \emph{F1000Research}.
+#' The input data object \code{d_se} is assumed to contain a vector \code{is_type_col} in
+#' the column meta-data. This vector specifies the columns that contain protein markers
+#' used to define cell types; these markers will be used for clustering. For example, in
+#' immunological data, this may be the lineage markers. The choice of cell type markers is
+#' an important design choice for the user, and will depend on the underlying experimental
+#' design and research questions. It may be made based on prior biological knowledge or
+#' using data-driven methods. For an example of a data-driven method of marker ranking and
+#' selection, see Nowicka et al. (2017), \emph{F1000Research}.
 #' 
 #' We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen et al. 2015,
 #' \emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We
@@ -28,11 +28,12 @@
 #' extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
 #' 
 #' By default, the clustering is run at high resolution to give a large number of small
-#' clusters (over-clustering). This is done by running only the initial 'self-organizing
-#' map' clustering step in the \code{FlowSOM} algorithm, i.e. without the final
-#' 'meta-clustering' step. This ensures that small or rare populations are adequately
-#' separated from larger populations, which is crucial for detecting differential
-#' abundance or differential functional states for extremely rare populations.
+#' clusters (i.e. over-clustering). This is done by running only the initial
+#' 'self-organizing map' clustering step in the \code{FlowSOM} algorithm, i.e. without the
+#' final 'meta-clustering' step. This ensures that small or rare populations are
+#' adequately separated from larger populations, which is crucial for detecting
+#' differential abundance or differential functional states for extremely rare
+#' populations.
 #' 
 #' The minimum spanning tree (MST) object from \code{\link[FlowSOM]{BuildMST}} is stored
 #' in the experiment \code{metadata} slot in the
@@ -44,14 +45,14 @@
 #'   \code{\link{transformData}}.
 #' 
 #' @param cols_to_use Columns to use for clustering. Default = \code{NULL}, in which case
-#'   the markers specified by \code{is_identity_col} in the column meta-data of
-#'   \code{d_se} will be used.
+#'   the markers specified by \code{is_type_col} in the column meta-data of \code{d_se}
+#'   will be used.
 #' 
-#' @param xdim Width of grid for self-organizing map for FlowSOM clustering (number of
-#'   clusters = \code{xdim} * \code{ydim}). Default = 30 (i.e. 900 clusters).
+#' @param xdim Horizontal length of grid for self-organizing map for FlowSOM clustering
+#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).
 #' 
-#' @param ydim Height of grid for self-organizing map for FlowSOM clustering (number of
-#'   clusters = \code{xdim} * \code{ydim}). Default = 30 (i.e. 900 clusters).
+#' @param ydim Vertical length of grid for self-organizing map for FlowSOM clustering
+#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).
 #' 
 #' @param meta_clustering Whether to include FlowSOM 'meta-clustering' step. Default =
 #'   \code{FALSE}.
@@ -87,11 +88,11 @@
 #' # pipeline on an experimental data set is available in the package vignette.
 #' 
 generateClusters <- function(d_se, cols_to_use = NULL, 
-                             xdim = 30, ydim = 30, 
+                             xdim = 20, ydim = 20, 
                              meta_clustering = FALSE, meta_k = 40, 
                              seed = NULL, ...) {
   
-  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_identity_col
+  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_col
   
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
   d_ff <- flowFrame(assays(d_se)[[1]])
@@ -127,7 +128,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
     n_clus <- xdim * ydim
   }
   
-  clus <- factor(clus, levels = seq_len(n_clus))  # includes levels for any missing clusters
+  clus <- factor(clus, levels = seq_len(n_clus))  # includes levels for any missing/empty clusters
   
   # store cluster labels in row meta-data
   rowData(d_se)$cluster <- clus

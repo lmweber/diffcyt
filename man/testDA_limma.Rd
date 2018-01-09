@@ -50,21 +50,22 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
 Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
 }
 \details{
-Calculates tests for differential abundance of clusters, using empirical Bayes
-moderation of cluster-level variances to improve power.
+Calculates tests for differential abundance of clusters, using functions from the
+\code{\link[limma]{limma}} package. Uses empirical Bayes moderation of cluster-level
+variances to improve statistical power.
 
-The \code{\link[limma]{limma}} package (Ritchie et al. 2015, \emph{Nucleic Acids
-Research}) is used to fit linear models and calculate empirical Bayes moderated tests.
-Empirical Bayes methods improve statistical power by sharing information on variability
-(i.e. variance across samples for a single cluster) between clusters. Since count data
-are often heteroscedastic, we use the  \code{\link[limma]{voom}} method (Law et al.
-2014, \emph{Genome Biology}) to transform the raw cluster cell counts and estimate
-observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
-are shown if \code{plot = TRUE}.
+This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
+\emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
+moderated tests at the cluster level. Empirical Bayes methods improve statistical power
+by sharing information on variability (i.e. variance across samples for a single
+cluster) between clusters. Since count data are often heteroscedastic, we use the
+\code{\link[limma]{voom}} method (Law et al. 2014, \emph{Genome Biology}) to transform
+the raw cluster cell counts and estimate observation-level weights to stabilize the
+mean-variance relationship. Diagnostic plots are shown if \code{plot = TRUE}.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
-including batch effects, continuous covariates, and paired designs. See
+including blocking (e.g. paired designs), batch effects, and continuous covariates. See
 \code{\link{createDesignMatrix}} for more details.
 
 For paired designs, either fixed effects or random effects can be used. Fixed effects
