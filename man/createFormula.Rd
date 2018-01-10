@@ -47,10 +47,11 @@ typically seen in high-dimensional cytometry data. This is known as an
 \emph{F1000Research}.}
 }
 \value{
-Returns a list with two elements:
+Returns a list with three elements:
 \itemize{
 \item \code{formula}: model formula
 \item \code{data}: data frame of variables corresponding to the model formula
+\item \code{random_terms}: TRUE if model formula contains random effect terms
 }
 }
 \description{

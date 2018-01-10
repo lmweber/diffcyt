@@ -65,10 +65,11 @@
 #'   \emph{F1000Research}.
 #' 
 #' 
-#' @return Returns a list with two elements:
+#' @return Returns a list with three elements:
 #' \itemize{
 #' \item \code{formula}: model formula
 #' \item \code{data}: data frame of variables corresponding to the model formula
+#' \item \code{random_terms}: TRUE if model formula contains random effect terms
 #' }
 #' 
 #' 
@@ -114,11 +115,15 @@ createFormula <- function(group_IDs,
   formula_chr <- paste("y ~", paste(terms[!nulls], collapse = " + "))
   
   # random effects
+  random_terms <- FALSE
+  
   if (!is.null(block_IDs) & block_IDs_type == "random") {
     formula_chr <- paste0(formula_chr, " + (1 | block_IDs)")
+    random_terms <- TRUE
   }
   if (!is.null(sample_IDs)) {
     formula_chr <- paste0(formula_chr, " + (1 | sample_IDs)")
+    random_terms <- TRUE
   }
   
   formula <- as.formula(formula_chr)
@@ -133,7 +138,7 @@ createFormula <- function(group_IDs,
   if (!is.null(sample_IDs)) data <- cbind(data, sample_IDs)
   
   # return as list
-  list(formula = formula, data = data)
+  list(formula = formula, data = data, random_terms = random_terms)
 }
 
 

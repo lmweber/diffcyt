@@ -3,10 +3,10 @@
 #' Calculate tests for differential functional states of clusters using method
 #' 'diffcyt-DS-med'
 #' 
-#' Calculates tests for differential functional states of clusters; i.e. differential
-#' expression of functional state markers within clusters. Clusters are defined using cell
-#' type markers, and functional states are characterized by the median expression of
-#' functional state markers within clusters. Uses empirical Bayes moderation of
+#' Calculates tests for differential functional states of clusters (i.e. differential
+#' expression of functional state markers within clusters). Clusters are defined using
+#' cell type markers, and functional states are characterized by the median transformed
+#' expression of functional state markers. Uses empirical Bayes moderation of
 #' cluster-level variances to improve statistical power.
 #' 
 #' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
@@ -135,11 +135,6 @@ testDS_med <- function(d_counts, d_medians, design, contrast,
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
-  
-  # remove any clusters containing missing values (required by voom) (note: not using voom any more)
-  #ix_complete <- apply(meds, 1, function(s) !any(is.na(s)))
-  #meds <- meds[ix_complete, ]
-  #cluster <- cluster[ix_complete[seq_along(cluster)]]
   
   # limma pipeline
   

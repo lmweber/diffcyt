@@ -3,23 +3,37 @@
 #' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-GLMM'
 #' 
 #' Calculates tests for differential abundance of clusters, using generalized linear mixed
-#' models (GLMMs) for each cluster. This methodology was originally developed and
-#' described by Nowicka et al. (2017), \emph{F1000Research}.
+#' models (GLMMs).
 #' 
-#' For more details on the underlying statistical methodology, refer to the paper by
-#' Nowicka et al. (2017), \emph{F1000Research}. The implementation here contains several
-#' additional modifications. In particular, we use high-resolution clustering and report
-#' results at the high-resolution cluster level, instead of relying on a manual
-#' cluster-merging step. We also include a filtering step to remove clusters with very
-#' small numbers of cells, to improve statistical power.
+#' This methodology was originally developed and described by Nowicka et al. (2017),
+#' \emph{F1000Research}, and has been modified here to make use of high-resolution
+#' clustering to enable investigation of rare cell populations. Note that unlike the
+#' original method by Nowicka et al., we do not attempt to manually merge clusters into
+#' canonical cell populations. Instead, results are reported at the high-resolution
+#' cluster level, and the interpretation of significant differential clusters is left to
+#' the user via visualizations such as heatmaps and tSNE plots (see the package vignette
+#' for a detailed example).
+#' 
+#' This method fits generalized linear mixed models (GLMMs) for each cluster, and
+#' calculates differential tests separately for each cluster. The response variables in
+#' the models are the cluster cell counts, which are assumed to follow a binomial
+#' distribution. There is one model per cluster. We also include a filtering step to
+#' remove clusters with very small numbers of cells, to improve statistical power.
+#' 
+#' For more details on the statistical methodology, see Nowicka et al. (2017),
+#' \emph{F1000Research} (section 'Differential cell population abundance'.)
 #' 
 #' The experimental design must be specified using a model formula, which can be created
 #' with \code{\link{createFormula}}. Flexible experimental designs are possible, including
-#' blocking (e.g. paired designs), batch effects, and continuous covariates. Random
-#' intercept terms are included for blocks (e.g. paired designs), as well as for samples.
-#' Sample-level random intercepts are known as 'observation-level random effects' (OLREs);
-#' these are included to account for the overdispersion typically seen in high-dimensional
-#' cytometry data. See Nowicka et al. (2017), \emph{F1000Research} for more details.
+#' blocking (e.g. paired designs), batch effects, and continuous covariates. Blocking
+#' variables can be included as either random intercept terms or fixed effect terms (see
+#' \code{\link{createFormula}}). For paired designs, we recommend using random intercept
+#' terms to improve statistical power; see Nowicka et al. (2017), \emph{F1000Research} for
+#' details. Batch effects and continuous covariates should be included as fixed effects.
+#' In addition, we include random intercept terms for each sample to account for
+#' overdispersion typically seen in high-dimensional cytometry count data. The
+#' sample-level random intercept terms are known as 'observation-level random effects'
+#' (OLREs); see Nowicka et al. (2017), \emph{F1000Research} for more details.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
@@ -34,9 +48,10 @@
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
-#'   should be a list containing two elements: \code{formula} and \code{data}; the model
-#'   formula and data frame of corresponding variables. See \code{\link{createFormula}}
-#'   for details.
+#'   should be a list containing three elements: \code{formula}, \code{data}, and
+#'   \code{random_terms}: the model formula, data frame of corresponding variables, and
+#'   variable indicating whether the model formula contains random effect terms. See
+#'   \code{\link{createFormula}} for details.
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
@@ -82,9 +97,6 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
-  # total cell counts per cluster
-  n_cells <- rowData(d_counts)$n_cells
-  
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples'
   # samples in at least one condition
   ix_keep <- rep(FALSE, length(cluster))
@@ -96,9 +108,8 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
-  n_cells <- n_cells[ix_keep]
   
-  # total cell counts per sample (after filtering) (for weights)
+  # total cell counts per sample (after filtering) (for weights in model fitting)
   n_cells_smp <- colSums(counts)
   
   # GLMM testing pipeline
@@ -114,10 +125,13 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   for (i in seq_along(cluster)) {
     # data for cluster i
-    # note: divide by total cell counts per sample (after filtering) to enable weights
+    # note: divide by total number of cells per sample (after filtering) to get
+    # proportions instead of counts
     y <- counts[i, ] / n_cells_smp
     data_i <- cbind(y, n_cells_smp, formula$data)
     # fit model
+    # note: provide proportions (y) together with weights for total number of cells per
+    # sample (n_cells_smp); this is equivalent to providing counts
     fit <- glmer(formula$formula, data = data_i, family = "binomial", weights = n_cells_smp)
     # test contrast
     test <- glht(fit, contrast)
