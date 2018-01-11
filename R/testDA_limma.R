@@ -3,8 +3,7 @@
 #' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
-#' \code{\link[limma]{limma}} package. Uses empirical Bayes moderation of cluster-level
-#' variances to improve statistical power.
+#' \code{\link[limma]{limma}} package.
 #' 
 #' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
 #' \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes

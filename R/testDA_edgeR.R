@@ -3,8 +3,7 @@
 #' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-edgeR'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
-#' \code{\link[edgeR]{edgeR}} package. Uses empirical Bayes moderation of cluster-level
-#' variances to improve statistical power.
+#' \code{\link[edgeR]{edgeR}} package.
 #' 
 #' This method uses the \code{\link[edgeR]{edgeR}} package (Robinson et al. 2010,
 #' \emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
