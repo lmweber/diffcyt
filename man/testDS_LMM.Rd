@@ -71,7 +71,7 @@ marker. Within each model, sample-level weights are included for the number of c
 per sample; these weights represent the relative uncertainty in calculating each median
 value. (Additional uncertainty exists due to variation in the total number of cells per
 cluster; however, it is not possible to account for this, since there are separate
-models for each cluster-marker combination. By contrast, the 'diffcyt-DS-med' method
+models for each cluster-marker combination. By contrast, the 'diffcyt-DS-limma' method
 can account for this source of uncertainty using empirical Bayes methodology.) We also
 include a filtering step to remove clusters with very small numbers of cells, to
 improve statistical power.

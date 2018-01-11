@@ -36,7 +36,7 @@
 #'   that block IDs can also be included as random effects (instead of fixed effects) by
 #'   using \code{\link{createFormula}}; or, for some methods, by providing them directly
 #'   to the differential testing function (\code{\link{testDA_limma}} and
-#'   \code{\link{testDS_med}}).
+#'   \code{\link{testDS_limma}}).
 #' 
 #' @param batch_IDs (Optional) Vector or factor of batch effect IDs. Batch effect IDs are
 #'   included as columns of indicator variables representing fixed effect terms in the

@@ -1,7 +1,7 @@
-#' Test for differential functional states: method 'diffcyt-DS-med'
+#' Test for differential functional states: method 'diffcyt-DS-limma'
 #' 
 #' Calculate tests for differential functional states of clusters using method
-#' 'diffcyt-DS-med'
+#' 'diffcyt-DS-limma'
 #' 
 #' Calculates tests for differential functional states of clusters (i.e. differential
 #' expression of functional state markers within clusters). Clusters are defined using
@@ -95,10 +95,10 @@
 #' # A full workflow example demonstrating the use of each function in the 'diffcyt'
 #' # pipeline on an experimental data set is available in the package vignette.
 #' 
-testDS_med <- function(d_counts, d_medians, design, contrast, 
-                       block_IDs = NULL, 
-                       min_cells = 3, min_samples = NULL, 
-                       plot = TRUE, path = ".") {
+testDS_limma <- function(d_counts, d_medians, design, contrast, 
+                         block_IDs = NULL, 
+                         min_cells = 3, min_samples = NULL, 
+                         plot = TRUE, path = ".") {
   
   if (!is.null(block_IDs) & !is.factor(block_IDs)) {
     block_IDs <- factor(block_IDs, levels = unique(block_IDs))

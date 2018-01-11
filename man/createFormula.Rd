@@ -19,14 +19,14 @@ level for differential testing. To re-order factor levels, use
 designs, such as one diseased and one healthy sample per patient). Block IDs can be
 included as either fixed effect terms or random intercept terms; this choice is
 specified using the argument \code{block_IDs_type}. Note that some testing methods
-(\code{\link{testDA_limma}} and \code{\link{testDS_med}}) require block IDs to be
+(\code{\link{testDA_limma}} and \code{\link{testDS_limma}}) require block IDs to be
 provided directly to the testing function, if they are to be included as random
 intercepts.}
 
 \item{block_IDs_type}{(Optional) Whether block IDs should be included in the model
 formula as fixed effect terms or random intercept terms. Options are 'fixed' and
 'random'. Default = 'fixed'. Note that some testing methods
-(\code{\link{testDA_limma}} and \code{\link{testDS_med}}) require block IDs to be
+(\code{\link{testDA_limma}} and \code{\link{testDS_limma}}) require block IDs to be
 provided directly to the testing function, if they are to be included as random
 intercepts.}
 
