@@ -6,8 +6,7 @@
 #' Calculates tests for differential functional states of clusters (i.e. differential
 #' expression of functional state markers within clusters). Clusters are defined using
 #' cell type markers, and functional states are characterized by the median transformed
-#' expression of functional state markers. Uses empirical Bayes moderation of
-#' cluster-level variances to improve statistical power.
+#' expression of functional state markers.
 #' 
 #' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
 #' \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
