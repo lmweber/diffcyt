@@ -39,8 +39,9 @@
 #' @param cols_state Column indices indicating functional state markers, to be used for
 #'   testing for differential functional states.
 #' 
-#' @param marker_names Optional vector of protein marker names. Only required if marker
-#'   names differ from column names of input data. Default = column names of input data.
+#' @param col_names Optional vector of column names; for example, this is useful if the
+#'   column names in the input data contain channel names instead of marker names. Default
+#'   = column names of input data.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.
@@ -126,12 +127,12 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     is_state_col[cols_state] <- TRUE
   }
   
-  if (!is.null(marker_names)) {
-    marker_names <- colnames(d_combined)
+  if (!is.null(col_names)) {
+    col_names <- colnames(d_combined)
   }
   
   col_data <- data.frame(
-    markers = marker_names, 
+    markers = col_names, 
     is_marker_col = is_marker_col, 
     is_type_col = is_type_col, 
     is_state_col = is_state_col, 
