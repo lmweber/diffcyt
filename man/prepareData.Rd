@@ -5,7 +5,7 @@
 \title{Prepare data}
 \usage{
 prepareData(d_input, sample_IDs, group_IDs, cols_markers = NULL,
-  cols_type = NULL, cols_state = NULL, marker_names = NULL,
+  cols_type = NULL, cols_state = NULL, col_names = NULL,
   subsampling = FALSE, n_sub = NULL)
 }
 \arguments{
@@ -24,15 +24,15 @@ clustering and testing for differential abundance.}
 \item{cols_state}{Column indices indicating functional state markers, to be used for
 testing for differential functional states.}
 
+\item{col_names}{Optional vector of column names; for example, this is useful if the
+column names in the input data contain channel names instead of marker names. Default
+= column names of input data.}
+
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
 
 \item{n_sub}{Number of cells to select from each sample by random subsampling, if
 \code{subsampling = TRUE}. Default = number of cells in smallest sample.}
-
-\item{col_names}{Optional vector of column names; for example, this is useful if the
-column names in the input data contain channel names instead of marker names. Default
-= column names of input data.}
 }
 \value{
 d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}

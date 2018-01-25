@@ -70,7 +70,7 @@
 #' 
 prepareData <- function(d_input, sample_IDs, group_IDs, 
                         cols_markers = NULL, cols_type = NULL, cols_state = NULL, 
-                        marker_names = NULL, subsampling = FALSE, n_sub = NULL) {
+                        col_names = NULL, subsampling = FALSE, n_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
