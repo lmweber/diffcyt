@@ -5,8 +5,8 @@
 \title{Prepare data}
 \usage{
 prepareData(d_input, sample_IDs, group_IDs, cols_markers = NULL,
-  cols_type = NULL, cols_state = NULL, subsampling = FALSE,
-  n_sub = NULL)
+  cols_type = NULL, cols_state = NULL, marker_names = NULL,
+  subsampling = FALSE, n_sub = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
@@ -23,6 +23,9 @@ clustering and testing for differential abundance.}
 
 \item{cols_state}{Column indices indicating functional state markers, to be used for
 testing for differential functional states.}
+
+\item{marker_names}{Optional vector of protein marker names. Only required if marker
+names differ from column names of input data. Default = column names of input data.}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
