@@ -127,7 +127,7 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     is_state_col[cols_state] <- TRUE
   }
   
-  if (!is.null(col_names)) {
+  if (is.null(col_names)) {
     col_names <- colnames(d_combined)
   }
   
