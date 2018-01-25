@@ -22,13 +22,14 @@
 #' \code{\link{createDesignMatrix}} for more details.
 #' 
 #' For paired designs, either fixed effects or random effects can be used. Fixed effects
-#' are simpler, but random effects may improve power for unbalanced designs. To use fixed
-#' effects, provide the block IDs (e.g. patient IDs) to \code{\link{createDesignMatrix}}.
-#' To use random effects, provide the \code{block_IDs} argument here instead. This will
-#' make use of the \code{limma} \code{\link[limma]{duplicateCorrelation}} methodology.
-#' Note that multiple measures per sample are not possible in this case (fixed effects
-#' should be used instead). Block IDs should not be included in the design matrix if the
-#' \code{limma} \code{\link[limma]{duplicateCorrelation}} methodology is used.
+#' are simpler, but random effects may improve power in data sets with unbalanced designs
+#' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
+#' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
+#' \code{block_IDs} argument here instead. This will make use of the \code{limma}
+#' \code{\link[limma]{duplicateCorrelation}} methodology. Note that multiple measures per
+#' sample are not possible in this case (fixed effects should be used instead). Block IDs
+#' should not be included in the design matrix if the \code{limma}
+#' \code{\link[limma]{duplicateCorrelation}} methodology is used.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
