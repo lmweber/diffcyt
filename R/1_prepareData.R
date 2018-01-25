@@ -126,8 +126,12 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     is_state_col[cols_state] <- TRUE
   }
   
+  if (!is.null(marker_names)) {
+    marker_names <- colnames(d_combined)
+  }
+  
   col_data <- data.frame(
-    markers = colnames(d_combined), 
+    markers = marker_names, 
     is_marker_col = is_marker_col, 
     is_type_col = is_type_col, 
     is_state_col = is_state_col, 
