@@ -30,12 +30,11 @@ See details.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-samples in at least one condition.}
+samples.}
 
-\item{min_samples}{Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
-i.e. one less than the number of samples in the smallest group. Clusters are kept for
-differential testing if they have at least \code{min_cells} cells in at least
-\code{min_samples} samples in at least one condition.}
+\item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}.
+Clusters are kept for differential testing if they have at least \code{min_cells}
+cells in at least \code{min_samples} samples.}
 
 \item{plot}{Whether to save diagnostic plot. Default = TRUE.}
 
@@ -49,18 +48,18 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   Differential test results are stored in the \code{rowData} slot. Results include raw
   p-values and adjusted p-values from the \code{limma} empirical Bayes moderated tests,
   which can be used to rank cluster-marker combinations by evidence for differential
-  functional states. The results can be accessed with the
+  functional states within populations. The results can be accessed with the
   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential functional states of clusters using method
+Calculate tests for differential functional states within populations using method
 'diffcyt-DS-limma'
 }
 \details{
-Calculates tests for differential functional states of clusters (i.e. differential
-expression of functional state markers within clusters). Clusters are defined using
-cell type markers, and functional states are characterized by the median transformed
-expression of functional state markers.
+Calculates tests for differential functional states within populations (i.e.
+differential expression of functional state markers within clusters). Clusters are
+defined using cell type markers, and functional states are characterized by the median
+transformed expression of functional state markers.
 
 This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
 \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
@@ -89,9 +88,8 @@ The contrast matrix specifying the contrast of interest can be created with
 \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 
 Filtering: Clusters are kept for differential testing if they have at least
-\code{min_cells} cells in at least \code{min_samples} samples in at least one
-condition. This removes clusters with very low cell counts across conditions, which
-improves power.
+\code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
+with very low cell counts across conditions, which improves power.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

@@ -39,9 +39,8 @@
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 #' 
 #' Filtering: Clusters are kept for differential testing if they have at least
-#' \code{min_cells} cells in at least \code{min_samples} samples in at least one
-#' condition. This removes clusters with very low cell counts across conditions, which
-#' improves power.
+#' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
+#' with very low cell counts across conditions, which improves power.
 #' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -50,7 +49,7 @@
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
 #'   should be a list containing three elements: \code{formula}, \code{data}, and
 #'   \code{random_terms}: the model formula, data frame of corresponding variables, and
-#'   variable indicating whether the model formula contains random effect terms. See
+#'   variable indicating whether the model formula contains any random effect terms. See
 #'   \code{\link{createFormula}} for details.
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
@@ -58,12 +57,11 @@
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-#'   samples in at least one condition.
+#'   samples.
 #' 
-#' @param min_samples Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
-#'   i.e. one less than the number of samples in the smallest group. Clusters are kept for
-#'   differential testing if they have at least \code{min_cells} cells in at least
-#'   \code{min_samples} samples in at least one condition.
+#' @param min_samples Filtering parameter. Default = \code{number of samples / 2}.
+#'   Clusters are kept for differential testing if they have at least \code{min_cells}
+#'   cells in at least \code{min_samples} samples.
 #' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -88,23 +86,16 @@
 testDA_GLMM <- function(d_counts, formula, contrast, 
                         min_cells = 3, min_samples = NULL) {
   
-  group_IDs <- colData(d_counts)$group_IDs
-  
   if (is.null(min_samples)) {
-    min_samples <- min(table(group_IDs)) - 1
+    min_samples <- ncol(d_counts) / 2
   }
   
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
-  # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples'
-  # samples in at least one condition
-  ix_keep <- rep(FALSE, length(cluster))
+  # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
-  for (g in seq_along(levels(group_IDs))) {
-    grp <- group_IDs == levels(group_IDs)[g]
-    ix_keep[rowSums(tf[, grp, drop = FALSE]) >= min_samples] <- TRUE
-  }
+  ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]

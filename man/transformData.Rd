@@ -10,14 +10,14 @@ transformData(d_se, cofactor = 5)
 \item{d_se}{Input data. Assumed to be in the form of a
 \code{\link[SummarizedExperiment]{SummarizedExperiment}}, prepared with the function
 \code{\link{prepareData}}. Column meta-data is assumed to contain a vector of logical
-entries (\code{is_marker_col}) indicating marker columns.}
+entries (\code{is_marker}) indicating protein marker columns.}
 
 \item{cofactor}{Cofactor parameter for 'arcsinh' transform. Default = 5, which is
 appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
 recommend cofactor = 150 instead.}
 }
 \value{
-d_se Data with transform applied to protein marker columns.
+\code{d_se}: Data with transform applied to protein marker columns.
 }
 \description{
 Transform data prior to clustering
@@ -45,8 +45,8 @@ Figure S2.
 The transform should be applied to protein marker columns only. The
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object created in the previous
 step (\code{\link{prepareData}}) is assumed to contain a vector of logical entries
-(\code{is_marker_col}) in the column meta-data, indicating which columns are marker
-columns. (If this is not available, all columns will be transformed instead.)
+named \code{is_marker} in the column meta-data, indicating whether each column is a
+protein marker. (If this is not available, all columns will be transformed instead.)
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

@@ -10,14 +10,15 @@ calcMedians(d_se)
 \item{d_se}{Data object from previous steps, in
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 labels as a column in the row meta-data (from \code{\link{generateClusters}}). Column
-meta-data is assumed to contain vectors \code{is_marker_col}, \code{is_type_col}, and
-\code{is_state_col}.}
+meta-data is assumed to contain vectors \code{is_marker}, \code{is_type_marker}, and
+\code{is_state_marker}.}
 }
 \value{
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
-  clusters, columns = samples, sheets ('assay' slots) = markers. The \code{metadata}
-  slot contains variables \code{id_type_markers} and \code{id_state_markers}, which can
-  be accessed with \code{metadata(d_medians)$id_type_markers} and
+\code{d_medians}: \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+  object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
+  The \code{metadata} slot contains variables \code{id_type_markers} and
+  \code{id_state_markers}, which can be accessed with
+  \code{metadata(d_medians)$id_type_markers} and
   \code{metadata(d_medians)$id_state_markers}.
 }
 \description{
@@ -27,13 +28,13 @@ combination)
 \details{
 Calculate median expression of each marker for each cluster-sample combination.
 
-The data object is assumed to contain vectors \code{is_marker_col}, \code{is_type_col},
-and \code{is_state_col} in the column meta-data (see \code{\link{prepareData}}). These
-indicate the sets of all marker columns, cell type marker columns, and functional state
-marker columns. Cluster medians are calculated for all markers.
+The data object is assumed to contain vectors \code{is_marker}, \code{is_type_marker},
+and \code{is_state_marker} in the column meta-data (see \code{\link{prepareData}}).
+These indicate the sets of all marker columns, cell type marker columns, and functional
+state marker columns. Cluster medians are calculated for all markers.
 
-The cluster medians (by sample) are required for testing for functional states, and for
-plotting.
+The cluster medians (by sample) are required for testing for functional states within
+populations, and for plotting.
 
 Variables \code{id_type_markers} and \code{id_state_markers} are saved in the
 \code{metadata} slot of the output object. These can be used to identify the cell type

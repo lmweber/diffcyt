@@ -1,12 +1,13 @@
 #' Test for differential functional states: method 'diffcyt-DS-LMM'
 #' 
-#' Calculate tests for differential functional states of clusters using method
+#' Calculate tests for differential functional states within populations using method
 #' 'diffcyt-DS-LMM'
 #' 
-#' Calculates tests for differential functional states of clusters (i.e. differential
-#' expression of functional state markers within clusters), using linear mixed models
-#' (LMMs). Clusters are defined using cell type markers, and functional states are
-#' characterized by the median transformed expression of functional state markers.
+#' Calculates tests for differential functional states within populations (i.e.
+#' differential expression of functional state markers within clusters), using linear
+#' mixed models (LMMs). Clusters are defined using cell type markers, and functional
+#' states are characterized by the median transformed expression of functional state
+#' markers.
 #' 
 #' This methodology was originally developed and described by Nowicka et al. (2017),
 #' \emph{F1000Research}, and has been modified here to make use of high-resolution
@@ -49,10 +50,9 @@
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 #' 
-#' Filtering: Cluster-marker combinations are kept for differential testing if they have
-#' at least \code{min_cells} cells in at least \code{min_samples} samples in at least one
-#' condition. This removes clusters with very low cell counts across conditions, which
-#' improves power.
+#' Filtering: Clusters are kept for differential testing if they have at least
+#' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
+#' with very low cell counts across conditions, which improves power.
 #' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -65,7 +65,7 @@
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
 #'   should be a list containing three elements: \code{formula}, \code{data}, and
 #'   \code{random_terms}: the model formula, data frame of corresponding variables, and
-#'   variable indicating whether the model formula contains random effect terms. See
+#'   variable indicating whether the model formula contains any random effect terms. See
 #'   \code{\link{createFormula}} for details.
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
@@ -73,12 +73,11 @@
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-#'   samples in at least one condition.
+#'   samples.
 #' 
-#' @param min_samples Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
-#'   i.e. one less than the number of samples in the smallest group. Clusters are kept for
-#'   differential testing if they have at least \code{min_cells} cells in at least
-#'   \code{min_samples} samples in at least one condition.
+#' @param min_samples Filtering parameter. Default = \code{number of samples / 2}.
+#'   Clusters are kept for differential testing if they have at least \code{min_cells}
+#'   cells in at least \code{min_samples} samples.
 #' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -87,8 +86,8 @@
 #'   from the previous \code{d_medians} object are stacked into a single matrix).
 #'   Differential test results are stored in the \code{rowData} slot. Results include raw
 #'   p-values and adjusted p-values, which can be used to rank cluster-marker combinations
-#'   by evidence for differential functional states. The results can be accessed with the
-#'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
+#'   by evidence for differential functional states within populations. The results can be
+#'   accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
@@ -106,10 +105,8 @@
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
                        min_cells = 3, min_samples = NULL) {
   
-  group_IDs <- colData(d_counts)$group_IDs
-  
   if (is.null(min_samples)) {
-    min_samples <- min(table(group_IDs)) - 1
+    min_samples <- ncol(d_counts) / 2
   }
   
   # vector identifying functional state markers
@@ -119,14 +116,9 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   counts <- assays(d_counts)[[1]]
   cluster <- rowData(d_counts)$cluster
   
-  # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples'
-  # samples in at least one condition
-  ix_keep <- rep(FALSE, length(cluster))
+  # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
-  for (g in seq_along(levels(group_IDs))) {
-    grp <- group_IDs == levels(group_IDs)[g]
-    ix_keep[rowSums(tf[, grp, drop = FALSE]) >= min_samples] <- TRUE
-  }
+  ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   cluster <- cluster[ix_keep]
   
@@ -157,7 +149,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
     # note: response values are medians
     y <- meds[i, ]
     data_i <- cbind(y, n_cells_smp, formula$data)
-    # fit LMM if model formula contains random effect terms; LM otherwise
+    # fit LMM if model formula contains any random effect terms; LM otherwise
     if (formula$random_terms) {
       fit <- lmer(formula$formula, data = data_i, weights = n_cells_smp)
     } else {

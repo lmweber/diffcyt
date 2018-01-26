@@ -18,12 +18,11 @@ containing cluster cell counts, from \code{\link{calcCounts}}.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-samples in at least one condition.}
+samples.}
 
-\item{min_samples}{Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
-i.e. one less than the number of samples in the smallest group. Clusters are kept for
-differential testing if they have at least \code{min_cells} cells in at least
-\code{min_samples} samples in at least one condition.}
+\item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}.
+Clusters are kept for differential testing if they have at least \code{min_cells}
+cells in at least \code{min_samples} samples.}
 }
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -58,9 +57,8 @@ The contrast matrix specifying the contrast of interest can be created with
 \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 
 Filtering: Clusters are kept for differential testing if they have at least
-\code{min_cells} cells in at least \code{min_samples} samples in at least one
-condition. This removes clusters with very low cell counts across conditions, which
-improves power.
+\code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
+with very low cell counts across conditions, which improves power.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

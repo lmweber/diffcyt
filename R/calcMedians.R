@@ -5,13 +5,13 @@
 #' 
 #' Calculate median expression of each marker for each cluster-sample combination.
 #' 
-#' The data object is assumed to contain vectors \code{is_marker_col}, \code{is_type_col},
-#' and \code{is_state_col} in the column meta-data (see \code{\link{prepareData}}). These
-#' indicate the sets of all marker columns, cell type marker columns, and functional state
-#' marker columns. Cluster medians are calculated for all markers.
+#' The data object is assumed to contain vectors \code{is_marker}, \code{is_type_marker},
+#' and \code{is_state_marker} in the column meta-data (see \code{\link{prepareData}}).
+#' These indicate the sets of all marker columns, cell type marker columns, and functional
+#' state marker columns. Cluster medians are calculated for all markers.
 #' 
-#' The cluster medians (by sample) are required for testing for functional states, and for
-#' plotting.
+#' The cluster medians (by sample) are required for testing for functional states within
+#' populations, and for plotting.
 #' 
 #' Variables \code{id_type_markers} and \code{id_state_markers} are saved in the
 #' \code{metadata} slot of the output object. These can be used to identify the cell type
@@ -28,14 +28,15 @@
 #' @param d_se Data object from previous steps, in
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 #'   labels as a column in the row meta-data (from \code{\link{generateClusters}}). Column
-#'   meta-data is assumed to contain vectors \code{is_marker_col}, \code{is_type_col}, and
-#'   \code{is_state_col}.
+#'   meta-data is assumed to contain vectors \code{is_marker}, \code{is_type_marker}, and
+#'   \code{is_state_marker}.
 #' 
 #' 
-#' @return \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
-#'   clusters, columns = samples, sheets ('assay' slots) = markers. The \code{metadata}
-#'   slot contains variables \code{id_type_markers} and \code{id_state_markers}, which can
-#'   be accessed with \code{metadata(d_medians)$id_type_markers} and
+#' @return \code{d_medians}: \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+#'   object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
+#'   The \code{metadata} slot contains variables \code{id_type_markers} and
+#'   \code{id_state_markers}, which can be accessed with
+#'   \code{metadata(d_medians)$id_type_markers} and
 #'   \code{metadata(d_medians)$id_state_markers}.
 #' 
 #' 
@@ -64,15 +65,15 @@ calcMedians <- function(d_se) {
   }
   
   # cell type and functional state markers
-  id_type_markers <- colData(d_se)$is_type_col[colData(d_se)$is_marker_col]
-  id_state_markers <- colData(d_se)$is_state_col[colData(d_se)$is_marker_col]
+  id_type_markers <- colData(d_se)$is_type_marker[colData(d_se)$is_marker]
+  id_state_markers <- colData(d_se)$is_state_marker[colData(d_se)$is_marker]
   
   # calculate cluster medians for each marker
   
   assaydata_mx <- assays(d_se)[[1]]
   
-  medians <- vector("list", sum(colData(d_se)$is_marker_col))
-  marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker_col])
+  medians <- vector("list", sum(colData(d_se)$is_marker))
+  marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker])
   names(medians) <- marker_names
   
   clus <- rowData(d_se)$cluster
@@ -110,12 +111,9 @@ calcMedians <- function(d_se) {
     cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster))
   )
   
-  stopifnot(all(colnames(medians[[1]]) == levels(rowData(d_se)$sample)))
+  stopifnot(all(colnames(medians[[1]]) == metadata(d_se)$sample_info$sample_IDs))
   
-  col_data <- data.frame(
-    sample_IDs = factor(colnames(medians[[1]]), levels = levels(rowData(d_se)$sample)), 
-    group_IDs = metadata(d_se)$group_IDs
-  )
+  col_data <- metadata(d_se)$sample_info
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)

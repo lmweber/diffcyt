@@ -4,40 +4,20 @@
 \alias{createDesignMatrix}
 \title{Create design matrix}
 \usage{
-createDesignMatrix(group_IDs, block_IDs = NULL, batch_IDs = NULL,
-  covariates = NULL)
+createDesignMatrix(sample_info, cols_include = NULL)
 }
 \arguments{
-\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). These are the parameters of interest
-in the model. Vectors are converted to factors internally. The first level of the
-factor (e.g. healthy) or first entry of the vector will be used as the reference
-level for differential testing. To re-order factor levels, use
-\code{\link[stats]{relevel}} or \code{\link[base]{factor}}.}
+\item{sample_info}{Data frame of sample information (which was also previously provided
+to \code{\link{prepareData}}). This should be a data frame containing all factors and
+covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
+covariates.}
 
-\item{block_IDs}{(Optional) Vector or factor of block IDs (e.g. patient IDs for paired
-designs, such as one diseased and one healthy sample per patient). If provided, block
-IDs are included as columns of indicator variables representing fixed effect terms in
-the design matrix. This allows their effects to be estimated during model fitting,
-and taken into account during inference on the group ID parameters of interest. Note
-that block IDs can also be included as random effects (instead of fixed effects) by
-using \code{\link{createFormula}}; or, for some methods, by providing them directly
-to the differential testing function (\code{\link{testDA_limma}} and
-\code{\link{testDS_limma}}).}
-
-\item{batch_IDs}{(Optional) Vector or factor of batch effect IDs. Batch effect IDs are
-included as columns of indicator variables representing fixed effect terms in the
-design matrix. This allows batch effects to be estimated during model fitting, and
-taken into account during inference on the group ID parameters of interest.}
-
-\item{covariates}{(Optional) Numeric matrix of continuous covariates (one column per
-covariate). Covariates are included as columns of values in the design matrix. This
-allows their effects to be estimated during model fitting, and taken into account
-during inference on the group ID parameters of interest.}
+\item{cols_include}{(Logical) Columns of \code{sample_info} to include in the design
+matrix. Default = all columns.}
 }
 \value{
-Returns a design matrix (numeric matrix), with one row per sample, and one
-  column per model parameter.
+\code{design}: Returns a design matrix (numeric matrix), with one row per
+  sample, and one column per model parameter.
 }
 \description{
 Create design matrix for model fitting
@@ -50,16 +30,32 @@ matrix.)
 The design matrix can then be provided to the differential testing functions, together
 with the data object and contrast matrix.
 
-The \code{group_IDs} input specifies the groups for differential testing. This can be
-provided as a vector or factor. The first level of the factor or first entry of the
-vector is used as the 'reference level' for differential testing. To set a different
-reference level, re-order the levels using \code{\link[stats]{relevel}} or
-\code{\link[base]{factor}}.
+The \code{sample_info} input (which was also previously provided to
+\code{\link{prepareData}}) should be a data frame containing all factors and covariates
+of interest. For example, depending on the experimental design, this may include the
+following columns:
 
-Depending on the experimental design, there may also be block IDs (e.g. patient IDs in
-a paired design), batch effects, and continuous covariates. These can be included in
-the design matrix by providing the optional arguments \code{block_IDs},
-\code{batch_IDs}, and \code{covariates}.
+\itemize{
+\item group IDs (e.g. groups for differential testing)
+\item block IDs (e.g. patient IDs in a paired design)
+\item batch IDs (batch effects)
+\item continuous covariates
+}
+
+The logical vector \code{cols_include} specifies which columns in \code{sample_info} to
+include in the design matrix. (For example, there may be an additional column of sample
+IDs, which should not be included.)
+
+Columns of indicator variables (e.g. group IDs, block IDs, batch IDs) must be formatted
+as factors (otherwise they will be treated as numeric values). The indicator columns
+will be expanded into the design matrix format. The names for each parameter are taken
+from the column names of \code{sample_info}.
+
+All factors provided here will be included as fixed effect terms in the design matrix.
+Alternatively, to use random effects for some factors (e.g. for block IDs), see
+\code{\link{createFormula}}; or, depending on the method used, provide them directly to
+the differential testing function (\code{\link{testDA_limma}} and
+\code{\link{testDS_limma}}).
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

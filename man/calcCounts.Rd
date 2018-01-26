@@ -12,19 +12,19 @@ calcCounts(d_se)
 labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
 }
 \value{
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, where rows =
-  clusters, columns = samples, assay = values (counts).
+\code{d_counts}: \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+  object, where rows = clusters, columns = samples, assay = values (counts).
 }
 \description{
-Calculate number of cells per cluster per sample
+Calculate number of cells per cluster-sample combination
 }
 \details{
-Calculate number of cells per cluster per sample (referred to as cluster cell 'counts',
-'abundances', or 'frequencies').
+Calculate number of cells per cluster-sample combination (referred to as cluster cell
+'counts', 'abundances', or 'frequencies').
 
 The cluster cell counts are required for testing for differential abundance, and are
 also used for filtering to improve statistical power when testing for differential
-functional states.
+functional states within populations.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = samples, assay = values (counts). (Note that

@@ -18,7 +18,7 @@ combination), from \code{\link{calcMedians}}.}
 \item{formula}{Model formula object, created with \code{\link{createFormula}}. This
 should be a list containing three elements: \code{formula}, \code{data}, and
 \code{random_terms}: the model formula, data frame of corresponding variables, and
-variable indicating whether the model formula contains random effect terms. See
+variable indicating whether the model formula contains any random effect terms. See
 \code{\link{createFormula}} for details.}
 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
@@ -26,12 +26,11 @@ variable indicating whether the model formula contains random effect terms. See
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
-samples in at least one condition.}
+samples.}
 
-\item{min_samples}{Filtering parameter. Default = \code{min(table(group_IDs)) - 1},
-i.e. one less than the number of samples in the smallest group. Clusters are kept for
-differential testing if they have at least \code{min_cells} cells in at least
-\code{min_samples} samples in at least one condition.}
+\item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}.
+Clusters are kept for differential testing if they have at least \code{min_cells}
+cells in at least \code{min_samples} samples.}
 }
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -40,18 +39,19 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   from the previous \code{d_medians} object are stacked into a single matrix).
   Differential test results are stored in the \code{rowData} slot. Results include raw
   p-values and adjusted p-values, which can be used to rank cluster-marker combinations
-  by evidence for differential functional states. The results can be accessed with the
-  \code{\link[SummarizedExperiment]{rowData}} accessor function.
+  by evidence for differential functional states within populations. The results can be
+  accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential functional states of clusters using method
+Calculate tests for differential functional states within populations using method
 'diffcyt-DS-LMM'
 }
 \details{
-Calculates tests for differential functional states of clusters (i.e. differential
-expression of functional state markers within clusters), using linear mixed models
-(LMMs). Clusters are defined using cell type markers, and functional states are
-characterized by the median transformed expression of functional state markers.
+Calculates tests for differential functional states within populations (i.e.
+differential expression of functional state markers within clusters), using linear
+mixed models (LMMs). Clusters are defined using cell type markers, and functional
+states are characterized by the median transformed expression of functional state
+markers.
 
 This methodology was originally developed and described by Nowicka et al. (2017),
 \emph{F1000Research}, and has been modified here to make use of high-resolution
@@ -94,10 +94,9 @@ performed using a linear model (LM) instead of a LMM.
 The contrast matrix specifying the contrast of interest can be created with
 \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 
-Filtering: Cluster-marker combinations are kept for differential testing if they have
-at least \code{min_cells} cells in at least \code{min_samples} samples in at least one
-condition. This removes clusters with very low cell counts across conditions, which
-improves power.
+Filtering: Clusters are kept for differential testing if they have at least
+\code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
+with very low cell counts across conditions, which improves power.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

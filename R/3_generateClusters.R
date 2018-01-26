@@ -4,16 +4,16 @@
 #' 
 #' Performs clustering to group cells into clusters representing cell populations or
 #' subsets, which can then be further analyzed for differential abundance or differential
-#' functional states. By default, we use high-resolution clustering or over-clustering
-#' (i.e. we generate a large number of small clusters), which helps ensure that rare
-#' populations are adequately separated from larger ones.
+#' functional states within populations. By default, we use high-resolution clustering or
+#' over-clustering (i.e. we generate a large number of small clusters), which helps ensure
+#' that rare populations are adequately separated from larger ones.
 #' 
 #' Data is assumed to be in the form of a
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
 #' \code{\link{prepareData}} and transformed with \code{\link{transformData}}.
 #' 
-#' The input data object \code{d_se} is assumed to contain a vector \code{is_type_col} in
-#' the column meta-data. This vector specifies the columns that contain protein markers
+#' The input data object \code{d_se} is assumed to contain a vector \code{is_type_marker}
+#' in the column meta-data. This vector specifies the columns that contain protein markers
 #' used to define cell types; these markers will be used for clustering. For example, in
 #' immunological data, this may be the lineage markers. The choice of cell type markers is
 #' an important design choice for the user, and will depend on the underlying experimental
@@ -45,7 +45,7 @@
 #'   \code{\link{transformData}}.
 #' 
 #' @param cols_to_use Columns to use for clustering. Default = \code{NULL}, in which case
-#'   the markers specified by \code{is_type_col} in the column meta-data of \code{d_se}
+#'   the markers specified by \code{is_type_marker} in the column meta-data of \code{d_se}
 #'   will be used.
 #' 
 #' @param xdim Horizontal length of grid for self-organizing map for FlowSOM clustering
@@ -67,12 +67,12 @@
 #'   function \code{\link[FlowSOM]{BuildSOM}}).
 #' 
 #' 
-#' @return Returns the \code{\link[SummarizedExperiment]{SummarizedExperiment}} input
-#'   object, with cluster labels for each cell stored in an additional column of row
-#'   meta-data. Row meta-data can be accessed with
-#'   \code{\link[SummarizedExperiment]{rowData}}. The minimum spanning tree (MST) object
-#'   is also stored in the \code{metadata} slot, and can be accessed with
-#'   \code{metadata(d_se)$MST}.
+#' @return \code{d_se}: Returns the
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} input object, with cluster
+#'   labels for each cell stored in an additional column of row meta-data. Row meta-data
+#'   can be accessed with \code{\link[SummarizedExperiment]{rowData}}. The minimum
+#'   spanning tree (MST) object is also stored in the \code{metadata} slot, and can be
+#'   accessed with \code{metadata(d_se)$MST}.
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
@@ -92,7 +92,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
                              meta_clustering = FALSE, meta_k = 40, 
                              seed = NULL, ...) {
   
-  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_col
+  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_marker
   
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
   d_ff <- flowFrame(assays(d_se)[[1]])

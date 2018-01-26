@@ -2,56 +2,28 @@
 % Please edit documentation in R/createFormula.R
 \name{createFormula}
 \alias{createFormula}
-\title{Create model formula and data frame of variables}
+\title{Create model formula and corresponding data frame of variables}
 \usage{
-createFormula(group_IDs, block_IDs = NULL, block_IDs_type = c("fixed",
-  "random"), batch_IDs = NULL, covariates = NULL, sample_IDs = NULL)
+createFormula(sample_info, cols_fixed = NULL, cols_random = NULL)
 }
 \arguments{
-\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). These are the parameters of interest
-in the model. Vectors are converted to factors internally. The first level of the
-factor (e.g. healthy) or first entry of the vector will be used as the reference
-level for differential testing. To re-order factor levels, use
-\code{\link[stats]{relevel}} or \code{\link[base]{factor}}.}
+\item{sample_info}{Data frame of sample information (which was also previously provided
+to \code{\link{prepareData}}). This should be a data frame containing all factors and
+covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
+covariates.}
 
-\item{block_IDs}{(Optional) Vector or factor of block IDs (e.g. patient IDs for paired
-designs, such as one diseased and one healthy sample per patient). Block IDs can be
-included as either fixed effect terms or random intercept terms; this choice is
-specified using the argument \code{block_IDs_type}. Note that some testing methods
-(\code{\link{testDA_limma}} and \code{\link{testDS_limma}}) require block IDs to be
-provided directly to the testing function, if they are to be included as random
-intercepts.}
+\item{cols_fixed}{(Logical) Columns of \code{sample_info} to include as fixed effect
+terms in the model formula.}
 
-\item{block_IDs_type}{(Optional) Whether block IDs should be included in the model
-formula as fixed effect terms or random intercept terms. Options are 'fixed' and
-'random'. Default = 'fixed'. Note that some testing methods
-(\code{\link{testDA_limma}} and \code{\link{testDS_limma}}) require block IDs to be
-provided directly to the testing function, if they are to be included as random
-intercepts.}
-
-\item{batch_IDs}{(Optional) Vector or factor of batch effect IDs. Batch effect IDs are
-included as fixed effect terms in the model formula. This allows batch effects to be
-estimated during model fitting, and taken into account during inference on the group
-ID parameters of interest.}
-
-\item{covariates}{(Optional) Numeric matrix of continuous covariates (one column per
-covariate). Covariates are included as fixed effect terms in the model formula. This
-allows their effects to be estimated during model fitting, and taken into account
-during inference on the group ID parameters of interest.}
-
-\item{sample_IDs}{(Optional) Vector or factor of sample IDs. Sample IDs are included as
-random intercept terms in the model formula, to account for the overdispersion
-typically seen in high-dimensional cytometry data. This is known as an
-'observation-level random effect'; for more details see Nowicka et al. (2017),
-\emph{F1000Research}.}
+\item{cols_random}{(Logical) Columns of \code{sample_info} to include as random
+intercept terms in the model formula.}
 }
 \value{
-Returns a list with three elements:
+\code{formula}: Returns a list with three elements:
 \itemize{
 \item \code{formula}: model formula
 \item \code{data}: data frame of variables corresponding to the model formula
-\item \code{random_terms}: TRUE if model formula contains random effect terms
+\item \code{random_terms}: TRUE if model formula contains any random effect terms
 }
 }
 \description{
@@ -67,19 +39,34 @@ variables (one column per formula term). These can then be provided to different
 testing functions that require a model formula, together with the main data object and
 contrast matrix.
 
-Depending on the experimental design, there may also be block IDs (e.g. patient IDs in
-a paired design), batch effects, and continuous covariates. These can be included in
-the model formula by providing the optional arguments \code{block_IDs},
-\code{batch_IDs}, and \code{covariates}.
+The \code{sample_info} input (which was also previously provided to
+\code{\link{prepareData}}) should be a data frame containing all factors and covariates
+of interest. For example, depending on the experimental design, this may include the
+following columns:
 
-Block IDs can be included as either fixed effect terms or random intercept terms. This
-choice is controlled with the \code{block_IDs_type} argument. (See arguments for more
-details.)
+\itemize{
+\item group IDs (e.g. groups for differential testing)
+\item block IDs (e.g. patient IDs in a paired design; these may be included as either
+fixed effect or random effects)
+\item batch IDs (batch effects)
+\item continuous covariates
+\item sample IDs (e.g. to include random intercept terms for each sample, to account
+for overdispersion typically seen in high-dimensional cytometry data; this is known as
+an 'observation-level random effect' (OLRE); see see Nowicka et al., 2017,
+\emph{F1000Research} for more details)
+}
 
-In addition, sample IDs can be included as random intercept terms by providing the
-\code{sample_IDs} argument, in order to account for the overdispersion typically seen
-in high-dimensional cytometry data. This is known as an 'observation-level random
-effect'; see Nowicka et al. (2017), \emph{F1000Research}, for more details.
+The logical vectors \code{cols_fixed} and \code{cols_random} specify the columns in
+\code{sample_info} to include as fixed effect terms and random intercept terms
+respectively. The names for each formula term are taken from the column names of
+\code{sample_info}.
+
+Note that for some methods, random effect terms (e.g. for block IDs) must be provided
+directly to the differential testing function instead (\code{\link{testDA_limma}} and
+\code{\link{testDS_limma}}).
+
+If there are no random effect terms, it may be simpler to use a design matrix instead
+of a model formula; see \code{\link{createDesignMatrix}}.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

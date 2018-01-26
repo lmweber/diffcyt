@@ -4,24 +4,17 @@
 \alias{createContrast}
 \title{Create contrast matrix}
 \usage{
-createContrast(group_IDs, contrast = NULL)
+createContrast(contrast)
 }
 \arguments{
-\item{group_IDs}{Vector or factor of group membership labels for each sample (e.g.
-diseased vs. healthy, or treated vs. untreated). The first level of the factor (e.g.
-healthy) or first entry of the vector will be used as the reference level for
-differential testing. To re-order factor levels, use \code{\link[stats]{relevel}} or
-\code{\link[base]{factor}}.}
-
-\item{contrast}{Vector defining the contrast of interest. For example, \code{c(0, 1)}
-to compare the second level against the first level for a \code{group_IDs} vector of
-length 2, with no other columns in the design matrix. See details for additional
-explanation. Default is to compare the second level against the first level of
-\code{group_IDs}, assuming no other columns in the design matrix.}
+\item{contrast}{Vector defining the contrast of interest. This should be a numeric
+vector specifying the combination of model parameters to test whether they are equal
+to zero. For example, \code{c(0, 1, 0, 0, 0)} to test whether a single parameter (the
+second column in the design matrix) is equal to zero.}
 }
 \value{
-Returns a contrast matrix containing the contrast of interest, formatted as a
-  matrix with a single column.
+\code{contrast}: Returns a contrast matrix containing the contrast of interest,
+  formatted as a matrix with a single column.
 }
 \description{
 Create contrast matrix for differential testing
@@ -32,26 +25,23 @@ for the differential testing functions. This can then be provided to the differe
 testing functions, together with either a design matrix or model formula, and the data
 object.
 
-The argument \code{contrast} defines the contrast of interest, given the levels of
-\code{group_IDs} and any other fixed effect terms in the design matrix or model
-formula. Note that the design matrix (\code{\link{createDesignMatrix}}) or model
-formula (\code{\link{createFormula}}) is constructed assuming that the first level of
-\code{group_IDs} is the reference level. The design matrix is specified with an
-intercept term, so that the first column represents the intercept, and the following
-columns represent the difference between levels of \code{group_IDs} and the reference
-level.
+The argument \code{contrast} defines the contrast of interest. This should be a numeric
+vector specifying the combination of model parameters to test whether they are equal to
+zero. In most cases, this will simply be a vectors of zeros and a single entry equal to
+one; this specifies a single parameter to test whether it is equal to zero (e.g. c(0,
+1, 0, 0, 0)).
 
-For example, to compare the second level against the first level for a \code{group_IDs}
-vector of length 2, with no other columns in the design matrix, the \code{contrast}
-argument would be \code{c(0, 1)}. To compare the second level against the first level
-for a \code{group_IDs} vector of length 3, it would be \code{c(0, 1, 0)}. If there are
-additional fixed effect terms in the design matrix (such as block IDs), which are not
-of interest for inference, extra zeros should be included for the corresponding
-additional columns of the design matrix.
+If a design matrix has been used, the length of \code{contrast} should be equal to the
+number of columns in the design matrix. If a model formula has been used, the length of
+\code{contrast} should equal the number of fixed effect terms.
 
 The contrast matrix is formatted as a matrix with a single column containing the
 contrast of interest. To perform tests for multiple contrasts, run this function and
 the corresponding differential testing function multiple times.
+
+taken into account during inference
+This allows their effects to be estimated during model fitting, and taken into account
+during inference on the group ID parameters of interest.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

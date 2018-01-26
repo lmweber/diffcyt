@@ -1,6 +1,6 @@
 #' Prepare data
 #' 
-#' Prepare data into format required for \code{diffcyt} pipeline
+#' Prepare data into format for \code{diffcyt} pipeline
 #' 
 #' Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
 #' a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
@@ -10,11 +10,23 @@
 #' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 #' tables into a single matrix, and adds row and column meta-data.
 #' 
-#' Row meta-data contains sample labels and group membership labels. Column meta-data
-#' contains protein marker names, and logical entries indicating whether each column is
-#' (i) a marker, (ii) a cell type marker (for clustering and testing for differential
-#' abundance), and (iii) a functional state marker (for testing for differential
-#' functional states).
+#' Row meta-data should be provided as a data frame named \code{sample_info}, containing
+#' columns of relevant sample information such as sample IDs and group IDs. Must contain a
+#' column named \code{sample_IDs}.
+#' 
+#' Column meta-data should be provided as a data frame named \code{marker_info},
+#' containing the following columns of marker information. The column names must be as
+#' shown.
+#' 
+#' \itemize{
+#' \item \code{marker_names}: protein marker names
+#' \item \code{is_marker}: logical vector indicating whether each column is a marker
+#' \item \code{is_type_marker}: logical vector indicating whether each column is a cell
+#' type marker (for clustering and testing for differential abundance)
+#' \item \code{is_state_marker}: logical vector indicating whether each column is a
+#' functional state marker (for testing for differential functional states within
+#' populations)
+#' }
 #' 
 #' Optionally, random subsampling can be used to select an equal number of cells from each
 #' sample (\code{subsampling = TRUE}). This can be useful when there are large differences
@@ -27,21 +39,15 @@
 #' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 #'   item or \code{\link[flowCore]{flowFrame}} per sample).
 #' 
-#' @param sample_IDs Vector of sample IDs.
+#' @param sample_info Data frame of sample information, for example sample IDs and group
+#'   IDs. Must contain a column named \code{sample_IDs}.
 #' 
-#' @param group_IDs Vector of group IDs.
-#' 
-#' @param cols_markers Column indices indicating all protein markers.
-#' 
-#' @param cols_type Column indices indicating cell type markers, to be used for
-#'   clustering and testing for differential abundance.
-#' 
-#' @param cols_state Column indices indicating functional state markers, to be used for
-#'   testing for differential functional states.
-#' 
-#' @param col_names Optional vector of column names; for example, this is useful if the
-#'   column names in the input data contain channel names instead of marker names. Default
-#'   = column names of input data.
+#' @param marker_info Data frame of marker information for each column. This should
+#'   contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
+#'   and \code{is_state_marker}. The first column must contain marker names or column
+#'   names; the remaining columns are logical vectors indicating whether each column in
+#'   the input data is (i) a protein marker, (ii) a cell type marker, and (iii) a
+#'   functional state marker.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.
@@ -50,12 +56,12 @@
 #'   \code{subsampling = TRUE}. Default = number of cells in smallest sample.
 #' 
 #' 
-#' @return d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-#'   containing a single matrix of data (expression values) in the \code{assays} slot,
-#'   together with row meta-data (sample IDs, group IDs) and column meta-data (protein
-#'   marker names, logical vectors for: all markers, cell type markers, and functional
-#'   state markers). The \code{group_IDs} vector is also stored in the \code{metadata}
-#'   slot, and can be accessed with \code{metadata(d_se)$group_IDs}.
+#' @return \code{d_se}: Returns data as a
+#'   \code{\link[SummarizedExperiment]{SummarizedExperiment}} containing a single matrix
+#'   of data (expression values) in the \code{assays} slot, together with row meta-data
+#'   (sample information) and column meta-data (marker information). The
+#'   \code{sample_info} data frame is also stored in the \code{metadata} slot, and can be
+#'   accessed with \code{metadata(d_se)$sample_info}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -68,9 +74,8 @@
 #' # A full workflow example demonstrating the use of each function in the 'diffcyt'
 #' # pipeline on an experimental data set is available in the package vignette.
 #' 
-prepareData <- function(d_input, sample_IDs, group_IDs, 
-                        cols_markers = NULL, cols_type = NULL, cols_state = NULL, 
-                        col_names = NULL, subsampling = FALSE, n_sub = NULL) {
+prepareData <- function(d_input, sample_info, marker_info, 
+                        subsampling = FALSE, n_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
@@ -82,8 +87,8 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   
   d_ex <- lapply(d_input, exprs)
   
-  if (!(length(sample_IDs) == length(d_ex))) {
-    stop("'sample_IDs' vector must have length equal to number of samples")
+  if (!(nrow(sample_info) == length(d_ex))) {
+    stop("number of rows in 'sample_info' data frame must equal the number of samples")
   }
   
   n_cells <- sapply(d_ex, nrow)
@@ -96,57 +101,32 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   
   d_combined <- do.call(rbind, d_ex)
   
-  if (!is.null(col_names)) {
-    colnames(d_combined) <- col_names
-  }
+  # assume marker names are in first column of 'marker_info'
+  colnames(d_combined) <- marker_info[, "marker_names"]
   
   # create row meta-data
-  if (!is.factor(sample_IDs)) {
-    sample_IDs <- factor(sample_IDs, levels = unique(sample_IDs))
-  }
-  if (!is.factor(group_IDs)) {
-    group_IDs <- factor(group_IDs, levels = unique(group_IDs))
-  }
+  stopifnot(is.data.frame(sample_info))
   
-  stopifnot(length(sample_IDs) == length(n_cells), length(group_IDs) == length(n_cells))
+  row_data <- as.data.frame(lapply(sample_info, function(col) {
+    as.factor(rep(col, n_cells))
+  }))
   
-  row_data <- data.frame(
-    sample = rep(sample_IDs, n_cells), 
-    group = rep(group_IDs, n_cells)
-  )
+  stopifnot(nrow(row_data) == sum(n_cells))
   
   # create column meta-data
-  empty <- rep(FALSE, ncol(d_combined))
+  stopifnot(is.data.frame(marker_info), 
+            nrow(marker_info) == ncol(d_combined))
   
-  if (!is.null(cols_markers)) {
-    is_marker_col <- empty
-    is_marker_col[cols_markers] <- TRUE
-  }
-  if (!is.null(cols_type)) {
-    is_type_col <- empty
-    is_type_col[cols_type] <- TRUE
-  }
-  if (!is.null(cols_state)) {
-    is_state_col <- empty
-    is_state_col[cols_state] <- TRUE
-  }
+  col_data <- marker_info
   
-  col_data <- data.frame(
-    markers = colnames(d_combined), 
-    is_marker_col = is_marker_col, 
-    is_type_col = is_type_col, 
-    is_state_col = is_state_col, 
-    row.names = colnames(d_combined)
-  )
-  
-  colnames(d_combined) <- NULL
+  stopifnot("sample_IDs" %in% colnames(sample_info))
   
   # create SummarizedExperiment object
   d_se <- SummarizedExperiment(
     d_combined, 
     rowData = row_data, 
     colData = col_data, 
-    metadata = list(group_IDs = group_IDs)
+    metadata = list(sample_info = sample_info)
   )
   
   d_se

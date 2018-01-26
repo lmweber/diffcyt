@@ -4,29 +4,22 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, sample_IDs, group_IDs, cols_markers = NULL,
-  cols_type = NULL, cols_state = NULL, col_names = NULL,
-  subsampling = FALSE, n_sub = NULL)
+prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
+  n_sub = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 item or \code{\link[flowCore]{flowFrame}} per sample).}
 
-\item{sample_IDs}{Vector of sample IDs.}
+\item{sample_info}{Data frame of sample information, for example sample IDs and group
+IDs. Must contain a column named \code{sample_IDs}.}
 
-\item{group_IDs}{Vector of group IDs.}
-
-\item{cols_markers}{Column indices indicating all protein markers.}
-
-\item{cols_type}{Column indices indicating cell type markers, to be used for
-clustering and testing for differential abundance.}
-
-\item{cols_state}{Column indices indicating functional state markers, to be used for
-testing for differential functional states.}
-
-\item{col_names}{Optional vector of column names; for example, this is useful if the
-column names in the input data contain channel names instead of marker names. Default
-= column names of input data.}
+\item{marker_info}{Data frame of marker information for each column. This should
+contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
+and \code{is_state_marker}. The first column must contain marker names or column
+names; the remaining columns are logical vectors indicating whether each column in
+the input data is (i) a protein marker, (ii) a cell type marker, and (iii) a
+functional state marker.}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
@@ -35,15 +28,15 @@ from each sample. Default = FALSE.}
 \code{subsampling = TRUE}. Default = number of cells in smallest sample.}
 }
 \value{
-d_se Returns data as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  containing a single matrix of data (expression values) in the \code{assays} slot,
-  together with row meta-data (sample IDs, group IDs) and column meta-data (protein
-  marker names, logical vectors for: all markers, cell type markers, and functional
-  state markers). The \code{group_IDs} vector is also stored in the \code{metadata}
-  slot, and can be accessed with \code{metadata(d_se)$group_IDs}.
+\code{d_se}: Returns data as a
+  \code{\link[SummarizedExperiment]{SummarizedExperiment}} containing a single matrix
+  of data (expression values) in the \code{assays} slot, together with row meta-data
+  (sample information) and column meta-data (marker information). The
+  \code{sample_info} data frame is also stored in the \code{metadata} slot, and can be
+  accessed with \code{metadata(d_se)$sample_info}.
 }
 \description{
-Prepare data into format required for \code{diffcyt} pipeline
+Prepare data into format for \code{diffcyt} pipeline
 }
 \details{
 Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
@@ -54,11 +47,23 @@ This function accepts a list or \code{\link[flowCore]{flowSet}} as input (contai
 one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
 tables into a single matrix, and adds row and column meta-data.
 
-Row meta-data contains sample labels and group membership labels. Column meta-data
-contains protein marker names, and logical entries indicating whether each column is
-(i) a marker, (ii) a cell type marker (for clustering and testing for differential
-abundance), and (iii) a functional state marker (for testing for differential
-functional states).
+Row meta-data should be provided as a data frame named \code{sample_info}, containing
+columns of relevant sample information such as sample IDs and group IDs. Must contain a
+column named \code{sample_IDs}.
+
+Column meta-data should be provided as a data frame named \code{marker_info},
+containing the following columns of marker information. The column names must be as
+shown.
+
+\itemize{
+\item \code{marker_names}: protein marker names
+\item \code{is_marker}: logical vector indicating whether each column is a marker
+\item \code{is_type_marker}: logical vector indicating whether each column is a cell
+type marker (for clustering and testing for differential abundance)
+\item \code{is_state_marker}: logical vector indicating whether each column is a
+functional state marker (for testing for differential functional states within
+populations)
+}
 
 Optionally, random subsampling can be used to select an equal number of cells from each
 sample (\code{subsampling = TRUE}). This can be useful when there are large differences

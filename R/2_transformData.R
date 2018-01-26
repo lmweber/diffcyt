@@ -24,21 +24,21 @@
 #' The transform should be applied to protein marker columns only. The
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object created in the previous
 #' step (\code{\link{prepareData}}) is assumed to contain a vector of logical entries
-#' (\code{is_marker_col}) in the column meta-data, indicating which columns are marker
-#' columns. (If this is not available, all columns will be transformed instead.)
+#' named \code{is_marker} in the column meta-data, indicating whether each column is a
+#' protein marker. (If this is not available, all columns will be transformed instead.)
 #' 
 #' 
 #' @param d_se Input data. Assumed to be in the form of a
 #'   \code{\link[SummarizedExperiment]{SummarizedExperiment}}, prepared with the function
 #'   \code{\link{prepareData}}. Column meta-data is assumed to contain a vector of logical
-#'   entries (\code{is_marker_col}) indicating marker columns.
+#'   entries (\code{is_marker}) indicating protein marker columns.
 #' 
 #' @param cofactor Cofactor parameter for 'arcsinh' transform. Default = 5, which is
 #'   appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
 #'   recommend cofactor = 150 instead.
 #' 
 #' 
-#' @return d_se Data with transform applied to protein marker columns.
+#' @return \code{d_se}: Data with transform applied to protein marker columns.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays colData 'assays<-'
@@ -51,15 +51,15 @@
 #' 
 transformData <- function(d_se, cofactor = 5) {
   
-  is_marker_col <- colData(d_se)$is_marker_col
+  is_marker <- colData(d_se)$is_marker
   
-  if (is.null(is_marker_col)) is_marker_col <- rep(TRUE, ncol(d_se[[1]]))
+  if (is.null(is_marker)) is_marker <- rep(TRUE, ncol(d_se[[1]]))
   
   # extract expression data
   d_ex <- assays(d_se)[[1]]
   
   # apply transform to marker columns
-  d_ex[, is_marker_col] <- asinh(d_ex[, is_marker_col] / cofactor)
+  d_ex[, is_marker] <- asinh(d_ex[, is_marker] / cofactor)
   
   assays(d_se)[[1]] <- d_ex
   
