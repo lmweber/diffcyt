@@ -73,24 +73,24 @@ calcMedians <- function(d_se) {
   assaydata_mx <- assays(d_se)[[1]]
   
   medians <- vector("list", sum(colData(d_se)$is_marker))
-  marker_names <- as.character(colData(d_se)$markers[colData(d_se)$is_marker])
-  names(medians) <- marker_names
+  marker_names_sub <- as.character(colData(d_se)$marker_names[colData(d_se)$is_marker])
+  names(medians) <- marker_names_sub
   
   clus <- rowData(d_se)$cluster
-  smp <- rowData(d_se)$sample
+  smp <- rowData(d_se)$sample_IDs
   
   for (i in seq_along(medians)) {
-    assaydata_i <- assaydata_mx[, marker_names[i], drop = FALSE]
+    assaydata_i <- assaydata_mx[, marker_names_sub[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
-    assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
+    assaydata_i <- cbind(assaydata_i, sample_IDs = smp, cluster = clus)
     colnames(assaydata_i)[1] <- "value"
     
     assaydata_i %>% 
-      group_by(cluster, sample) %>% 
+      group_by(cluster, sample_IDs) %>% 
       summarize(median = median(value)) -> 
       med
     
-    med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
+    med <- acast(med, cluster ~ sample_IDs, value.var = "median", fill = NA)
     
     medians[[i]] <- med
   }
@@ -111,9 +111,10 @@ calcMedians <- function(d_se) {
     cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster))
   )
   
-  stopifnot(all(colnames(medians[[1]]) == metadata(d_se)$sample_info$sample_IDs))
-  
   col_data <- metadata(d_se)$sample_info
+  col_data <- col_data[match(colnames(medians[[1]]), metadata(d_se)$sample_info$sample_IDs), ]
+  
+  stopifnot(all(col_data$sample_IDs == colnames(medians[[1]])))
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)

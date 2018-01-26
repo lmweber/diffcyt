@@ -67,16 +67,13 @@ calcMediansAll <- function(d_se) {
   
   # calculate cluster medians
   
-  marker_vals <- as.data.frame(assay(d_se))
+  marker_vals <- as.data.frame(assay(d_se))[, colData(d_se)$is_marker]
   rowdata_df <- as.data.frame(rowData(d_se))
-  
-  # remove non-marker values
-  marker_vals[, !colData(d_se)$is_marker] <- as.numeric(NA)
   
   stopifnot(nrow(marker_vals) == nrow(rowdata_df))
   
   d_all <- cbind(rowdata_df, marker_vals)
-  d_all <- melt(d_all, id.vars = 1:ncol(rowdata_df), variable.name = "marker")
+  d_all <- melt(d_all, id.vars = seq_len(ncol(rowdata_df)), variable.name = "marker")
   
   d_all %>% 
     group_by(cluster, marker) %>% 
@@ -101,10 +98,10 @@ calcMediansAll <- function(d_se) {
     cluster = factor(rownames(medians), levels = levels(rowData(d_se)$cluster))
   )
   
-  stopifnot(all(colnames(medians) == colData(d_se)$markers), 
-            length(colnames(medians)) == length(colData(d_se)$markers))
+  col_data <- colData(d_se)[colData(d_se)$is_marker, ]
+  col_data <- col_data[match(colnames(medians), col_data$marker_names), ]
   
-  col_data <- colData(d_se)
+  stopifnot(all(col_data$marker_names == colnames(medians)))
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)

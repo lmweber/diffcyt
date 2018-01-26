@@ -52,12 +52,12 @@ calcCounts <- function(d_se) {
   rowdata_df <- as.data.frame(rowData(d_se))
   
   rowdata_df %>% 
-    group_by(cluster, sample) %>% 
+    group_by(cluster, sample_IDs) %>% 
     tally %>% 
-    complete(sample) -> 
+    complete(sample_IDs) -> 
     n_cells
   
-  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
+  n_cells <- acast(n_cells, cluster ~ sample_IDs, value.var = "n", fill = 0)
   
   # fill in any missing clusters
   if (nrow(n_cells) < nlevels(rowData(d_se)$cluster)) {
@@ -78,9 +78,10 @@ calcCounts <- function(d_se) {
     n_cells = n_cells_total
   )
   
-  stopifnot(all(colnames(n_cells) == levels(rowData(d_se)$sample)))
-  
   col_data <- metadata(d_se)$sample_info
+  col_data <- col_data[match(colnames(n_cells), metadata(d_se)$sample_info$sample_IDs), ]
+  
+  stopifnot(all(col_data$sample_IDs == colnames(n_cells)))
   
   d_counts <- SummarizedExperiment(
     n_cells, 
