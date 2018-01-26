@@ -70,7 +70,7 @@ createDesignMatrix <- function(sample_info, cols_include = NULL) {
   
   formula <- as.formula(paste("~", paste(terms, collapse = " + ")))
   
-  design <- model.matrix(formula)
+  design <- model.matrix(formula, data = sample_info)
   
   design
 }
