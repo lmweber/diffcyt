@@ -96,6 +96,10 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
   
   d_combined <- do.call(rbind, d_ex)
   
+  if (!is.null(col_names)) {
+    colnames(d_combined) <- col_names
+  }
+  
   # create row meta-data
   if (!is.factor(sample_IDs)) {
     sample_IDs <- factor(sample_IDs, levels = unique(sample_IDs))
@@ -127,12 +131,8 @@ prepareData <- function(d_input, sample_IDs, group_IDs,
     is_state_col[cols_state] <- TRUE
   }
   
-  if (is.null(col_names)) {
-    col_names <- colnames(d_combined)
-  }
-  
   col_data <- data.frame(
-    markers = col_names, 
+    markers = colnames(d_combined), 
     is_marker_col = is_marker_col, 
     is_type_col = is_type_col, 
     is_state_col = is_state_col, 
