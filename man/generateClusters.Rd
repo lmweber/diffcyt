@@ -12,8 +12,8 @@ generateClusters(d_se, cols_to_use = NULL, xdim = 20, ydim = 20,
 \code{\link{transformData}}.}
 
 \item{cols_to_use}{Columns to use for clustering. Default = \code{NULL}, in which case
-the markers specified by \code{is_type_marker} in the column meta-data of \code{d_se}
-will be used.}
+the markers specified by \code{is_celltype_marker} in the column meta-data of
+\code{d_se} will be used.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
 (number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).}
@@ -55,14 +55,15 @@ Data is assumed to be in the form of a
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
 \code{\link{prepareData}} and transformed with \code{\link{transformData}}.
 
-The input data object \code{d_se} is assumed to contain a vector \code{is_type_marker}
-in the column meta-data. This vector specifies the columns that contain protein markers
-used to define cell types; these markers will be used for clustering. For example, in
-immunological data, this may be the lineage markers. The choice of cell type markers is
-an important design choice for the user, and will depend on the underlying experimental
-design and research questions. It may be made based on prior biological knowledge or
-using data-driven methods. For an example of a data-driven method of marker ranking and
-selection, see Nowicka et al. (2017), \emph{F1000Research}.
+The input data object \code{d_se} is assumed to contain a vector
+\code{is_celltype_marker} in the column meta-data. This vector specifies the columns
+that contain protein markers used to define cell types; these markers will be used for
+clustering. For example, in immunological data, this may be the lineage markers. The
+choice of cell type markers is an important design choice for the user, and will depend
+on the underlying experimental design and research questions. It may be made based on
+prior biological knowledge or using data-driven methods. For an example of a
+data-driven method of marker ranking and selection, see Nowicka et al. (2017),
+\emph{F1000Research}.
 
 We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen et al. 2015,
 \emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We

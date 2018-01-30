@@ -15,11 +15,11 @@ item or \code{\link[flowCore]{flowFrame}} per sample).}
 IDs. Must contain a column named \code{sample_IDs}.}
 
 \item{marker_info}{Data frame of marker information for each column. This should
-contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
-and \code{is_state_marker}. The first column must contain marker names or column
-names; the remaining columns are logical vectors indicating whether each column in
-the input data is (i) a protein marker, (ii) a cell type marker, and (iii) a
-functional state marker.}
+contain columns named \code{marker_names}, \code{is_marker},
+\code{is_celltype_marker}, and \code{is_state_marker}. The first column must contain
+marker names or column names; the remaining columns are logical vectors indicating
+whether each column in the input data is (i) a protein marker, (ii) a cell type
+marker, and (iii) a functional state marker.}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
@@ -58,8 +58,8 @@ shown.
 \itemize{
 \item \code{marker_names}: protein marker names
 \item \code{is_marker}: logical vector indicating whether each column is a marker
-\item \code{is_type_marker}: logical vector indicating whether each column is a cell
-type marker (for clustering and testing for differential abundance)
+\item \code{is_celltype_marker}: logical vector indicating whether each column is a
+cell type marker (for clustering and testing for differential abundance)
 \item \code{is_state_marker}: logical vector indicating whether each column is a
 functional state marker (for testing for differential functional states within
 populations)
