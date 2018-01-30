@@ -82,6 +82,7 @@ createFormula <- function(sample_info, cols_fixed = NULL, cols_random = NULL) {
   
   # random effects
   random_terms <- FALSE
+  RHS_random <- NULL
   
   if (!is.null(cols_random)) {
     terms_random <- colnames(sample_info)[cols_random]
