@@ -35,7 +35,8 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential abundance of clusters using method 'diffcyt-DA-GLMM'
+Calculate tests for differential abundance of cell populations using method
+'diffcyt-DA-GLMM'
 }
 \details{
 Calculates tests for differential abundance of clusters, using generalized linear mixed

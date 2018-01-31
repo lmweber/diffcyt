@@ -1,6 +1,7 @@
 #' Test for differential abundance: method 'diffcyt-DA-GLMM'
 #' 
-#' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-GLMM'
+#' Calculate tests for differential abundance of cell populations using method
+#' 'diffcyt-DA-GLMM'
 #' 
 #' Calculates tests for differential abundance of clusters, using generalized linear mixed
 #' models (GLMMs).

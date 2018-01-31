@@ -22,10 +22,10 @@
 #' \item \code{marker_names}: protein marker names
 #' \item \code{is_marker}: logical vector indicating whether each column is a marker
 #' \item \code{is_celltype_marker}: logical vector indicating whether each column is a
-#' cell type marker (for clustering and testing for differential abundance)
-#' \item \code{is_state_marker}: logical vector indicating whether each column is a
-#' functional state marker (for testing for differential functional states within
+#' cell type marker (for clustering and testing for differential abundance of cell
 #' populations)
+#' \item \code{is_state_marker}: logical vector indicating whether each column is a state
+#' marker (for testing for differential states within cell populations)
 #' }
 #' 
 #' Optionally, random subsampling can be used to select an equal number of cells from each
@@ -47,7 +47,7 @@
 #'   \code{is_celltype_marker}, and \code{is_state_marker}. The first column must contain
 #'   marker names or column names; the remaining columns are logical vectors indicating
 #'   whether each column in the input data is (i) a protein marker, (ii) a cell type
-#'   marker, and (iii) a functional state marker.
+#'   marker, and (iii) a state marker.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.

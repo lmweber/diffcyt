@@ -46,7 +46,8 @@ Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   function.
 }
 \description{
-Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
+Calculate tests for differential abundance of cell populations using method
+'diffcyt-DA-limma'
 }
 \details{
 Calculates tests for differential abundance of clusters, using functions from the

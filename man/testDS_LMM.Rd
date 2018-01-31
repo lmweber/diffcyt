@@ -2,7 +2,7 @@
 % Please edit documentation in R/testDS_LMM.R
 \name{testDS_LMM}
 \alias{testDS_LMM}
-\title{Test for differential functional states: method 'diffcyt-DS-LMM'}
+\title{Test for differential states: method 'diffcyt-DS-LMM'}
 \usage{
 testDS_LMM(d_counts, d_medians, formula, contrast, min_cells = 3,
   min_samples = NULL)
@@ -35,23 +35,22 @@ cells in at least \code{min_samples} samples.}
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   where rows = cluster-marker combinations, and columns = samples. In the rows,
-  clusters are repeated for each functional state marker (i.e. the sheets or 'assays'
-  from the previous \code{d_medians} object are stacked into a single matrix).
-  Differential test results are stored in the \code{rowData} slot. Results include raw
-  p-values and adjusted p-values, which can be used to rank cluster-marker combinations
-  by evidence for differential functional states within populations. The results can be
-  accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
+  clusters are repeated for each state marker (i.e. the sheets or 'assays' from the
+  previous \code{d_medians} object are stacked into a single matrix). Differential test
+  results are stored in the \code{rowData} slot. Results include raw p-values and
+  adjusted p-values, which can be used to rank cluster-marker combinations by evidence
+  for differential states within cell populations. The results can be accessed with the
+  \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential functional states within populations using method
+Calculate tests for differential states within cell populations using method
 'diffcyt-DS-LMM'
 }
 \details{
-Calculates tests for differential functional states within populations (i.e.
-differential expression of functional state markers within clusters), using linear
-mixed models (LMMs). Clusters are defined using cell type markers, and functional
-states are characterized by the median transformed expression of functional state
-markers.
+Calculates tests for differential states within cell populations (i.e. differential
+expression of state markers within clusters), using linear mixed models (LMMs).
+Clusters are defined using cell type markers, and states are characterized by the
+median transformed expression of state markers.
 
 This methodology was originally developed and described by Nowicka et al. (2017),
 \emph{F1000Research}, and has been modified here to make use of high-resolution
@@ -62,19 +61,19 @@ cluster level, and the interpretation of significant differential clusters is le
 the user via visualizations such as heatmaps and tSNE plots (see the package vignette
 for a detailed example).
 
-This method fits linear mixed models (LMMs) for each cluster-marker combination
-(functional state markers only), and calculates differential tests separately for each
-cluster-marker combination. The response variable in each model is the median
-arcsinh-transformed marker expression of the functional state marker, which is assumed
-to follow a Gaussian distribution. There is one model per cluster per functional state
-marker. Within each model, sample-level weights are included for the number of cells
-per sample; these weights represent the relative uncertainty in calculating each median
-value. (Additional uncertainty exists due to variation in the total number of cells per
-cluster; however, it is not possible to account for this, since there are separate
-models for each cluster-marker combination. By contrast, the 'diffcyt-DS-limma' method
-can account for this source of uncertainty using empirical Bayes methodology.) We also
-include a filtering step to remove clusters with very small numbers of cells, to
-improve statistical power.
+This method fits linear mixed models (LMMs) for each cluster-marker combination (state
+markers only), and calculates differential tests separately for each cluster-marker
+combination. The response variable in each model is the median arcsinh-transformed
+marker expression of the state marker, which is assumed to follow a Gaussian
+distribution. There is one model per cluster per state marker. Within each model,
+sample-level weights are included for the number of cells per sample; these weights
+represent the relative uncertainty in calculating each median value. (Additional
+uncertainty exists due to variation in the total number of cells per cluster; however,
+it is not possible to account for this, since there are separate models for each
+cluster-marker combination. By contrast, the 'diffcyt-DS-limma' method can account for
+this source of uncertainty using empirical Bayes methodology.) We also include a
+filtering step to remove clusters with very small numbers of cells, to improve
+statistical power.
 
 For more details on the statistical methodology, see Nowicka et al. (2017),
 \emph{F1000Research} (section 'Differential analysis of marker expression stratified by

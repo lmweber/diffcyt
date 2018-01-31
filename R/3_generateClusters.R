@@ -3,10 +3,11 @@
 #' Generate high-resolution clusters for \code{diffcyt} analysis
 #' 
 #' Performs clustering to group cells into clusters representing cell populations or
-#' subsets, which can then be further analyzed for differential abundance or differential
-#' functional states within populations. By default, we use high-resolution clustering or
-#' over-clustering (i.e. we generate a large number of small clusters), which helps ensure
-#' that rare populations are adequately separated from larger ones.
+#' subsets, which can then be further analyzed for differential abundance of cell
+#' populations or differential states within cell populations. By default, we use
+#' high-resolution clustering or over-clustering (i.e. we generate a large number of small
+#' clusters), which helps ensure that rare populations are adequately separated from
+#' larger ones.
 #' 
 #' Data is assumed to be in the form of a
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
@@ -33,8 +34,7 @@
 #' 'self-organizing map' clustering step in the \code{FlowSOM} algorithm, i.e. without the
 #' final 'meta-clustering' step. This ensures that small or rare populations are
 #' adequately separated from larger populations, which is crucial for detecting
-#' differential abundance or differential functional states for extremely rare
-#' populations.
+#' differential abundance or differential states for extremely rare populations.
 #' 
 #' The minimum spanning tree (MST) object from \code{\link[FlowSOM]{BuildMST}} is stored
 #' in the experiment \code{metadata} slot in the

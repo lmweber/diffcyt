@@ -30,20 +30,20 @@ Calculate median expression of each marker for each cluster across all samples.
 The data object is assumed to contain vectors \code{is_marker},
 \code{is_celltype_marker}, and \code{is_state_marker} in the column meta-data (see
 \code{\link{prepareData}}). These indicate the sets of all marker columns, cell type
-marker columns, and functional state marker columns. Cluster medians are calculated for
-all markers.
+marker columns, and state marker columns. Cluster medians are calculated for all
+markers.
 
 The cluster medians (across all samples) are required for plotting functions.
 
 Variables \code{id_celltype_markers} and \code{id_state_markers} are saved in the
 \code{metadata} slot of the output object. These can be used to identify the cell type
-and functional state markers in later steps of the 'diffcyt' pipeline.
+and state markers in later steps of the 'diffcyt' pipeline.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = markers, assay = values (marker expression
 values). The \code{metadata} slot also contains variables \code{id_celltype_markers}
 and \code{id_state_markers}, which can be used to identify the sets of cell type and
-functional state markers.
+state markers.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

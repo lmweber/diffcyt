@@ -2,7 +2,7 @@
 % Please edit documentation in R/testDS_limma.R
 \name{testDS_limma}
 \alias{testDS_limma}
-\title{Test for differential functional states: method 'diffcyt-DS-limma'}
+\title{Test for differential states: method 'diffcyt-DS-limma'}
 \usage{
 testDS_limma(d_counts, d_medians, design, contrast, block_IDs = NULL,
   min_cells = 3, min_samples = NULL, plot = TRUE, path = ".")
@@ -43,23 +43,23 @@ cells in at least \code{min_samples} samples.}
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
   where rows = cluster-marker combinations, and columns = samples. In the rows,
-  clusters are repeated for each functional state marker (i.e. the sheets or 'assays'
-  from the previous \code{d_medians} object are stacked into a single matrix).
-  Differential test results are stored in the \code{rowData} slot. Results include raw
-  p-values and adjusted p-values from the \code{limma} empirical Bayes moderated tests,
-  which can be used to rank cluster-marker combinations by evidence for differential
-  functional states within populations. The results can be accessed with the
+  clusters are repeated for each state marker (i.e. the sheets or 'assays' from the
+  previous \code{d_medians} object are stacked into a single matrix). Differential test
+  results are stored in the \code{rowData} slot. Results include raw p-values and
+  adjusted p-values from the \code{limma} empirical Bayes moderated tests, which can be
+  used to rank cluster-marker combinations by evidence for differential states within
+  cell populations. The results can be accessed with the
   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 }
 \description{
-Calculate tests for differential functional states within populations using method
+Calculate tests for differential states within cell populations using method
 'diffcyt-DS-limma'
 }
 \details{
-Calculates tests for differential functional states within populations (i.e.
-differential expression of functional state markers within clusters). Clusters are
-defined using cell type markers, and functional states are characterized by the median
-transformed expression of functional state markers.
+Calculates tests for differential states within cell populations (i.e. differential
+expression of state markers within clusters). Clusters are defined using cell type
+markers, and states are characterized by the median transformed expression of state
+markers.
 
 This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
 \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes

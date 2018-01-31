@@ -1,6 +1,7 @@
 #' Test for differential abundance: method 'diffcyt-DA-limma'
 #' 
-#' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-limma'
+#' Calculate tests for differential abundance of cell populations using method
+#' 'diffcyt-DA-limma'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
 #' \code{\link[limma]{limma}} package.

@@ -1,6 +1,7 @@
 #' Test for differential abundance: method 'diffcyt-DA-edgeR'
 #' 
-#' Calculate tests for differential abundance of clusters using method 'diffcyt-DA-edgeR'
+#' Calculate tests for differential abundance of cell populations using method
+#' 'diffcyt-DA-edgeR'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
 #' \code{\link[edgeR]{edgeR}} package.
