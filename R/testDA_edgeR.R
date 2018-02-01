@@ -41,9 +41,9 @@
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
 #'   samples.
 #' 
-#' @param min_samples Filtering parameter. Default = \code{number of samples / 2}.
-#'   Clusters are kept for differential testing if they have at least \code{min_cells}
-#'   cells in at least \code{min_samples} samples.
+#' @param min_samples Filtering parameter. Default = \code{number of samples / 2}, which
+#'   is appropriate for two-group comparisons. Clusters are kept for differential testing
+#'   if they have at least \code{min_cells} cells in at least \code{min_samples} samples.
 #' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
