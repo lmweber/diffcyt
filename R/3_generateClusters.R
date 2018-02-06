@@ -50,10 +50,10 @@
 #'   \code{d_se} will be used.
 #' 
 #' @param xdim Horizontal length of grid for self-organizing map for FlowSOM clustering
-#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).
+#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).
 #' 
 #' @param ydim Vertical length of grid for self-organizing map for FlowSOM clustering
-#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).
+#'   (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).
 #' 
 #' @param meta_clustering Whether to include FlowSOM 'meta-clustering' step. Default =
 #'   \code{FALSE}.
@@ -89,7 +89,7 @@
 #' # pipeline on an experimental data set is available in the package vignette.
 #' 
 generateClusters <- function(d_se, cols_to_use = NULL, 
-                             xdim = 20, ydim = 20, 
+                             xdim = 10, ydim = 10, 
                              meta_clustering = FALSE, meta_k = 40, 
                              seed = NULL, ...) {
   

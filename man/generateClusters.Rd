@@ -4,7 +4,7 @@
 \alias{generateClusters}
 \title{Generate clusters}
 \usage{
-generateClusters(d_se, cols_to_use = NULL, xdim = 20, ydim = 20,
+generateClusters(d_se, cols_to_use = NULL, xdim = 10, ydim = 10,
   meta_clustering = FALSE, meta_k = 40, seed = NULL, ...)
 }
 \arguments{
@@ -16,10 +16,10 @@ the markers specified by \code{is_celltype_marker} in the column meta-data of
 \code{d_se} will be used.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
-(number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).}
+(number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).}
 
 \item{ydim}{Vertical length of grid for self-organizing map for FlowSOM clustering
-(number of clusters = \code{xdim} * \code{ydim}). Default = 20 (i.e. 400 clusters).}
+(number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).}
 
 \item{meta_clustering}{Whether to include FlowSOM 'meta-clustering' step. Default =
 \code{FALSE}.}
