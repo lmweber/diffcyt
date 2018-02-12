@@ -5,7 +5,8 @@
 \title{Test for differential abundance: method 'diffcyt-DA-limma'}
 \usage{
 testDA_limma(d_counts, design, contrast, block_IDs = NULL, min_cells = 3,
-  min_samples = NULL, plot = TRUE, path = ".")
+  min_samples = NULL, normalize = FALSE, norm_factors = "TMM",
+  plot = TRUE, path = ".")
 }
 \arguments{
 \item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -31,6 +32,13 @@ samples.}
 \item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}, which
 is appropriate for two-group comparisons. Clusters are kept for differential testing
 if they have at least \code{min_cells} cells in at least \code{min_samples} samples.}
+
+\item{normalize}{Whether to include optional normalization factors to adjust for
+composition effects (see details). Default = FALSE.}
+
+\item{norm_factors}{Normalization factors to use, if \code{normalize = TRUE}. Default =
+\code{"TMM"}, in which case normalization factors are calculated automatically using
+the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.}
 
 \item{plot}{Whether to save diagnostic plots for the \code{limma}
 \code{\link[limma]{voom}} transformations. Default = TRUE.}
@@ -83,6 +91,20 @@ The contrast matrix specifying the contrast of interest can be created with
 Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 with very low cell counts across conditions, which improves power.
+
+Normalization: Optional normalization factors can be included to adjust for composition
+effects in the total number of counts per sample (library sizes). For example, if one
+cell population is more abundant in one condition, while all other populations have
+equal numbers of cells across conditions, then this effectively reduces the
+\emph{relative} abundance of the unchanged populations in the first condition, creating
+false positive differential abundance signals for these populations. Normalization
+factors can be provided directly as a vector of values representing relative total
+abundances per sample (where values >1 indicate extra cells in a sample; note this is
+the inverse of normalization factors as defined in the \code{edgeR} package).
+Alternatively, normalization factors can be calculated automatically using the 'trimmed
+mean of M-values' (TMM) method from the \code{edgeR} package (Robinson and Oshlack,
+2010). The TMM method assumes that most populations are not differentially abundant;
+see the \code{edgeR} User's Guide for more details.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'

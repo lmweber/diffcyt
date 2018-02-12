@@ -43,6 +43,20 @@
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, which improves power.
 #' 
+#' Normalization: Optional normalization factors can be included to adjust for composition
+#' effects in the total number of counts per sample (library sizes). For example, if one
+#' cell population is more abundant in one condition, while all other populations have
+#' equal numbers of cells across conditions, then this effectively reduces the
+#' \emph{relative} abundance of the unchanged populations in the first condition, creating
+#' false positive differential abundance signals for these populations. Normalization
+#' factors can be provided directly as a vector of values representing relative total
+#' abundances per sample (where values >1 indicate extra cells in a sample; note this is
+#' the inverse of normalization factors as defined in the \code{edgeR} package).
+#' Alternatively, normalization factors can be calculated automatically using the 'trimmed
+#' mean of M-values' (TMM) method from the \code{edgeR} package (Robinson and Oshlack,
+#' 2010). The TMM method assumes that most populations are not differentially abundant;
+#' see the \code{edgeR} User's Guide for more details.
+#' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
@@ -64,6 +78,13 @@
 #'   is appropriate for two-group comparisons. Clusters are kept for differential testing
 #'   if they have at least \code{min_cells} cells in at least \code{min_samples} samples.
 #' 
+#' @param normalize Whether to include optional normalization factors to adjust for
+#'   composition effects (see details). Default = FALSE.
+#' 
+#' @param norm_factors Normalization factors to use, if \code{normalize = TRUE}. Default =
+#'   \code{"TMM"}, in which case normalization factors are calculated automatically using
+#'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+#' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
 #'   with differential test results stored in the \code{rowData} slot. Results include raw
@@ -73,6 +94,7 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom edgeR calcNormFactors
 #' @importFrom lme4 glmer
 #' @importFrom multcomp glht
 #' @importFrom methods as is
@@ -85,7 +107,8 @@
 #' # pipeline on an experimental data set is available in the package vignette.
 #' 
 testDA_GLMM <- function(d_counts, formula, contrast, 
-                        min_cells = 3, min_samples = NULL) {
+                        min_cells = 3, min_samples = NULL, 
+                        normalize = FALSE, norm_factors = "TMM") {
   
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
@@ -103,7 +126,21 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
   
-  n_cells_smp <- colSums(counts)
+  # normalization factors
+  if (normalize & norm_factors == "TMM") {
+    norm_factors <- calcNormFactors(counts, method = "TMM")
+  } else if (normalize & norm_factors != "TMM") {
+    # edgeR and limma define normalization factors as inverse and require product = 1
+    norm_factors <- 1 / norm_factors
+    # using geometric mean
+    norm_factors <- norm_factors / (prod(norm_factors) ^ (1 / length(norm_factors)))
+  }
+  
+  if (normalize) {
+    n_cells_smp <- colSums(counts) / norm_factors
+  } else {
+    n_cells_smp <- colSums(counts)
+  }
   
   # GLMM testing pipeline
   
