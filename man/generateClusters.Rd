@@ -27,8 +27,8 @@ the markers specified by \code{is_celltype_marker} in the column meta-data of
 \item{meta_k}{Number of meta-clusters for FlowSOM, if \code{meta-clustering = TRUE}.
 Default = 40.}
 
-\item{seed}{Random seed. Set to an integer value to generate reproducible results.
-Default = \code{NULL}.}
+\item{seed}{Random seed for clustering. Set to an integer value to generate
+reproducible results. Default = \code{NULL}.}
 
 \item{...}{Other parameters to pass to the FlowSOM clustering algorithm (through the
 function \code{\link[FlowSOM]{BuildSOM}}).}

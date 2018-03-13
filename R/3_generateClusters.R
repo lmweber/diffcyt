@@ -61,8 +61,8 @@
 #' @param meta_k Number of meta-clusters for FlowSOM, if \code{meta-clustering = TRUE}.
 #'   Default = 40.
 #' 
-#' @param seed Random seed. Set to an integer value to generate reproducible results.
-#'   Default = \code{NULL}.
+#' @param seed Random seed for clustering. Set to an integer value to generate
+#'   reproducible results. Default = \code{NULL}.
 #' 
 #' @param ... Other parameters to pass to the FlowSOM clustering algorithm (through the
 #'   function \code{\link[FlowSOM]{BuildSOM}}).

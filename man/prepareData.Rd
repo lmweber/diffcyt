@@ -5,7 +5,7 @@
 \title{Prepare data}
 \usage{
 prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
-  n_sub = NULL)
+  n_sub = NULL, seed = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
@@ -26,6 +26,9 @@ from each sample. Default = FALSE.}
 
 \item{n_sub}{Number of cells to select from each sample by random subsampling, if
 \code{subsampling = TRUE}. Default = number of cells in smallest sample.}
+
+\item{seed}{Random seed for subsampling. Set to an integer value to generate
+reproducible results. Default = \code{NULL}.}
 }
 \value{
 \code{d_se}: Returns data as a
