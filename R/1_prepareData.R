@@ -95,7 +95,7 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   if (subsampling) {
     if (is.null(n_sub)) n_sub <- min(n_cells)
-    d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), n_sub), ])
+    d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), min(n_sub, nrow(d))), ])
     n_cells <- sapply(d_ex, nrow)
   }
   
