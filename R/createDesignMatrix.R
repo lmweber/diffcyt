@@ -25,10 +25,10 @@
 #' include in the design matrix. (For example, there may be an additional column of sample
 #' IDs, which should not be included.)
 #' 
-#' Columns of indicator variables (e.g. group IDs, block IDs, batch IDs) must be formatted
-#' as factors (otherwise they will be treated as numeric values). The indicator columns
-#' will be expanded into the design matrix format. The names for each parameter are taken
-#' from the column names of \code{sample_info}.
+#' Columns of indicator variables (e.g. group IDs, block IDs, and batch IDs) must be
+#' formatted as factors (otherwise they will be treated as numeric values). The indicator
+#' columns will be expanded into the design matrix format. The names for each parameter
+#' are taken from the column names of \code{sample_info}.
 #' 
 #' All factors provided here will be included as fixed effect terms in the design matrix.
 #' Alternatively, to use random effects for some factors (e.g. for block IDs), see
@@ -56,8 +56,32 @@
 #' @export
 #' 
 #' @examples
-#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline on an experimental data set is available in the package vignette.
+#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline, see the package vignette.
+#' 
+#' # Example: simple design matrix
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#' )
+#' createDesignMatrix(sample_info, cols_include = 2)
+#' 
+#' # Example: more complex design matrix: patient IDs and batch IDs
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:8), 
+#'   group_IDs = factor(rep(paste0("group", 1:2), each = 4)), 
+#'   patient_IDs = factor(rep(paste0("patient", 1:4), 2)), 
+#'   batch_IDs = factor(rep(paste0("batch", 1:2), 4))
+#' )
+#' createDesignMatrix(sample_info, cols_include = 2:4)
+#' 
+#' # Example: more complex design matrix: continuous covariate
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2")), 
+#'   age = c(52, 35, 71, 60)
+#' )
+#' createDesignMatrix(sample_info, cols_include = 2:3)
 #' 
 createDesignMatrix <- function(sample_info, cols_include = NULL) {
   

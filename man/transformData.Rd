@@ -49,7 +49,35 @@ named \code{is_marker} in the column meta-data, indicating whether each column i
 protein marker. (If this is not available, all columns will be transformed instead.)
 }
 \examples{
-# A full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline on an experimental data set is available in the package vignette.
+# For a full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline, see the package vignette.
+
+# Create some random data (without any true differential signal)
+cofactor <- 5
+set.seed(123)
+d_input <- list(
+  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+)
+
+sample_info <- data.frame(
+  sample_IDs = paste0("sample", 1:4), 
+  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+)
+
+marker_info <- data.frame(
+  marker_names = paste0("marker", 1:20), 
+  is_marker = rep(TRUE, 20), 
+  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+)
+
+# Prepare data
+d_se <- prepareData(d_input, sample_info, marker_info)
+
+# Transform data
+d_se <- transformData(d_se)
 
 }

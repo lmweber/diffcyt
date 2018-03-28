@@ -12,7 +12,7 @@
 #' 
 #' Row meta-data should be provided as a data frame named \code{sample_info}, containing
 #' columns of relevant sample information such as sample IDs and group IDs. This must
-#' contain a column named \code{sample_IDs}.
+#' contain at least a column named \code{sample_IDs}.
 #' 
 #' Column meta-data should be provided as a data frame named \code{marker_info},
 #' containing the following columns of marker information. The column names must be as
@@ -21,11 +21,11 @@
 #' \itemize{
 #' \item \code{marker_names}: protein marker names
 #' \item \code{is_marker}: logical vector indicating whether each column is a marker
-#' \item \code{is_celltype_marker}: logical vector indicating whether each column is a
-#' cell type marker (for clustering and testing for differential abundance of cell
+#' \item \code{is_type_marker}: logical vector indicating whether each column is a 'cell
+#' type' marker (for clustering and testing for differential abundance of cell
 #' populations)
-#' \item \code{is_state_marker}: logical vector indicating whether each column is a state
-#' marker (for testing for differential states within cell populations)
+#' \item \code{is_state_marker}: logical vector indicating whether each column is a 'cell
+#' state' marker (for testing for differential states within cell populations)
 #' }
 #' 
 #' Optionally, random subsampling can be used to select an equal number of cells from each
@@ -43,11 +43,11 @@
 #'   IDs. Must contain a column named \code{sample_IDs}.
 #' 
 #' @param marker_info Data frame of marker information for each column. This should
-#'   contain columns named \code{marker_names}, \code{is_marker},
-#'   \code{is_celltype_marker}, and \code{is_state_marker}. The first column must contain
-#'   marker names or column names; the remaining columns are logical vectors indicating
-#'   whether each column in the input data is (i) a protein marker, (ii) a cell type
-#'   marker, and (iii) a state marker.
+#'   contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
+#'   and \code{is_state_marker}. The first column must contain marker names or column
+#'   names; the remaining columns are logical vectors indicating whether each column in
+#'   the input data is (i) a protein marker, (ii) a 'cell type' marker, and (iii) a 'cell
+#'   state' marker.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.
@@ -74,8 +74,33 @@
 #' @export
 #' 
 #' @examples
-#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline on an experimental data set is available in the package vignette.
+#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline, see the package vignette.
+#' 
+#' # Create some random data (without any true differential signal)
+#' cofactor <- 5
+#' set.seed(123)
+#' d_input <- list(
+#'   sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+#' )
+#' 
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#' )
+#' 
+#' marker_info <- data.frame(
+#'   marker_names = paste0("marker", 1:20), 
+#'   is_marker = rep(TRUE, 20), 
+#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#' )
+#' 
+#' # Prepare data
+#' d_se <- prepareData(d_input, sample_info, marker_info)
 #' 
 prepareData <- function(d_input, sample_info, marker_info, 
                         subsampling = FALSE, n_sub = NULL, seed = NULL) {
@@ -88,7 +113,11 @@ prepareData <- function(d_input, sample_info, marker_info,
     d_input <- as(d_input, "list")
   }
   
-  d_ex <- lapply(d_input, exprs)
+  if (all(sapply(d_input, class) == "flowFrame")) {
+    d_ex <- lapply(d_input, exprs)
+  } else {
+    d_ex <- d_input
+  }
   
   if (!(nrow(sample_info) == length(d_ex))) {
     stop("number of rows in 'sample_info' data frame must equal the number of samples")

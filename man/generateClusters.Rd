@@ -12,8 +12,8 @@ generateClusters(d_se, cols_to_use = NULL, xdim = 10, ydim = 10,
 \code{\link{transformData}}.}
 
 \item{cols_to_use}{Columns to use for clustering. Default = \code{NULL}, in which case
-the markers specified by \code{is_celltype_marker} in the column meta-data of
-\code{d_se} will be used.}
+the markers specified by \code{is_type_marker} in the column meta-data of \code{d_se}
+will be used.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
 (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).}
@@ -46,8 +46,8 @@ Generate high-resolution clusters for \code{diffcyt} analysis
 }
 \details{
 Performs clustering to group cells into clusters representing cell populations or
-subsets, which can then be further analyzed for differential abundance of cell
-populations or differential states within cell populations. By default, we use
+subsets, which can then be further analyzed by testing for differential abundance of
+cell populations or differential states within cell populations. By default, we use
 high-resolution clustering or over-clustering (i.e. we generate a large number of small
 clusters), which helps ensure that rare populations are adequately separated from
 larger ones.
@@ -56,28 +56,27 @@ Data is assumed to be in the form of a
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
 \code{\link{prepareData}} and transformed with \code{\link{transformData}}.
 
-The input data object \code{d_se} is assumed to contain a vector
-\code{is_celltype_marker} in the column meta-data. This vector specifies the columns
-that contain protein markers used to define cell types; these markers will be used for
-clustering. For example, in immunological data, this may be the lineage markers. The
-choice of cell type markers is an important design choice for the user, and will depend
-on the underlying experimental design and research questions. It may be made based on
-prior biological knowledge or using data-driven methods. For an example of a
-data-driven method of marker ranking and selection, see Nowicka et al. (2017),
-\emph{F1000Research}.
+The input data object \code{d_se} is assumed to contain a vector \code{is_type_marker}
+in the column meta-data. This vector specifies the columns that contain protein markers
+used to define cell types; these markers will be used for clustering. For example, in
+immunological data, this may be the lineage markers. The choice of cell type markers is
+an important design choice for the user, and will depend on the underlying experimental
+design and research questions. It may be made based on prior biological knowledge or
+using data-driven methods. For an example of a data-driven method of marker ranking and
+selection, see Nowicka et al. (2017), \emph{F1000Research}.
 
-We use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen et al. 2015,
-\emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We
-previously showed that \code{FlowSOM} gives very good clustering performance for
-high-dimensional cytometry data, for both major and rare cell populations, and is
-extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
+By default, we use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen
+et al. 2015, \emph{Cytometry Part A}, available from Bioconductor) to generate the
+clusters. We previously showed that \code{FlowSOM} gives very good clustering
+performance for high-dimensional cytometry data, for both major and rare cell
+populations, and is extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
 
-By default, the clustering is run at high resolution to give a large number of small
-clusters (i.e. over-clustering). This is done by running only the initial
-'self-organizing map' clustering step in the \code{FlowSOM} algorithm, i.e. without the
-final 'meta-clustering' step. This ensures that small or rare populations are
-adequately separated from larger populations, which is crucial for detecting
-differential abundance or differential states for extremely rare populations.
+The clustering is run at high resolution to give a large number of small clusters (i.e.
+over-clustering). This is done by running only the initial 'self-organizing map'
+clustering step in the \code{FlowSOM} algorithm, i.e. without the final
+'meta-clustering' step. This ensures that small or rare populations are adequately
+separated from larger populations, which is crucial for detecting differential signals
+for extremely rare populations.
 
 The minimum spanning tree (MST) object from \code{\link[FlowSOM]{BuildMST}} is stored
 in the experiment \code{metadata} slot in the
@@ -85,7 +84,38 @@ in the experiment \code{metadata} slot in the
 accessed with \code{metadata(d_se)$MST}.
 }
 \examples{
-# A full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline on an experimental data set is available in the package vignette.
+# For a full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline, see the package vignette.
+
+# Create some random data (without any true differential signal)
+cofactor <- 5
+set.seed(123)
+d_input <- list(
+  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+)
+
+sample_info <- data.frame(
+  sample_IDs = paste0("sample", 1:4), 
+  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+)
+
+marker_info <- data.frame(
+  marker_names = paste0("marker", 1:20), 
+  is_marker = rep(TRUE, 20), 
+  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+)
+
+# Prepare data
+d_se <- prepareData(d_input, sample_info, marker_info)
+
+# Transform data
+d_se <- transformData(d_se)
+
+# Generate clusters
+d_se <- generateClusters(d_se)
 
 }

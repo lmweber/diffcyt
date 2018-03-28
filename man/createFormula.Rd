@@ -65,11 +65,19 @@ Note that for some methods, random effect terms (e.g. for block IDs) must be pro
 directly to the differential testing function instead (\code{\link{testDA_limma}} and
 \code{\link{testDS_limma}}).
 
-If there are no random effect terms, it may be simpler to use a design matrix instead
-of a model formula; see \code{\link{createDesignMatrix}}.
+If there are no random effect terms, it will usually be simpler to use a design matrix
+instead of a model formula; see \code{\link{createDesignMatrix}}.
 }
 \examples{
-# A full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline on an experimental data set is available in the package vignette.
+# For a full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline, see the package vignette.
+
+# Example: model formula
+sample_info <- data.frame(
+  sample_IDs = paste0("sample", 1:8), 
+  group_IDs = factor(rep(paste0("group", 1:2), each = 4)), 
+  patient_IDs = factor(rep(paste0("patient", 1:4), 2))
+)
+createFormula(sample_info, cols_fixed = 2, cols_random = c(1, 3))
 
 }

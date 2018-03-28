@@ -23,16 +23,49 @@ Calculate number of cells per cluster-sample combination (referred to as cluster
 'counts', 'abundances', or 'frequencies').
 
 The cluster cell counts are required for testing for differential abundance of cell
-populations, and are also used for filtering to improve statistical power when testing
-for differential states within cell populations.
+populations, and are also used for weights and filtering when testing for differential
+states within cell populations.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = samples, assay = values (counts). (Note that
-this structure differs from the input data object, where rows = cells, and columns =
-markers.)
+this structure differs from the input data object.)
 }
 \examples{
-# A full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline on an experimental data set is available in the package vignette.
+# For a full workflow example demonstrating the use of each function in the 'diffcyt'
+# pipeline, see the package vignette.
+
+# Create some random data (without any true differential signal)
+cofactor <- 5
+set.seed(123)
+d_input <- list(
+  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+)
+
+sample_info <- data.frame(
+  sample_IDs = paste0("sample", 1:4), 
+  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+)
+
+marker_info <- data.frame(
+  marker_names = paste0("marker", 1:20), 
+  is_marker = rep(TRUE, 20), 
+  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+)
+
+# Prepare data
+d_se <- prepareData(d_input, sample_info, marker_info)
+
+# Transform data
+d_se <- transformData(d_se)
+
+# Generate clusters
+d_se <- generateClusters(d_se)
+
+# Calculate counts
+d_counts <- calcCounts(d_se)
 
 }

@@ -2,7 +2,7 @@
 
 export(calcCounts)
 export(calcMedians)
-export(calcMediansAll)
+export(calcMediansAllSamples)
 export(createContrast)
 export(createDesignMatrix)
 export(createFormula)
