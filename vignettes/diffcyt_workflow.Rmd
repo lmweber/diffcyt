@@ -1,0 +1,23 @@
+---
+title: "'diffcyt' workflow"
+author: 
+  - name: Lukas M. Weber
+    affiliation: 
+      - &id1 Institute of Molecular Life Sciences, University of Zurich, Switzerland
+      - &id2 SIB Swiss Institute of Bioinformatics
+  - name: Mark. D. Robinson
+    affiliation: 
+      - *id1
+      - *id2
+package: diffcyt
+output: 
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{'diffcyt' workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+text
+

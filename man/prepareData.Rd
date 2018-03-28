@@ -51,8 +51,8 @@ one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the
 tables into a single matrix, and adds row and column meta-data.
 
 Row meta-data should be provided as a data frame named \code{sample_info}, containing
-columns of relevant sample information such as sample IDs and group IDs. Must contain a
-column named \code{sample_IDs}.
+columns of relevant sample information such as sample IDs and group IDs. This must
+contain a column named \code{sample_IDs}.
 
 Column meta-data should be provided as a data frame named \code{marker_info},
 containing the following columns of marker information. The column names must be as
