@@ -23,7 +23,199 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-# Testing
+# Introduction
 
-text
+The 'diffcyt' package implements statistical methods for differential discovery in high-dimensional cytometry, based on high-resolution clustering and moderated tests.
+
+High-dimensional cytometry includes multi-color flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry. These technologies measure expression levels of dozens (10--100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations.
+
+This vignette provides a complete workflow example for running the 'diffcyt' pipeline, using either the wrapper function or individual functions for each step.
+
+
+
+# Overview of methodology
+
+The 'diffcyt' methodology contains two main components: high-resolution clustering and moderated tests.
+
+We use high-resolution clustering to define small clusters representing cell populations. We use 'FlowSOM' (Van Gassen et al., 2015) to perform the high-resolution clustering, since we previously showed that this clustering algorithm gives excellent clustering performance and fast runtimes for high-dimensional cytometry data (Weber and Robinson, 2016).
+
+For the differential testing, we use methods from 'edgeR' (Robinson et al., 2010; McCarthy et al., 2012), 'limma' (Ritchie et al., 2015), and 'voom' (Law et al., 2014). These methods are widely used in the transcriptomics field, and have been adapted here for high-dimensional cytometry. In addition, we provide alternative methods based on generalized linear mixed models (GLMMs), linear mixed models (LMMs), and linear models (LMs), developed by Nowicka et al. (2017).
+
+
+## 'Cell type' and 'cell state' markers
+
+In the 'diffcyt' methodology, the set of protein markers is divided into 'cell type' and 'cell state' markers. Cell type markers are used for clustering and to test for differential abundance (DA) of cell populations, and cell state markers are used to test for differential states (DS) within cell populations.
+
+This split facilitates biological interpretability, since it allows the user to interpret clusters in terms of cell populations defined by known cell type markers.
+
+
+## More details
+
+For a detailed description of the methodology and comparisons with existing approaches, see the accompanying paper (available soon).
+
+
+
+# Data
+
+First, we generate some random data containing a differential signal.
+
+```{r}
+# Create some random data (without differential signal)
+cofactor <- 5
+set.seed(123)
+d_input <- list(
+  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+)
+
+# Add differential signal (for some cells and markers in one group)
+ix_rows <- 901:1000
+ix_cols <- c(6:10, 16:20)
+d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+```
+
+
+# Row and column meta-data
+
+Next, generate the row and column meta-data. Cells are stored in rows, and samples are stored in columns.
+
+```{r}
+# Sample information
+sample_info <- data.frame(
+  sample_IDs = paste0("sample", 1:4), 
+  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+)
+
+# Marker information
+marker_info <- data.frame(
+  marker_names = paste0("marker", 1:20), 
+  is_marker = rep(TRUE, 20), 
+  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+)
+```
+
+
+# Prepare data, transform data, and generate clusters
+
+Prepare data into the format required by other functions in the 'diffcyt' pipeline, transform data using an 'arcsinh' transformation with adjustable 'cofactor' parameter, and generate clusters using 'FlowSOM'.
+
+```{r}
+library(diffcyt)
+
+# Prepare data
+d_se <- prepareData(d_input, sample_info, marker_info)
+
+# Transform data
+d_se <- transformData(d_se)
+
+# Generate clusters
+d_se <- generateClusters(d_se)
+```
+
+
+# Calculate features
+
+Calculate cluster cell counts, median expression of markers by sample, and median expression of markers across all samples. These objects will be used to calculate the differential tests and generate plots.
+
+```{r}
+# Calculate counts
+d_counts <- calcCounts(d_se)
+
+# Calculate medians (by sample)
+d_medians <- calcMedians(d_se)
+
+# Calculate medians (across all samples)
+d_medians_all_samples <- calcMediansAllSamples(d_se)
+```
+
+
+# Create design matrix (or model formula) and contrast matrix
+
+The design matrix (or model formula) specifies the experimental design and setup. Flexible experimental designs are possible, including blocking (e.g. paired designs), batch effects, and continuous covariates. Some of the differential testing methods require a model formula instead of a design matrix (see the individual help files for details).
+
+The contrast matrix specifies the comparison of interest, i.e. the combination of model parameters assumed to equal zero under the null hypothesis.
+
+```{r}
+# Create design matrix
+design <- createDesignMatrix(sample_info, cols_include = 2)
+
+# Alternatively, calculate model formula (required for some methods)
+formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+
+# Create contrast matrix
+contrast <- createContrast(c(0, 1))
+```
+
+
+# Test for differential abundance (DA) of cell populations
+
+Calculate tests for differential abundance of clusters, using either method 'diffcyt-DA-edgeR', 'diffcyt-DA-voom', or 'diffcyt-DA-GLMM'. In this example, we use the default method, 'diffcyt-DA-edgeR'.
+
+```{r}
+# Test for differential abundance (DA) of clusters
+res_DA <- testDA_edgeR(d_counts, design, contrast)
+```
+
+
+## Analyze results
+
+The differential test results are stored in the 'rowData' of the output object, which is in 'SummarizedExperiment' format. There is one test result for each cluster. The detected differentially abundant (DA) clusters can be ranked by false discovery rate (FDR), and we can calculate the number of detected DA clusters at a given FDR threshold.
+
+```{r}
+library(SummarizedExperiment)
+
+# Show top (most highly significant) DA clusters
+res_DA_sorted <- rowData(res_DA)[order(rowData(res_DA)$FDR), ]
+head(res_DA_sorted)
+
+# Show number of detected DA clusters at 10% FDR threshold
+table(res_DA_sorted$FDR <= 0.1)
+```
+
+
+
+# Test for differential states (DS) within cell populations
+
+Calculate tests for differential states (DS) within clusters, using either method 'diffcyt-DS-limma' or 'diffcyt-DS-LMM'. In this example, we use the default method, 'diffcyt-DS-limma'.
+
+```{r}
+# Test for differential states (DS) within clusters
+res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
+```
+
+
+## Analyze results
+
+As above, the differential test results are stored in the 'rowData' of the output object in 'SummarizedExperiment' format. However, there is now one test result for each cluster-marker combination (for cell state markers), since we are testing for differential expression of each cell state marker within each cluster. The detected differential cluster-marker combinations can be ranked by their adjusted p-values, and we can calculate the number of detected differential cluster-marker combinations at a given adjusted p-value threshold.
+
+```{r}
+library(SummarizedExperiment)
+
+# Show top (most highly significant) cluster-marker combinations
+res_DS_sorted <- rowData(res_DS)[order(rowData(res_DS)$adj.P.Val), ]
+head(res_DS_sorted)
+
+# Show number detected at 10% adjusted p-value threshold
+table(res_DS_sorted$adj.P.Val <= 0.1)
+```
+
+
+
+# Visualizations
+
+The results can be visualized using heatmaps. Each row in the heatmap represents a cluster (DA tests) or cluster-marker combination (DS tests). Columns show protein markers (left panels) or samples (right panel). The left panels display the (arcsinh-transformed) median marker expression profiles of the detected clusters or cluster-marker combinations, and the right panel illustrates the signal of interest (cluster abundance by sample for DA tests, or median expression of cell state markers by sample for DS tests).
+
+These heatmaps are generated using the [ComplexHeatmaps](http://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html) package available from Bioconductor (Gu et al., 2016, *Bioinformatics*).
+
+
+
+# Additional visualizations: CATALYST
+
+We can generate additional visualizations to further explore the data, using plotting functions available from the [CATALYST](http://bioconductor.org/packages/release/bioc/html/CATALYST.html) Bioconductor package (Chevrier, Crowell, Zanotelli et al., 2018, *Cell Systems*, in press). These plotting functions were originally developed by Malgorzata Nowicka for the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) available from Bioconductor (Nowicka et al., 2017, *F1000Research*), and have been adapted by Helena Crowell for the CATALYST package.
+
+
 
