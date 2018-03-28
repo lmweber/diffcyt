@@ -4,17 +4,17 @@
 #' 'diffcyt-DS-limma'
 #' 
 #' Calculates tests for differential states within cell populations (i.e. differential
-#' expression of state markers within clusters). Clusters are defined using cell type
-#' markers, and states are characterized by the median transformed expression of state
-#' markers.
+#' expression of cell state markers within clusters). Clusters are defined using cell type
+#' markers, and cell states are characterized by the median transformed expression of cell
+#' state markers.
 #' 
 #' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
-#' \emph{Nucleic Acids Research}) to fit linear models and calculate empirical Bayes
-#' moderated tests at the cluster level. Empirical Bayes methods improve statistical power
-#' by sharing information on variability (i.e. variance across samples for a single
-#' cluster) between clusters. We use the option \code{trend = TRUE} in the \code{eBayes}
-#' fitting function in order to stabilize the mean-variance relationship. Diagnostic plots
-#' are shown if \code{plot = TRUE}.
+#' \emph{Nucleic Acids Research}) to fit models and calculate moderated tests at the
+#' cluster level. Moderated tests improve statistical power by sharing information on
+#' variability (i.e. variance across samples for a single cluster) between clusters. We
+#' use the option \code{trend = TRUE} in the \code{eBayes} fitting function in order to
+#' stabilize the mean-variance relationship. Diagnostic plots are shown if \code{plot =
+#' TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -26,9 +26,9 @@
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
 #' \code{block_IDs} argument here instead. This will make use of the \code{limma}
-#' \code{\link[limma]{duplicateCorrelation}} methodology. Note that multiple measures per
-#' sample are not possible in this case (fixed effects should be used instead). Block IDs
-#' should not be included in the design matrix if the \code{limma}
+#' \code{\link[limma]{duplicateCorrelation}} methodology. Note that >2 measures per sample
+#' are not possible in this case (fixed effects should be used instead). Block IDs should
+#' not be included in the design matrix if the \code{limma}
 #' \code{\link[limma]{duplicateCorrelation}} methodology is used.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
@@ -38,13 +38,18 @@
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, to improve power.
 #' 
+#' Weights: Cluster cell counts are used as precision weights (across all samples and
+#' clusters); allowing the \code{limma} model fitting functions to account for uncertainty
+#' due to the total number of cells per sample (library sizes) and total number of cells
+#' per cluster.
+#' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
 #'   containing cluster cell counts, from \code{\link{calcCounts}}.
 #' 
 #' @param d_medians \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster medians (median expression of each marker for each cluster-sample
-#'   combination), from \code{\link{calcMedians}}.
+#'   containing cluster medians by sample (median expression of each marker for each
+#'   cluster-sample combination), from \code{\link{calcMedians}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -75,12 +80,12 @@
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
 #'   where rows = cluster-marker combinations, and columns = samples. In the rows,
-#'   clusters are repeated for each state marker (i.e. the sheets or 'assays' from the
-#'   previous \code{d_medians} object are stacked into a single matrix). Differential test
-#'   results are stored in the \code{rowData} slot. Results include raw p-values and
-#'   adjusted p-values from the \code{limma} empirical Bayes moderated tests, which can be
-#'   used to rank cluster-marker combinations by evidence for differential states within
-#'   cell populations. The results can be accessed with the
+#'   clusters are repeated for each cell state marker (i.e. the sheets or 'assays' from
+#'   the previous \code{d_medians} object are stacked into a single matrix). Differential
+#'   test results are stored in the \code{rowData} slot. Results include raw p-values and
+#'   adjusted p-values from the \code{limma} moderated tests, which can be used to rank
+#'   cluster-marker combinations by evidence for differential states within cell
+#'   populations. The results can be accessed with the
 #'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
@@ -93,8 +98,56 @@
 #' @export
 #' 
 #' @examples
-#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline on an experimental data set is available in the package vignette.
+#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline, see the package vignette.
+#' 
+#' # Create some random data (without differential signal)
+#' cofactor <- 5
+#' set.seed(123)
+#' d_input <- list(
+#'   sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+#' )
+#' # Add differential signal (for some cells and markers in one group)
+#' ix_rows <- 901:1000
+#' ix_cols <- c(6:10, 16:20)
+#' d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' 
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#' )
+#' 
+#' marker_info <- data.frame(
+#'   marker_names = paste0("marker", 1:20), 
+#'   is_marker = rep(TRUE, 20), 
+#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#' )
+#' 
+#' # Prepare data
+#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' # Transform data
+#' d_se <- transformData(d_se)
+#' # Generate clusters
+#' d_se <- generateClusters(d_se)
+#' 
+#' # Calculate counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # Calculate medians (by sample)
+#' d_medians <- calcMedians(d_se)
+#' 
+#' # Create design matrix
+#' design <- createDesignMatrix(sample_info, cols_include = 2)
+#' # Create contrast matrix
+#' contrast <- createContrast(c(0, 1))
+#' 
+#' # Test for differential states (DS) within clusters
+#' res <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 #' 
 testDS_limma <- function(d_counts, d_medians, design, contrast, 
                          block_IDs = NULL, 
@@ -120,6 +173,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
+  counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
   
   # extract medians and create concatenated matrix
@@ -138,16 +192,21 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
     dupcor <- duplicateCorrelation(meds, design, block = block_IDs)
   }
   
-  # fit linear models
+  # weights: cluster cell counts (repeat for each marker)
+  weights <- counts[rep(cluster, length(state_names)), ]
+  stopifnot(nrow(weights) == nrow(meds))
+  
+  # fit models
   if (!is.null(block_IDs)) {
     message("Fitting linear models with random effects term for 'block_IDs'.")
-    fit <- lmFit(meds, design, block = block_IDs, correlation = dupcor$consensus.correlation)
+    fit <- lmFit(meds, design, weights = weights, 
+                 block = block_IDs, correlation = dupcor$consensus.correlation)
   } else {
-    fit <- lmFit(meds, design)
+    fit <- lmFit(meds, design, weights = weights)
   }
   fit <- contrasts.fit(fit, contrast)
   
-  # calculate empirical Bayes moderated tests (note: using 'trend = TRUE' for mean-variance relationship)
+  # calculate moderated tests (note: using 'trend = TRUE' for mean-variance relationship)
   efit <- eBayes(fit, trend = TRUE)
   
   if (plot) pdf(file.path(path, "SA_plot.pdf"), width = 6, height = 6)

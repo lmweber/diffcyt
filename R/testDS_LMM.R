@@ -4,9 +4,9 @@
 #' 'diffcyt-DS-LMM'
 #' 
 #' Calculates tests for differential states within cell populations (i.e. differential
-#' expression of state markers within clusters), using linear mixed models (LMMs).
-#' Clusters are defined using cell type markers, and states are characterized by the
-#' median transformed expression of state markers.
+#' expression of cell state markers within clusters), using linear mixed models (LMMs).
+#' Clusters are defined using cell type markers, and cell states are characterized by the
+#' median transformed expression of cell state markers.
 #' 
 #' This methodology was originally developed and described by Nowicka et al. (2017),
 #' \emph{F1000Research}, and has been modified here to make use of high-resolution
@@ -14,22 +14,19 @@
 #' original method by Nowicka et al., we do not attempt to manually merge clusters into
 #' canonical cell populations. Instead, results are reported at the high-resolution
 #' cluster level, and the interpretation of significant differential clusters is left to
-#' the user via visualizations such as heatmaps and tSNE plots (see the package vignette
-#' for a detailed example).
+#' the user via visualizations such as heatmaps (see the package vignette for an example).
 #' 
-#' This method fits linear mixed models (LMMs) for each cluster-marker combination (state
-#' markers only), and calculates differential tests separately for each cluster-marker
-#' combination. The response variable in each model is the median arcsinh-transformed
-#' marker expression of the state marker, which is assumed to follow a Gaussian
-#' distribution. There is one model per cluster per state marker. Within each model,
-#' sample-level weights are included for the number of cells per sample; these weights
-#' represent the relative uncertainty in calculating each median value. (Additional
-#' uncertainty exists due to variation in the total number of cells per cluster; however,
-#' it is not possible to account for this, since there are separate models for each
-#' cluster-marker combination. By contrast, the 'diffcyt-DS-limma' method can account for
-#' this source of uncertainty using empirical Bayes methodology.) We also include a
-#' filtering step to remove clusters with very small numbers of cells, to improve
-#' statistical power.
+#' This method fits linear mixed models (LMMs) for each cluster-marker combination (cell
+#' state markers only), and calculates differential tests separately for each
+#' cluster-marker combination. The response variable in each model is the median
+#' arcsinh-transformed marker expression of the cell state marker, which is assumed to
+#' follow a Gaussian distribution. There is one model per cluster per cell state marker.
+#' Within each model, sample-level weights are included for the number of cells per
+#' sample; these weights represent the relative uncertainty in calculating each median
+#' value. (Additional uncertainty exists due to variation in the total number of cells per
+#' cluster; however, it is not possible to account for this, since there are separate
+#' models for each cluster-marker combination.) We also include a filtering step to remove
+#' clusters with very small numbers of cells, to improve statistical power.
 #' 
 #' For more details on the statistical methodology, see Nowicka et al. (2017),
 #' \emph{F1000Research} (section 'Differential analysis of marker expression stratified by
@@ -52,6 +49,11 @@
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, to improve power.
+#' 
+#' Weights: Cluster cell counts are used as precision weights within each model (across
+#' samples only, i.e. within the model for each cluster); these represent the relative
+#' uncertainty in calculating each median value (within each model). See above for
+#' details.
 #' 
 #' 
 #' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
@@ -82,9 +84,9 @@
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
 #'   where rows = cluster-marker combinations, and columns = samples. In the rows,
-#'   clusters are repeated for each state marker (i.e. the sheets or 'assays' from the
-#'   previous \code{d_medians} object are stacked into a single matrix). Differential test
-#'   results are stored in the \code{rowData} slot. Results include raw p-values and
+#'   clusters are repeated for each cell state marker (i.e. the sheets or 'assays' from
+#'   the previous \code{d_medians} object are stacked into a single matrix). Differential
+#'   test results are stored in the \code{rowData} slot. Results include raw p-values and
 #'   adjusted p-values, which can be used to rank cluster-marker combinations by evidence
 #'   for differential states within cell populations. The results can be accessed with the
 #'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
@@ -99,8 +101,56 @@
 #' @export
 #' 
 #' @examples
-#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline on an experimental data set is available in the package vignette.
+#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline, see the package vignette.
+#' 
+#' # Create some random data (without differential signal)
+#' cofactor <- 5
+#' set.seed(123)
+#' d_input <- list(
+#'   sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+#' )
+#' # Add differential signal (for some cells and markers in one group)
+#' ix_rows <- 901:1000
+#' ix_cols <- c(6:10, 16:20)
+#' d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' 
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#' )
+#' 
+#' marker_info <- data.frame(
+#'   marker_names = paste0("marker", 1:20), 
+#'   is_marker = rep(TRUE, 20), 
+#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#' )
+#' 
+#' # Prepare data
+#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' # Transform data
+#' d_se <- transformData(d_se)
+#' # Generate clusters
+#' d_se <- generateClusters(d_se)
+#' 
+#' # Calculate counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # Calculate medians (by sample)
+#' d_medians <- calcMedians(d_se)
+#' 
+#' # Create model formula
+#' formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+#' # Create contrast matrix
+#' contrast <- createContrast(c(0, 1))
+#' 
+#' # Test for differential states (DS) within clusters
+#' res <- testDS_LMM(d_counts, d_medians, formula, contrast)
 #' 
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
                        min_cells = 3, min_samples = NULL) {
@@ -120,6 +170,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
+  counts <- counts[ix_keep, ]
   cluster <- cluster[ix_keep]
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
@@ -145,20 +196,23 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   p_vals <- rep(NA, nrow(meds))
   
   for (i in seq_len(nrow(meds))) {
-    # data for cluster-marker i
-    # note: response values are medians
-    y <- meds[i, ]
-    data_i <- cbind(y, n_cells_smp, formula$data)
-    # fit LMM if model formula contains any random effect terms; LM otherwise
-    if (formula$random_terms) {
-      fit <- lmer(formula$formula, data = data_i, weights = n_cells_smp)
-    } else {
-      fit <- lm(formula$formula, data = data_i, weights = n_cells_smp)
-    }
-    # test contrast
-    test <- glht(fit, contrast)
-    # return p-value
-    p_vals[i] <- summary(test)$test$pvalues
+    p_vals[i] <- tryCatch({
+      # data for cluster-marker i
+      # note: response values are medians
+      y <- meds[i, ]
+      data_i <- cbind(y, n_cells_smp, formula$data)
+      # fit LMM if model formula contains any random effect terms; LM otherwise
+      if (formula$random_terms) {
+        fit <- lmer(formula$formula, data = data_i, weights = n_cells_smp)
+      } else {
+        fit <- lm(formula$formula, data = data_i, weights = n_cells_smp)
+      }
+      # test contrast
+      test <- glht(fit, contrast)
+      # return p-value
+      summary(test)$test$pvalues
+      # return NA as p-value if there is an error
+    }, error = function(e) NA)
   }
   
   # adjusted p-values (false discovery rates)

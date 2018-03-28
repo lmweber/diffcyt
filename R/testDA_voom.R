@@ -123,7 +123,7 @@
 #' )
 #' # Add differential signal (for some cells and markers in one group)
 #' ix_rows <- 901:1000
-#' ix_cols <- 11:20
+#' ix_cols <- c(6:10, 16:20)
 #' d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 #' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 #' 
@@ -210,7 +210,7 @@ testDA_voom <- function(d_counts, design, contrast, block_IDs = NULL,
     dupcor <- duplicateCorrelation(v, design, block = block_IDs)
   }
   
-  # fit linear models
+  # fit models
   if (!is.null(block_IDs)) {
     message("Fitting linear models with random effects term for 'block_IDs'.")
     vfit <- lmFit(v, design, block = block_IDs, correlation = dupcor$consensus.correlation)
@@ -219,7 +219,7 @@ testDA_voom <- function(d_counts, design, contrast, block_IDs = NULL,
   }
   vfit <- contrasts.fit(vfit, contrast)
   
-  # calculate empirical Bayes moderated tests
+  # calculate moderated tests
   efit <- eBayes(vfit)
   
   if (plot) pdf(file.path(path, "voom_after.pdf"), width = 6, height = 6)

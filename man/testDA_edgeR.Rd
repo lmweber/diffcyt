@@ -52,11 +52,12 @@ This method uses the \code{\link[edgeR]{edgeR}} package (Robinson et al. 2010,
 \emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
 models and calculate moderated tests at the cluster level. Moderated tests improve
 statistical power by sharing information on variability (i.e. variance across samples
-for a single cluster) between clusters. The statistical methods implemented in the
-\code{edgeR} package were originally designed for the analysis of gene expression data
-such as RNA-sequencing counts. Here, we apply these methods to cluster cell counts.
-Note that we use the option \code{trend.method = "none"} to calculate dispersions,
-since the dispersion-mean relationship typically does not resemble RNA-sequencing data.
+for a single cluster) between clusters. We use the option \code{trend.method = "none"}
+to calculate dispersions, since the dispersion-mean relationship typically does not
+resemble RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods
+implemented in the \code{edgeR} package were originally designed for the analysis of
+gene expression data such as RNA-sequencing counts. Here, we apply these methods to
+cluster cell counts.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -101,7 +102,7 @@ d_input <- list(
 )
 # Add differential signal (for some cells and markers in one group)
 ix_rows <- 901:1000
-ix_cols <- 11:20
+ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 
