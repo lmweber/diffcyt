@@ -12,8 +12,7 @@
 #' original method by Nowicka et al., we do not attempt to manually merge clusters into
 #' canonical cell populations. Instead, results are reported at the high-resolution
 #' cluster level, and the interpretation of significant differential clusters is left to
-#' the user via visualizations such as heatmaps and tSNE plots (see the package vignette
-#' for a detailed example).
+#' the user via visualizations such as heatmaps (see the package vignette for an example).
 #' 
 #' This method fits generalized linear mixed models (GLMMs) for each cluster, and
 #' calculates differential tests separately for each cluster. The response variables in
@@ -41,7 +40,7 @@
 #' 
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
-#' with very low cell counts across conditions, which improves power.
+#' with very low cell counts across conditions, to improve power.
 #' 
 #' Normalization: Optional normalization factors can be included to adjust for composition
 #' effects in the total number of counts per sample (library sizes). For example, if one
@@ -75,8 +74,9 @@
 #'   samples.
 #' 
 #' @param min_samples Filtering parameter. Default = \code{number of samples / 2}, which
-#'   is appropriate for two-group comparisons. Clusters are kept for differential testing
-#'   if they have at least \code{min_cells} cells in at least \code{min_samples} samples.
+#'   is appropriate for two-group comparisons (of equal size). Clusters are kept for
+#'   differential testing if they have at least \code{min_cells} cells in at least
+#'   \code{min_samples} samples.
 #' 
 #' @param normalize Whether to include optional normalization factors to adjust for
 #'   composition effects (see details). Default = FALSE.
@@ -103,8 +103,53 @@
 #' @export
 #' 
 #' @examples
-#' # A full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline on an experimental data set is available in the package vignette.
+#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
+#' # pipeline, see the package vignette.
+#' 
+#' # Create some random data (without differential signal)
+#' cofactor <- 5
+#' set.seed(123)
+#' d_input <- list(
+#'   sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
+#'   sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+#' )
+#' # Add differential signal (for some cells and markers in one group)
+#' ix_rows <- 901:1000
+#' ix_cols <- 11:20
+#' d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+#' 
+#' sample_info <- data.frame(
+#'   sample_IDs = paste0("sample", 1:4), 
+#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#' )
+#' 
+#' marker_info <- data.frame(
+#'   marker_names = paste0("marker", 1:20), 
+#'   is_marker = rep(TRUE, 20), 
+#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#' )
+#' 
+#' # Prepare data
+#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' # Transform data
+#' d_se <- transformData(d_se)
+#' # Generate clusters
+#' d_se <- generateClusters(d_se)
+#' 
+#' # Calculate counts
+#' d_counts <- calcCounts(d_se)
+#' 
+#' # Create model formula
+#' formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+#' # Create contrast matrix
+#' contrast <- createContrast(c(0, 1))
+#' 
+#' # Test for differential abundance (DA) of clusters
+#' res <- testDA_GLMM(d_counts, formula, contrast)
 #' 
 testDA_GLMM <- function(d_counts, formula, contrast, 
                         min_cells = 3, min_samples = NULL, 
@@ -154,19 +199,22 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   p_vals <- rep(NA, length(cluster))
   
   for (i in seq_along(cluster)) {
-    # data for cluster i
-    # note: divide by total number of cells per sample (after filtering) to get
-    # proportions instead of counts
-    y <- counts[i, ] / n_cells_smp
-    data_i <- cbind(y, n_cells_smp, formula$data)
-    # fit model
-    # note: provide proportions (y) together with weights for total number of cells per
-    # sample (n_cells_smp); this is equivalent to providing counts
-    fit <- glmer(formula$formula, data = data_i, family = "binomial", weights = n_cells_smp)
-    # test contrast
-    test <- glht(fit, contrast)
-    # return p-value
-    p_vals[i] <- summary(test)$test$pvalues
+    p_vals[i] <- tryCatch({
+      # data for cluster i
+      # note: divide by total number of cells per sample (after filtering) to get
+      # proportions instead of counts
+      y <- counts[i, ] / n_cells_smp
+      data_i <- cbind(y, n_cells_smp, formula$data)
+      # fit model
+      # note: provide proportions (y) together with weights for total number of cells per
+      # sample (n_cells_smp); this is equivalent to providing counts
+      fit <- glmer(formula$formula, data = data_i, family = "binomial", weights = n_cells_smp)
+      # test contrast
+      test <- glht(fit, contrast)
+      # return p-value
+      summary(test)$test$pvalues
+      # return NA as p-value if there is an error
+    }, error = function(e) NA)
   }
   
   # adjusted p-values (false discovery rates)

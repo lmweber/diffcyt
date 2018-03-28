@@ -34,7 +34,7 @@
 #' \code{sample_info}.
 #' 
 #' Note that for some methods, random effect terms (e.g. for block IDs) must be provided
-#' directly to the differential testing function instead (\code{\link{testDA_limma}} and
+#' directly to the differential testing function instead (\code{\link{testDA_voom}} and
 #' \code{\link{testDS_limma}}).
 #' 
 #' If there are no random effect terms, it will usually be simpler to use a design matrix

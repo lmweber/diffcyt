@@ -33,7 +33,7 @@
 #' All factors provided here will be included as fixed effect terms in the design matrix.
 #' Alternatively, to use random effects for some factors (e.g. for block IDs), see
 #' \code{\link{createFormula}}; or, depending on the method used, provide them directly to
-#' the differential testing function (\code{\link{testDA_limma}} and
+#' the differential testing function (\code{\link{testDA_voom}} and
 #' \code{\link{testDS_limma}}).
 #' 
 #' 

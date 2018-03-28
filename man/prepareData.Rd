@@ -79,7 +79,7 @@ significant loss of information if cells from the rare population are discarded.
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
 # pipeline, see the package vignette.
 
-# Create some random data (without any true differential signal)
+# Create some random data (without differential signal)
 cofactor <- 5
 set.seed(123)
 d_input <- list(

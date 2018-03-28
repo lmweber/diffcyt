@@ -29,8 +29,9 @@ testing if they have at least \code{min_cells} cells in at least \code{min_sampl
 samples.}
 
 \item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}, which
-is appropriate for two-group comparisons. Clusters are kept for differential testing
-if they have at least \code{min_cells} cells in at least \code{min_samples} samples.}
+is appropriate for two-group comparisons (of equal size). Clusters are kept for
+differential testing if they have at least \code{min_cells} cells in at least
+\code{min_samples} samples.}
 }
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -95,7 +96,7 @@ The contrast matrix specifying the contrast of interest can be created with
 
 Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
-with very low cell counts across conditions, which improves power.
+with very low cell counts across conditions, to improve power.
 }
 \examples{
 # A full workflow example demonstrating the use of each function in the 'diffcyt'
