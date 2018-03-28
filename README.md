@@ -1,34 +1,37 @@
 # diffcyt
 
-R package: Statistical methods for differential discovery in high-dimensional cytometry data.
-
-Under development.
+R package: Differential discovery in high-dimensional cytometry via high-resolution clustering
 
 
+## Details
 
-## Details and examples
+Statistical methods for differential discovery in high-dimensional cytometry (including flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry) using high-resolution clustering and moderated tests.
 
-For details on the statistical methodology and comparisons with existing approaches, see the paper (in progress).
+For details on the methodology and comparisons with existing approaches, see the paper (available soon).
 
-For a tutorial and examples of usage, see the Bioconductor vignette (in progress).
 
+## Tutorial and examples
+
+For a tutorial and examples of usage, see the vignette.
 
 
 ## How to install
 
-Since there are dependencies from both CRAN and Bioconductor, the Bioconductor installer (`biocLite`) should be used. This will install all dependencies automatically.
+The package will be submitted to Bioconductor soon. For now, it can be installed from GitHub.
 
-Ensure the Bioconductor installer and `devtools` package are installed:
+The Bioconductor installer (`biocLite`) can be used to install from GitHub. This will install all dependencies from both CRAN and Bioconductor.
+
+First, ensure that the Bioconductor installer and `devtools` package are installed:
 
 ```{r}
 source("https://bioconductor.org/biocLite.R")
 install.packages("devtools")
 ```
 
-Install the `diffcyt` package from GitHub using `biocLite`, with the option `dependencies = TRUE`. (Currently, an authentication token is also required with `auth_token = ...`, since this is a private repository.)
+Then, install the `diffcyt` package from GitHub using `biocLite`, with the option `dependencies = TRUE`.
 
 ```{r}
-biocLite("lmweber/diffcyt", dependencies = TRUE, auth_token = "...")
+biocLite("lmweber/diffcyt", dependencies = TRUE)
 ```
 
 
