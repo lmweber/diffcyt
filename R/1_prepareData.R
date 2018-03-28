@@ -55,7 +55,7 @@
 #' @param n_sub Number of cells to select from each sample by random subsampling, if
 #'   \code{subsampling = TRUE}. Default = number of cells in smallest sample.
 #' 
-#' @param seed Random seed for subsampling. Set to an integer value to generate
+#' @param seed_sub Random seed for subsampling. Set to an integer value to generate
 #'   reproducible results. Default = \code{NULL}.
 #' 
 #' 
@@ -103,7 +103,7 @@
 #' d_se <- prepareData(d_input, sample_info, marker_info)
 #' 
 prepareData <- function(d_input, sample_info, marker_info, 
-                        subsampling = FALSE, n_sub = NULL, seed = NULL) {
+                        subsampling = FALSE, n_sub = NULL, seed_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
     stop("Input data must be a 'list' or 'flowSet'")
@@ -127,7 +127,7 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   if (subsampling) {
     if (is.null(n_sub)) n_sub <- min(n_cells)
-    if (!is.null(seed)) set.seed(seed)
+    if (!is.null(seed_sub)) set.seed(seed_sub)
     d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), min(n_sub, nrow(d))), ])
     n_cells <- sapply(d_ex, nrow)
   }

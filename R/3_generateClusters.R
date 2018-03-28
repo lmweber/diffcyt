@@ -60,7 +60,7 @@
 #' @param meta_k Number of meta-clusters for FlowSOM, if \code{meta-clustering = TRUE}.
 #'   Default = 40.
 #' 
-#' @param seed Random seed for clustering. Set to an integer value to generate
+#' @param seed_clustering Random seed for clustering. Set to an integer value to generate
 #'   reproducible results. Default = \code{NULL}.
 #' 
 #' @param ... Other parameters to pass to the FlowSOM clustering algorithm (through the
@@ -121,7 +121,7 @@
 generateClusters <- function(d_se, cols_to_use = NULL, 
                              xdim = 10, ydim = 10, 
                              meta_clustering = FALSE, meta_k = 40, 
-                             seed = NULL, ...) {
+                             seed_clustering = NULL, ...) {
   
   if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_marker
   
@@ -130,7 +130,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
   
   runtime <- system.time({
     # FlowSOM: pre meta-clustering
-    if (!is.null(seed)) set.seed(seed); 
+    if (!is.null(seed_clustering)) set.seed(seed_clustering); 
     fsom <- ReadInput(d_ff, transform = FALSE, scale = FALSE); 
     fsom <- suppressMessages(BuildSOM(fsom, colsToUse = cols_to_use, xdim = xdim, ydim = ydim, ...)); 
     fsom <- suppressMessages(BuildMST(fsom))
@@ -138,7 +138,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
     if (meta_clustering) {
       # FlowSOM: meta-clustering
       # (note: seed for meta-clustering must be provided via argument)
-      meta <- metaClustering_consensus(fsom$map$codes, k = meta_k, seed = seed)
+      meta <- metaClustering_consensus(fsom$map$codes, k = meta_k, seed = seed_clustering)
     }
   })
   

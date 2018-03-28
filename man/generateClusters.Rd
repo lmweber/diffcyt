@@ -5,7 +5,7 @@
 \title{Generate clusters}
 \usage{
 generateClusters(d_se, cols_to_use = NULL, xdim = 10, ydim = 10,
-  meta_clustering = FALSE, meta_k = 40, seed = NULL, ...)
+  meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, ...)
 }
 \arguments{
 \item{d_se}{Transformed input data, from \code{\link{prepareData}} and
@@ -27,7 +27,7 @@ will be used.}
 \item{meta_k}{Number of meta-clusters for FlowSOM, if \code{meta-clustering = TRUE}.
 Default = 40.}
 
-\item{seed}{Random seed for clustering. Set to an integer value to generate
+\item{seed_clustering}{Random seed for clustering. Set to an integer value to generate
 reproducible results. Default = \code{NULL}.}
 
 \item{...}{Other parameters to pass to the FlowSOM clustering algorithm (through the
