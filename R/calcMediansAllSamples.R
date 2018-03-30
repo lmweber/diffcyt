@@ -136,8 +136,9 @@ calcMediansAllSamples <- function(d_se) {
   )
   
   col_data <- colData(d_se)[colData(d_se)$is_marker, ]
-  col_data <- col_data[match(colnames(medians), col_data$marker_names), ]
   
+  # rearrange marker order to match 'marker_info'
+  medians <- medians[, match(col_data$marker_names, colnames(medians))]
   stopifnot(all(col_data$marker_names == colnames(medians)))
   
   metadata <- list(id_type_markers = id_type_markers, 

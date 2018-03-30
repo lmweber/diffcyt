@@ -112,8 +112,9 @@ calcCounts <- function(d_se) {
   )
   
   col_data <- metadata(d_se)$sample_info
-  col_data <- col_data[match(colnames(n_cells), metadata(d_se)$sample_info$sample_IDs), ]
   
+  # rearrange sample order to match 'sample_info'
+  n_cells <- n_cells[, match(col_data$sample_IDs, colnames(n_cells))]
   stopifnot(all(col_data$sample_IDs == colnames(n_cells)))
   
   d_counts <- SummarizedExperiment(

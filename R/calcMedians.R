@@ -147,9 +147,14 @@ calcMedians <- function(d_se) {
   )
   
   col_data <- metadata(d_se)$sample_info
-  col_data <- col_data[match(colnames(medians[[1]]), metadata(d_se)$sample_info$sample_IDs), ]
   
-  stopifnot(all(col_data$sample_IDs == colnames(medians[[1]])))
+  # rearrange sample order to match 'sample_info'
+  medians <- lapply(medians, function(m) {
+    m[, match(col_data$sample_IDs, colnames(m))]
+  })
+  stopifnot(all(sapply(medians, function(m) {
+    col_data$sample_IDs == colnames(m)
+  })))
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)
