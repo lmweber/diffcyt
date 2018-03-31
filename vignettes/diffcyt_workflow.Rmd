@@ -80,7 +80,7 @@ d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), nco
 
 # Row and column meta-data
 
-Next, generate the row and column meta-data. Cells are stored in rows, and samples are stored in columns.
+Next, generate the row and column meta-data. Cells are stored in rows, and protein markers are stored in columns.
 
 ```{r}
 # Sample information

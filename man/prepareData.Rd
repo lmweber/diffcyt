@@ -8,8 +8,9 @@ prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
   n_sub = NULL, seed_sub = NULL)
 }
 \arguments{
-\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
-item or \code{\link[flowCore]{flowFrame}} per sample).}
+\item{d_input}{Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
+\code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (one
+\code{flowFrame} or list item per sample).}
 
 \item{sample_info}{Data frame of sample information, for example sample IDs and group
 IDs. Must contain a column named \code{sample_IDs}.}
@@ -46,9 +47,10 @@ Functions in the \code{diffcyt} analysis pipeline assume that input data is prov
 a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
 single matrix of expression values, together with row and column meta-data.
 
-This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
-one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
-tables into a single matrix, and adds row and column meta-data.
+This function accepts a \code{\link[flowCore]{flowSet}} or a list of
+\code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (i.e. one
+\code{flowFrame} or list item per sample). The function then concatenates the data
+tables into a single matrix of values, and adds row and column meta-data.
 
 Row meta-data should be provided as a data frame named \code{sample_info}, containing
 columns of relevant sample information such as sample IDs and group IDs. This must

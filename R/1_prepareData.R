@@ -6,9 +6,10 @@
 #' a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
 #' single matrix of expression values, together with row and column meta-data.
 #' 
-#' This function accepts a list or \code{\link[flowCore]{flowSet}} as input (containing
-#' one list item or \code{\link[flowCore]{flowFrame}} per sample), concatenates the data
-#' tables into a single matrix, and adds row and column meta-data.
+#' This function accepts a \code{\link[flowCore]{flowSet}} or a list of
+#' \code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (i.e. one
+#' \code{flowFrame} or list item per sample). The function then concatenates the data
+#' tables into a single matrix of values, and adds row and column meta-data.
 #' 
 #' Row meta-data should be provided as a data frame named \code{sample_info}, containing
 #' columns of relevant sample information such as sample IDs and group IDs. This must
@@ -36,8 +37,9 @@
 #' significant loss of information if cells from the rare population are discarded.
 #' 
 #' 
-#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
-#'   item or \code{\link[flowCore]{flowFrame}} per sample).
+#' @param d_input Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
+#'   \code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (one
+#'   \code{flowFrame} or list item per sample).
 #' 
 #' @param sample_info Data frame of sample information, for example sample IDs and group
 #'   IDs. Must contain a column named \code{sample_IDs}.
@@ -115,8 +117,12 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   if (all(sapply(d_input, class) == "flowFrame")) {
     d_ex <- lapply(d_input, exprs)
-  } else {
+  } else if (all(sapply(d_input, is.data.frame))) {
+    d_ex <- lapply(d_input, as.matrix)
+  } else if (all(sapply(d_input, is.matrix))) {
     d_ex <- d_input
+  } else {
+    stop("input data format not recognized (should be a 'flowSet' or a list of 'flowFrames', data.frames, or matrices)")
   }
   
   if (!(nrow(sample_info) == length(d_ex))) {
