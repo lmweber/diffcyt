@@ -31,7 +31,9 @@ composition effects (see details). Default = FALSE.}
 
 \item{norm_factors}{Normalization factors to use, if \code{normalize = TRUE}. Default =
 \code{"TMM"}, in which case normalization factors are calculated automatically using
-the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.}
+the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+Alternatively, a vector of values can be provided. (Note that other normalization
+methods from \code{edgeR} are not used.)}
 }
 \value{
 Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -107,15 +109,17 @@ d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), nco
 d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 
 sample_info <- data.frame(
-  sample_IDs = paste0("sample", 1:4), 
-  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+  sample = factor(paste0("sample", 1:4)), 
+  group = factor(c("group1", "group1", "group2", "group2")), 
+  stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
-  marker_names = paste0("marker", 1:20), 
+  marker_name = paste0("marker", 1:20), 
   is_marker = rep(TRUE, 20), 
   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+  stringsAsFactors = FALSE
 )
 
 # Prepare data

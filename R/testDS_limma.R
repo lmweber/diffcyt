@@ -25,7 +25,7 @@
 #' are simpler, but random effects may improve power in data sets with unbalanced designs
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
-#' \code{block_IDs} argument here instead. This will make use of the \code{limma}
+#' \code{block} argument here instead. This will make use of the \code{limma}
 #' \code{\link[limma]{duplicateCorrelation}} methodology. Note that >2 measures per sample
 #' are not possible in this case (fixed effects should be used instead). Block IDs should
 #' not be included in the design matrix if the \code{limma}
@@ -57,7 +57,7 @@
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
 #' 
-#' @param block_IDs (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+#' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects. If provided, the block IDs
 #'   will be included as random effects using the \code{limma}
 #'   \code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
@@ -89,7 +89,7 @@
 #'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom limma contrasts.fit duplicateCorrelation lmFit eBayes plotSA topTable
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
@@ -117,15 +117,17 @@
 #' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -149,13 +151,12 @@
 #' # Test for differential states (DS) within clusters
 #' res <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 #' 
-testDS_limma <- function(d_counts, d_medians, design, contrast, 
-                         block_IDs = NULL, 
+testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL, 
                          min_cells = 3, min_samples = NULL, 
                          plot = TRUE, path = ".") {
   
-  if (!is.null(block_IDs) & !is.factor(block_IDs)) {
-    block_IDs <- factor(block_IDs, levels = unique(block_IDs))
+  if (!is.null(block) & !is.factor(block)) {
+    block <- factor(block, levels = unique(block))
   }
   
   if (is.null(min_samples)) {
@@ -166,20 +167,20 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   id_state_markers <- metadata(d_medians)$id_state_markers
   
   # note: counts are only required for filtering
-  counts <- assays(d_counts)[[1]]
+  counts <- assay(d_counts)
   cluster <- rowData(d_counts)$cluster
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
-  counts <- counts[ix_keep, ]
+  counts <- counts[ix_keep, , drop = FALSE]
   cluster <- cluster[ix_keep]
   
   # extract medians and create concatenated matrix
   state_names <- names(assays(d_medians))[id_state_markers]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, ])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, , drop = FALSE])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
@@ -188,19 +189,19 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   
   # estimate correlation between paired samples
   # (note: paired designs only; >2 measures per sample not allowed)
-  if (!is.null(block_IDs)) {
-    dupcor <- duplicateCorrelation(meds, design, block = block_IDs)
+  if (!is.null(block)) {
+    dupcor <- duplicateCorrelation(meds, design, block = block)
   }
   
   # weights: cluster cell counts (repeat for each marker)
-  weights <- counts[rep(cluster, length(state_names)), ]
+  weights <- counts[rep(cluster, length(state_names)), , drop = FALSE]
   stopifnot(nrow(weights) == nrow(meds))
   
   # fit models
-  if (!is.null(block_IDs)) {
-    message("Fitting linear models with random effects term for 'block_IDs'.")
+  if (!is.null(block)) {
+    message("Fitting linear models with random effects term for 'block'.")
     fit <- lmFit(meds, design, weights = weights, 
-                 block = block_IDs, correlation = dupcor$consensus.correlation)
+                 block = block, correlation = dupcor$consensus.correlation)
   } else {
     fit <- lmFit(meds, design, weights = weights)
   }
@@ -244,7 +245,8 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster = clus, marker = stat), row_data)
+  row_data <- cbind(data.frame(cluster = clus, marker = stat, stringsAsFactors = FALSE), 
+                    row_data)
   
   col_data <- colData(d_medians)
   

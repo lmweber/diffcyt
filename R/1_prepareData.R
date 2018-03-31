@@ -13,14 +13,14 @@
 #' 
 #' Row meta-data should be provided as a data frame named \code{sample_info}, containing
 #' columns of relevant sample information such as sample IDs and group IDs. This must
-#' contain at least a column named \code{sample_IDs}.
+#' contain at least a column named \code{sample}.
 #' 
 #' Column meta-data should be provided as a data frame named \code{marker_info},
 #' containing the following columns of marker information. The column names must be as
 #' shown.
 #' 
 #' \itemize{
-#' \item \code{marker_names}: protein marker names
+#' \item \code{marker_name}: protein marker names
 #' \item \code{is_marker}: logical vector indicating whether each column is a marker
 #' \item \code{is_type_marker}: logical vector indicating whether each column is a 'cell
 #' type' marker (for clustering and testing for differential abundance of cell
@@ -42,10 +42,10 @@
 #'   \code{flowFrame} or list item per sample).
 #' 
 #' @param sample_info Data frame of sample information, for example sample IDs and group
-#'   IDs. Must contain a column named \code{sample_IDs}.
+#'   IDs. Must contain a column named \code{sample}.
 #' 
 #' @param marker_info Data frame of marker information for each column. This should
-#'   contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
+#'   contain columns named \code{marker_name}, \code{is_marker}, \code{is_type_marker},
 #'   and \code{is_state_marker}. The first column must contain marker names or column
 #'   names; the remaining columns are logical vectors indicating whether each column in
 #'   the input data is (i) a protein marker, (ii) a 'cell type' marker, and (iii) a 'cell
@@ -90,15 +90,17 @@
 #' )
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -129,7 +131,8 @@ prepareData <- function(d_input, sample_info, marker_info,
     stop("number of rows in 'sample_info' data frame must equal the number of samples")
   }
   
-  if (!all(sapply(d_input, function(d) is.null(colnames(d)))) | !all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]]))))) {
+  if (!all(sapply(d_input, function(d) is.null(colnames(d)))) | 
+      !all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]]))))) {
     stop("column (marker) names do not match for all samples")
   }
   
@@ -145,7 +148,7 @@ prepareData <- function(d_input, sample_info, marker_info,
   d_combined <- do.call(rbind, d_ex)
   
   # assume marker names are in first column of 'marker_info'
-  colnames(d_combined) <- marker_info[, "marker_names"]
+  colnames(d_combined) <- marker_info[, "marker_name"]
   
   # create row meta-data
   stopifnot(is.data.frame(sample_info))
@@ -162,7 +165,7 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   col_data <- marker_info
   
-  stopifnot("sample_IDs" %in% colnames(sample_info))
+  stopifnot("sample" %in% colnames(sample_info))
   
   # create SummarizedExperiment object
   d_se <- SummarizedExperiment(

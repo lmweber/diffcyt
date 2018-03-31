@@ -65,15 +65,17 @@
 #' )
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -104,7 +106,7 @@ calcMediansAllSamples <- function(d_se) {
   
   # calculate cluster medians
   
-  marker_vals <- as.data.frame(assay(d_se))[, colData(d_se)$is_marker]
+  marker_vals <- as.data.frame(assay(d_se))[, colData(d_se)$is_marker, drop = FALSE]
   rowdata_df <- as.data.frame(rowData(d_se))
   
   stopifnot(nrow(marker_vals) == nrow(rowdata_df))
@@ -126,20 +128,21 @@ calcMediansAllSamples <- function(d_se) {
     rownames(medians_tmp) <- ix_missing
     medians <- rbind(medians, medians_tmp)
     # re-order rows
-    medians <- medians[order(as.numeric(rownames(medians))), ]
+    medians <- medians[order(as.numeric(rownames(medians))), , drop = FALSE]
   }
   
   # create new SummarizedExperiment (rows = clusters, columns = markers)
   
   row_data <- data.frame(
-    cluster = factor(rownames(medians), levels = levels(rowData(d_se)$cluster))
+    cluster = factor(rownames(medians), levels = levels(rowData(d_se)$cluster)), 
+    stringAsFactors = FALSE
   )
   
-  col_data <- colData(d_se)[colData(d_se)$is_marker, ]
+  col_data <- colData(d_se)[colData(d_se)$is_marker, , drop = FALSE]
   
   # rearrange marker order to match 'marker_info'
-  medians <- medians[, match(col_data$marker_names, colnames(medians))]
-  stopifnot(all(col_data$marker_names == colnames(medians)))
+  medians <- medians[, match(col_data$marker_name, colnames(medians)), drop = FALSE]
+  stopifnot(all(col_data$marker_name == colnames(medians)))
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)

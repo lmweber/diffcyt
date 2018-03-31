@@ -45,15 +45,17 @@ d_input <- list(
 )
 
 sample_info <- data.frame(
-  sample_IDs = paste0("sample", 1:4), 
-  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+  sample = factor(paste0("sample", 1:4)), 
+  group = factor(c("group1", "group1", "group2", "group2")), 
+  stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
-  marker_names = paste0("marker", 1:20), 
+  marker_name = paste0("marker", 1:20), 
   is_marker = rep(TRUE, 20), 
   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+  stringsAsFactors = FALSE
 )
 
 # Prepare data

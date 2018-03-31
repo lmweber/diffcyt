@@ -84,6 +84,8 @@
 #' @param norm_factors Normalization factors to use, if \code{normalize = TRUE}. Default =
 #'   \code{"TMM"}, in which case normalization factors are calculated automatically using
 #'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+#'   Alternatively, a vector of values can be provided. (Note that other normalization
+#'   methods from \code{edgeR} are not used.)
 #' 
 #' 
 #' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
@@ -93,7 +95,7 @@
 #'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
 #' @importFrom edgeR calcNormFactors
 #' @importFrom lme4 glmer
 #' @importFrom multcomp glht
@@ -122,15 +124,17 @@
 #' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -159,14 +163,14 @@ testDA_GLMM <- function(d_counts, formula, contrast,
     min_samples <- ncol(d_counts) / 2
   }
   
-  counts <- assays(d_counts)[[1]]
+  counts <- assay(d_counts)
   cluster <- rowData(d_counts)$cluster
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
-  counts <- counts[ix_keep, ]
+  counts <- counts[ix_keep, , drop = FALSE]
   cluster <- cluster[ix_keep]
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
@@ -224,7 +228,7 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
-  out <- data.frame(p_vals, p_adj)
+  out <- data.frame(p_vals, p_adj, stringsAsFactors = FALSE)
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster), ncol = ncol(out)))
@@ -232,7 +236,8 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   cluster_nm <- as.numeric(cluster)
   row_data[cluster_nm, ] <- out
   
-  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster))), row_data)
+  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster)), stringsAsFactors = FALSE), 
+                    row_data)
   
   res <- d_counts
   

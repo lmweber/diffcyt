@@ -47,15 +47,17 @@
 #' )
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -85,12 +87,12 @@ calcCounts <- function(d_se) {
   rowdata_df <- as.data.frame(rowData(d_se))
   
   rowdata_df %>% 
-    group_by(cluster, sample_IDs) %>% 
+    group_by(cluster, sample) %>% 
     tally %>% 
-    complete(sample_IDs) -> 
+    complete(sample) -> 
     n_cells
   
-  n_cells <- acast(n_cells, cluster ~ sample_IDs, value.var = "n", fill = 0)
+  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
   
   # fill in any missing clusters
   if (nrow(n_cells) < nlevels(rowData(d_se)$cluster)) {
@@ -99,7 +101,7 @@ calcCounts <- function(d_se) {
     rownames(n_cells_tmp) <- ix_missing
     n_cells <- rbind(n_cells, n_cells_tmp)
     # re-order rows
-    n_cells <- n_cells[order(as.numeric(rownames(n_cells))), ]
+    n_cells <- n_cells[order(as.numeric(rownames(n_cells))), , drop = FALSE]
   }
   
   n_cells_total <- rowSums(n_cells)
@@ -108,14 +110,15 @@ calcCounts <- function(d_se) {
   
   row_data <- data.frame(
     cluster = factor(rownames(n_cells), levels = levels(rowData(d_se)$cluster)), 
-    n_cells = n_cells_total
+    n_cells = n_cells_total, 
+    stringsAsFactors = FALSE
   )
   
   col_data <- metadata(d_se)$sample_info
   
   # rearrange sample order to match 'sample_info'
-  n_cells <- n_cells[, match(col_data$sample_IDs, colnames(n_cells))]
-  stopifnot(all(col_data$sample_IDs == colnames(n_cells)))
+  n_cells <- n_cells[, match(col_data$sample, colnames(n_cells)), drop = FALSE]
+  stopifnot(all(col_data$sample == colnames(n_cells)))
   
   d_counts <- SummarizedExperiment(
     n_cells, 

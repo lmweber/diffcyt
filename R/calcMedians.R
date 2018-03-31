@@ -41,7 +41,7 @@
 #'   \code{metadata(d_medians)$id_state_markers}.
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
+#' @importFrom SummarizedExperiment SummarizedExperiment assay rowData colData
 #' @importFrom dplyr group_by tally summarize
 #' @importFrom tidyr complete
 #' @importFrom reshape2 acast
@@ -66,15 +66,17 @@
 #' )
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -105,27 +107,27 @@ calcMedians <- function(d_se) {
   
   # calculate cluster medians for each marker
   
-  assaydata_mx <- assays(d_se)[[1]]
+  assaydata_mx <- assay(d_se)
   
   medians <- vector("list", sum(colData(d_se)$is_marker))
-  marker_names_sub <- as.character(colData(d_se)$marker_names[colData(d_se)$is_marker])
+  marker_names_sub <- as.character(colData(d_se)$marker_name[colData(d_se)$is_marker])
   names(medians) <- marker_names_sub
   
   clus <- rowData(d_se)$cluster
-  smp <- rowData(d_se)$sample_IDs
+  smp <- rowData(d_se)$sample
   
   for (i in seq_along(medians)) {
     assaydata_i <- assaydata_mx[, marker_names_sub[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
-    assaydata_i <- cbind(assaydata_i, sample_IDs = smp, cluster = clus)
+    assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
     colnames(assaydata_i)[1] <- "value"
     
     assaydata_i %>% 
-      group_by(cluster, sample_IDs) %>% 
+      group_by(cluster, sample) %>% 
       summarize(median = median(value)) -> 
       med
     
-    med <- acast(med, cluster ~ sample_IDs, value.var = "median", fill = NA)
+    med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
     
     medians[[i]] <- med
   }
@@ -143,17 +145,18 @@ calcMedians <- function(d_se) {
   # create new SummarizedExperiment (rows = clusters, columns = samples)
   
   row_data <- data.frame(
-    cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster))
+    cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster)), 
+    stringsAsFactors = FALSE
   )
   
   col_data <- metadata(d_se)$sample_info
   
   # rearrange sample order to match 'sample_info'
   medians <- lapply(medians, function(m) {
-    m[, match(col_data$sample_IDs, colnames(m))]
+    m[, match(col_data$sample, colnames(m)), drop = FALSE]
   })
   stopifnot(all(sapply(medians, function(m) {
-    col_data$sample_IDs == colnames(m)
+    col_data$sample == colnames(m)
   })))
   
   metadata <- list(id_type_markers = id_type_markers, 

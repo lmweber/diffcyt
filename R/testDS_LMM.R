@@ -92,7 +92,7 @@
 #'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom lme4 lmer
 #' @importFrom multcomp glht
 #' @importFrom stats lm p.adjust
@@ -120,15 +120,17 @@
 #' d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -163,14 +165,14 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   id_state_markers <- metadata(d_medians)$id_state_markers
   
   # note: counts are only required for filtering
-  counts <- assays(d_counts)[[1]]
+  counts <- assay(d_counts)
   cluster <- rowData(d_counts)$cluster
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
-  counts <- counts[ix_keep, ]
+  counts <- counts[ix_keep, , drop = FALSE]
   cluster <- cluster[ix_keep]
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
@@ -186,7 +188,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   # extract medians and create concatenated matrix
   state_names <- names(assays(d_medians))[id_state_markers]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, ])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, , drop = FALSE])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
@@ -222,7 +224,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
-  out <- data.frame(p_vals, p_adj)
+  out <- data.frame(p_vals, p_adj, stringsAsFactors = FALSE)
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), 
@@ -246,7 +248,8 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster = clus, marker = stat), row_data)
+  row_data <- cbind(data.frame(cluster = clus, marker = stat, stringsAsFactors = FALSE), 
+                    row_data)
   
   col_data <- colData(d_medians)
   

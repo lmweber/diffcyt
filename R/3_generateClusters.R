@@ -77,7 +77,7 @@
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
 #' @importFrom flowCore flowFrame
-#' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
+#' @importFrom SummarizedExperiment assay rowData colData 'rowData<-'
 #' @importFrom S4Vectors metadata 'metadata<-'
 #' @importFrom grDevices pdf dev.off
 #' 
@@ -98,15 +98,17 @@
 #' )
 #' 
 #' sample_info <- data.frame(
-#'   sample_IDs = paste0("sample", 1:4), 
-#'   group_IDs = factor(c("group1", "group1", "group2", "group2"))
+#'   sample = factor(paste0("sample", 1:4)), 
+#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
-#'   marker_names = paste0("marker", 1:20), 
+#'   marker_name = paste0("marker", 1:20), 
 #'   is_marker = rep(TRUE, 20), 
 #'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
@@ -126,7 +128,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
   if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_marker
   
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
-  d_ff <- flowFrame(assays(d_se)[[1]])
+  d_ff <- flowFrame(assay(d_se))
   
   runtime <- system.time({
     # FlowSOM: pre meta-clustering

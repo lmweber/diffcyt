@@ -11,17 +11,17 @@ diffcyt(d_input, sample_info, marker_info, design = NULL, formula = NULL,
   cofactor = 5, cols_to_use = NULL, xdim = 10, ydim = 10,
   meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
   min_cells = 3, min_samples = NULL, normalize = FALSE,
-  norm_factors = "TMM", block_IDs = NULL, plot = TRUE, path = ".")
+  norm_factors = "TMM", block = NULL, plot = TRUE, path = ".")
 }
 \arguments{
 \item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
 item or \code{\link[flowCore]{flowFrame}} per sample). See \code{\link{prepareData}}.}
 
 \item{sample_info}{Data frame of sample information, for example sample IDs and group
-IDs. Must contain a column named \code{sample_IDs}. See \code{\link{prepareData}}.}
+IDs. Must contain a column named \code{sample}. See \code{\link{prepareData}}.}
 
 \item{marker_info}{Data frame of marker information for each column. This should
-contain columns named \code{marker_names}, \code{is_marker}, \code{is_type_marker},
+contain columns named \code{marker_name}, \code{is_marker}, \code{is_type_marker},
 and \code{is_state_marker}. The first column must contain marker names or column
 names; the remaining columns are logical vectors indicating whether each column in
 the input data is (i) a protein marker, (ii) a 'cell type' marker, and (iii) a 'cell
@@ -111,7 +111,7 @@ composition effects (see details). Default = FALSE. See \code{\link{testDA_edgeR
 the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package. See
 \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
 
-\item{block_IDs}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+\item{block}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects. If provided, the block IDs
 will be included as random effects using the \code{limma}
 \code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
@@ -174,15 +174,17 @@ d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), nco
 d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
 
 sample_info <- data.frame(
-  sample_IDs = paste0("sample", 1:4), 
-  group_IDs = factor(c("group1", "group1", "group2", "group2"))
+  sample = factor(paste0("sample", 1:4)), 
+  group = factor(c("group1", "group1", "group2", "group2")), 
+  stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
-  marker_names = paste0("marker", 1:20), 
+  marker_name = paste0("marker", 1:20), 
   is_marker = rep(TRUE, 20), 
   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10))
+  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+  stringsAsFactors = FALSE
 )
 
 # Create design matrix
