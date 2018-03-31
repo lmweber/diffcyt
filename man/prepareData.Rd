@@ -9,7 +9,7 @@ prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
 }
 \arguments{
 \item{d_input}{Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
-\code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (one
+\code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
 \code{flowFrame} or list item per sample).}
 
 \item{sample_info}{Data frame of sample information, for example sample IDs and group
@@ -48,7 +48,7 @@ a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contain
 single matrix of expression values, together with row and column meta-data.
 
 This function accepts a \code{\link[flowCore]{flowSet}} or a list of
-\code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (i.e. one
+\code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (i.e. one
 \code{flowFrame} or list item per sample). The function then concatenates the data
 tables into a single matrix of values, and adds row and column meta-data.
 

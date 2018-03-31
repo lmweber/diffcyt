@@ -7,7 +7,7 @@
 #' single matrix of expression values, together with row and column meta-data.
 #' 
 #' This function accepts a \code{\link[flowCore]{flowSet}} or a list of
-#' \code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (i.e. one
+#' \code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (i.e. one
 #' \code{flowFrame} or list item per sample). The function then concatenates the data
 #' tables into a single matrix of values, and adds row and column meta-data.
 #' 
@@ -38,7 +38,7 @@
 #' 
 #' 
 #' @param d_input Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
-#'   \code{\link[flowCore]{flowFrames}}, \code{data.frames}, or matrices as input (one
+#'   \code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
 #'   \code{flowFrame} or list item per sample).
 #' 
 #' @param sample_info Data frame of sample information, for example sample IDs and group
@@ -129,12 +129,16 @@ prepareData <- function(d_input, sample_info, marker_info,
     stop("number of rows in 'sample_info' data frame must equal the number of samples")
   }
   
+  if (!all(sapply(d_input, function(d) is.null(colnames(d)))) | !all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]]))))) {
+    stop("column (marker) names do not match for all samples")
+  }
+  
   n_cells <- sapply(d_ex, nrow)
   
   if (subsampling) {
     if (is.null(n_sub)) n_sub <- min(n_cells)
     if (!is.null(seed_sub)) set.seed(seed_sub)
-    d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), min(n_sub, nrow(d))), ])
+    d_ex <- lapply(d_ex, function(d) d[sample(seq_len(nrow(d)), min(n_sub, nrow(d))), , drop = FALSE])
     n_cells <- sapply(d_ex, nrow)
   }
   
