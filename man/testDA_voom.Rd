@@ -159,6 +159,9 @@ design <- createDesignMatrix(sample_info, cols_include = 2)
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters
-res <- testDA_voom(d_counts, design, contrast, plot = FALSE)
+res_DA <- testDA_voom(d_counts, design, contrast, plot = FALSE)
+
+# Display results for top DA clusters
+topClusters(res_DA)
 
 }

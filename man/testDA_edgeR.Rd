@@ -138,6 +138,9 @@ design <- createDesignMatrix(sample_info, cols_include = 2)
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters
-res <- testDA_edgeR(d_counts, design, contrast)
+res_DA <- testDA_edgeR(d_counts, design, contrast)
+
+# Display results for top DA clusters
+topClusters(res_DA)
 
 }

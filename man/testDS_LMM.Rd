@@ -152,6 +152,9 @@ formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
 contrast <- createContrast(c(0, 1))
 
 # Test for differential states (DS) within clusters
-res <- testDS_LMM(d_counts, d_medians, formula, contrast)
+res_DS <- testDS_LMM(d_counts, d_medians, formula, contrast)
+
+# Display results for top DS cluster-marker combinations
+topClusters(res_DS)
 
 }

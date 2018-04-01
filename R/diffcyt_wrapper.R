@@ -133,10 +133,11 @@
 #'   \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.
 #' 
 #' 
-#' @return Returns the results object from the differential testing method. The structure
-#'   of the object depends on which method was used. See \code{\link{testDA_edgeR}},
-#'   \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or
-#'   \code{\link{testDS_LMM}}.
+#' @return Returns a list containing the differential test results (\code{res}) and the
+#'   data objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
+#'   \code{d_medians_all_samples}. The structure of \code{res} depends on the differential
+#'   testing method used. See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}},
+#'   \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment colData
@@ -183,15 +184,21 @@
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
-#' res_DA <- diffcyt(d_input, sample_info, marker_info, 
+#' out_DA <- diffcyt(d_input, sample_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
 #' 
 #' # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
-#' res_DS <- diffcyt(d_input, sample_info, marker_info, 
+#' out_DS <- diffcyt(d_input, sample_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
 #'                   plot = FALSE)
+#' 
+#' # Display results for top DA clusters
+#' topClusters(out_DA$res)
+#' 
+#' # Display results for top DS cluster-marker combinations
+#' topClusters(out_DS$res)
 #' 
 diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = NULL, contrast, 
                     analysis_type = c("DA", "DS"), 
@@ -217,6 +224,7 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
   # calculate features
   d_counts <- calcCounts(d_se)
   d_medians <- calcMedians(d_se)
+  d_medians_all_samples <- calcMediansAllSamples(d_se)
   
   # calculate tests
   if (analysis_type == "DA" & method_DA == "diffcyt-DA-edgeR") {
@@ -235,8 +243,12 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
     res <- testDS_LMM(d_counts, d_medians, formula, contrast, min_cells, min_samples)
   }
   
-  # return test results
-  res
+  # return test results and objects
+  list(res = res, 
+       d_se = d_se, 
+       d_counts = d_counts, 
+       d_medians = d_medians, 
+       d_medians_all_samples = d_medians_all_samples)
 }
 
 

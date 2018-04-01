@@ -153,7 +153,10 @@
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential abundance (DA) of clusters
-#' res <- testDA_GLMM(d_counts, formula, contrast)
+#' res_DA <- testDA_GLMM(d_counts, formula, contrast)
+#' 
+#' # Display results for top DA clusters
+#' topClusters(res_DA)
 #' 
 testDA_GLMM <- function(d_counts, formula, contrast, 
                         min_cells = 3, min_samples = NULL, 

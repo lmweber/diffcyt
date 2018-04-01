@@ -152,7 +152,10 @@
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential states (DS) within clusters
-#' res <- testDS_LMM(d_counts, d_medians, formula, contrast)
+#' res_DS <- testDS_LMM(d_counts, d_medians, formula, contrast)
+#' 
+#' # Display results for top DS cluster-marker combinations
+#' topClusters(res_DS)
 #' 
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
                        min_cells = 3, min_samples = NULL) {

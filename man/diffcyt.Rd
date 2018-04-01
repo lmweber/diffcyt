@@ -125,10 +125,11 @@ See details. See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 }
 \value{
-Returns the results object from the differential testing method. The structure
-  of the object depends on which method was used. See \code{\link{testDA_edgeR}},
-  \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or
-  \code{\link{testDS_LMM}}.
+Returns a list containing the differential test results (\code{res}) and the
+  data objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
+  \code{d_medians_all_samples}. The structure of \code{res} depends on the differential
+  testing method used. See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}},
+  \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
 }
 \description{
 Wrapper function to run complete 'diffcyt' pipeline
@@ -193,14 +194,20 @@ design <- createDesignMatrix(sample_info, cols_include = 2)
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
-res_DA <- diffcyt(d_input, sample_info, marker_info, 
+out_DA <- diffcyt(d_input, sample_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
 
 # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
-res_DS <- diffcyt(d_input, sample_info, marker_info, 
+out_DS <- diffcyt(d_input, sample_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
                   plot = FALSE)
+
+# Display results for top DA clusters
+topClusters(out_DA$res)
+
+# Display results for top DS cluster-marker combinations
+topClusters(out_DS$res)
 
 }

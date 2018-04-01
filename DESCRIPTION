@@ -30,8 +30,12 @@ Imports:
     magrittr, 
     stats, 
     methods, 
+    utils, 
     grDevices, 
-    graphics
+    graphics, 
+    ComplexHeatmap, 
+    circlize, 
+    grid
 VignetteBuilder: knitr
 Suggests:
     BiocStyle, 

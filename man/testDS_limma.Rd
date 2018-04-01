@@ -149,6 +149,9 @@ design <- createDesignMatrix(sample_info, cols_include = 2)
 contrast <- createContrast(c(0, 1))
 
 # Test for differential states (DS) within clusters
-res <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
+res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
+
+# Display results for top DS cluster-marker combinations
+topClusters(res_DS)
 
 }
