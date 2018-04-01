@@ -52,14 +52,17 @@ protein marker. (If this is not available, all columns will be transformed inste
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
 # pipeline, see the package vignette.
 
-# Create some random data (without differential signal)
-cofactor <- 5
+# Function to create random data (one sample)
+d_random <- function(n = 20000, mean = 0, sd = 1, ncol = 20, cofactor = 5) {
+  sinh(matrix(rnorm(n, mean, sd), ncol = ncol)) * cofactor
+}
+# Create random data (without differential signal)
 set.seed(123)
 d_input <- list(
-  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+  sample1 = d_random(), 
+  sample2 = d_random(), 
+  sample3 = d_random(), 
+  sample4 = d_random()
 )
 
 sample_info <- data.frame(
@@ -69,7 +72,7 @@ sample_info <- data.frame(
 )
 
 marker_info <- data.frame(
-  marker_name = paste0("marker", 1:20), 
+  marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   is_marker = rep(TRUE, 20), 
   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 

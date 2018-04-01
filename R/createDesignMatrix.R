@@ -61,7 +61,7 @@
 #' 
 #' # Example: simple design matrix
 #' sample_info <- data.frame(
-#'   sample = paste0("sample", 1:4), 
+#'   sample = factor(paste0("sample", 1:4)), 
 #'   group = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
@@ -69,7 +69,7 @@
 #' 
 #' # Example: more complex design matrix: patient IDs and batch IDs
 #' sample_info <- data.frame(
-#'   sample = paste0("sample", 1:8), 
+#'   sample = factor(paste0("sample", 1:8)), 
 #'   group = factor(rep(paste0("group", 1:2), each = 4)), 
 #'   patient = factor(rep(paste0("patient", 1:4), 2)), 
 #'   batch = factor(rep(paste0("batch", 1:2), 4)), 
@@ -79,7 +79,7 @@
 #' 
 #' # Example: more complex design matrix: continuous covariate
 #' sample_info <- data.frame(
-#'   sample = paste0("sample", 1:4), 
+#'   sample = factor(paste0("sample", 1:4)), 
 #'   group = factor(c("group1", "group1", "group2", "group2")), 
 #'   age = c(52, 35, 71, 60), 
 #'   stringsAsFactors = FALSE

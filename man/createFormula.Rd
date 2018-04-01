@@ -74,7 +74,7 @@ instead of a model formula; see \code{\link{createDesignMatrix}}.
 
 # Example: model formula
 sample_info <- data.frame(
-  sample = paste0("sample", 1:8), 
+  sample = factor(paste0("sample", 1:8)), 
   group = factor(rep(paste0("group", 1:2), each = 4)), 
   patient = factor(rep(paste0("patient", 1:4), 2)), 
   stringsAsFactors = FALSE

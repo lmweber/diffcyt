@@ -101,20 +101,23 @@ per cluster.
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
 # pipeline, see the package vignette.
 
-# Create some random data (without differential signal)
-cofactor <- 5
+# Function to create random data (one sample)
+d_random <- function(n = 20000, mean = 0, sd = 1, ncol = 20, cofactor = 5) {
+  sinh(matrix(rnorm(n, mean, sd), ncol = ncol)) * cofactor
+}
+# Create random data (without differential signal)
 set.seed(123)
 d_input <- list(
-  sample1 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample2 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample3 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor, 
-  sample4 = sinh(matrix(rnorm(20000, mean = 0, sd = 1), ncol = 20)) * cofactor
+  sample1 = d_random(), 
+  sample2 = d_random(), 
+  sample3 = d_random(), 
+  sample4 = d_random()
 )
 # Add differential signal (for some cells and markers in one group)
 ix_rows <- 901:1000
 ix_cols <- c(6:10, 16:20)
-d_input[[3]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
-d_input[[4]][ix_rows, ix_cols] <- sinh(matrix(rnorm(1000, mean = 2, sd = 1), ncol = 10)) * cofactor
+d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
+d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
 sample_info <- data.frame(
   sample = factor(paste0("sample", 1:4)), 
@@ -123,7 +126,7 @@ sample_info <- data.frame(
 )
 
 marker_info <- data.frame(
-  marker_name = paste0("marker", 1:20), 
+  marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   is_marker = rep(TRUE, 20), 
   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
@@ -132,14 +135,15 @@ marker_info <- data.frame(
 
 # Prepare data
 d_se <- prepareData(d_input, sample_info, marker_info)
+
 # Transform data
 d_se <- transformData(d_se)
+
 # Generate clusters
 d_se <- generateClusters(d_se)
 
 # Calculate counts
 d_counts <- calcCounts(d_se)
-
 # Calculate medians (by sample)
 d_medians <- calcMedians(d_se)
 
@@ -150,8 +154,5 @@ contrast <- createContrast(c(0, 1))
 
 # Test for differential states (DS) within clusters
 res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
-
-# Display results for top DS cluster-marker combinations
-topClusters(res_DS)
 
 }
