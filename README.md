@@ -7,7 +7,7 @@ R package: Differential discovery in high-dimensional cytometry via high-resolut
 
 Statistical methods for differential discovery in high-dimensional cytometry (including flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry) using high-resolution clustering and moderated tests.
 
-For details on the methodology and comparisons with existing approaches, see the paper (available soon).
+For details on the methodology and comparisons with existing approaches, see the accompanying paper (available soon).
 
 
 ## Tutorial and examples
@@ -17,7 +17,7 @@ For a tutorial and examples of usage, see the vignette.
 
 ## How to install
 
-The package will be submitted to Bioconductor soon. For now, it can be installed from GitHub.
+The package will be submitted to Bioconductor (soon). It can also be installed from GitHub.
 
 The Bioconductor installer (`biocLite`) can be used to install from GitHub. This will install all dependencies from both CRAN and Bioconductor.
 
