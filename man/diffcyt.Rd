@@ -14,8 +14,9 @@ diffcyt(d_input, sample_info, marker_info, design = NULL, formula = NULL,
   norm_factors = "TMM", block = NULL, plot = TRUE, path = ".")
 }
 \arguments{
-\item{d_input}{Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
-item or \code{\link[flowCore]{flowFrame}} per sample). See \code{\link{prepareData}}.}
+\item{d_input}{Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
+\code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
+\code{flowFrame} or list item per sample). See \code{\link{prepareData}}.}
 
 \item{sample_info}{Data frame of sample information, for example sample IDs and group
 IDs. Must contain a column named \code{sample}. See \code{\link{prepareData}}.}
@@ -30,28 +31,25 @@ state' marker. See \code{\link{prepareData}}.}
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}
 
-\item{formula}{Model formula object, created with \code{\link{createFormula}}. This
-should be a list containing three elements: \code{formula}, \code{data}, and
-\code{random_terms}: the model formula, data frame of corresponding variables, and
-variable indicating whether the model formula contains any random effect terms. See
+\item{formula}{Model formula object, created with \code{\link{createFormula}}. See
 \code{\link{createFormula}}.}
 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}}.}
 
-\item{analysis_type}{Type of differential discovery analysis to perform: differential
-abundance (DA) of cell populations; or differential states (DS) within cell
-populations. Options are \code{"DA"} and \code{"DS"}. See \code{\link{testDA_edgeR}},
+\item{analysis_type}{Type of differential analysis to perform: differential abundance
+(DA) of cell populations, or differential states (DS) within cell populations.
+Options are \code{"DA"} and \code{"DS"}. See \code{\link{testDA_edgeR}},
 \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or
 \code{\link{testDS_LMM}}.}
 
-\item{method_DA}{Differential testing method to use, for DA tests. Options are
-\code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and \code{"diffcyt-DA-GLMM"}.
-Default = \code{"diffcyt-DA-edgeR"}. See \code{\link{testDA_edgeR}},
-\code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
+\item{method_DA}{Method to use for calculating differential abundance (DA) tests.
+Options are \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and
+\code{"diffcyt-DA-GLMM"}. Default = \code{"diffcyt-DA-edgeR"}. See
+\code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
 
-\item{method_DS}{Differential testing method to use, for DS tests. Options are
-\code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
+\item{method_DS}{Method to use for calculating differential state (DS) tests. Options
+are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
 \code{"diffcyt-DS-limma"}. See \code{\link{testDS_limma}} or
 \code{\link{testDS_LMM}}.}
 
@@ -103,30 +101,35 @@ differential testing if they have at least \code{min_cells} cells in at least
 \code{\link{testDS_LMM}}.}
 
 \item{normalize}{Whether to include optional normalization factors to adjust for
-composition effects (see details). Default = FALSE. See \code{\link{testDA_edgeR}},
+composition effects. Default = FALSE. See \code{\link{testDA_edgeR}},
 \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
 
 \item{norm_factors}{Normalization factors to use, if \code{normalize = TRUE}. Default =
 \code{"TMM"}, in which case normalization factors are calculated automatically using
-the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package. See
-\code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
+the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+Alternatively, a vector of values can be provided. (Note that other normalization
+methods from \code{edgeR} are not used.) See \code{\link{testDA_edgeR}},
+\code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
 
 \item{block}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
-experimental designs, to be included as random effects. If provided, the block IDs
-will be included as random effects using the \code{limma}
-\code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
-be included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
-See details. See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
+experimental designs, to be included as random effects (for method \code{testDA_voom}
+or \code{testDS_limma}). If provided, the block IDs will be included as random
+effects using the \code{limma} \code{\link[limma]{duplicateCorrelation}} methodology.
+Alternatively, block IDs can be included as fixed effects in the design matrix
+(\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
+\code{\link{testDS_limma}}.}
 
-\item{plot}{Whether to save diagnostic plots. Default = TRUE. See
-\code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
+\item{plot}{Whether to save diagnostic plots (for method \code{testDA_voom} or
+\code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
+\code{\link{testDS_limma}}.}
 
-\item{path}{Path for diagnostic plots. Default = current working directory. See
+\item{path}{Path for diagnostic plots (for method \code{testDA_voom} or
+\code{testDS_limma}). Default = current working directory. See
 \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 }
 \value{
-Returns a list containing the differential test results (\code{res}) and the
-  data objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
+Returns a list containing the results object \code{res}, as well as the data
+  objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
   \code{d_medians_all_samples}. The structure of \code{res} depends on the differential
   testing method used. See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}},
   \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
@@ -148,10 +151,10 @@ Minimum required arguments are:
 \item \code{d_input}
 \item \code{sample_info}
 \item \code{marker_info}
-\item either \code{design} or \code{formula}
+\item either \code{design} or \code{formula} (depending on the differential testing
+method used)
 \item \code{contrast}
 \item \code{analysis_type}
-\item either \code{method_DA} or \code{method_DS}
 }
 }
 \examples{

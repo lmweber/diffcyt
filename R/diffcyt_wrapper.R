@@ -15,15 +15,16 @@
 #' \item \code{d_input}
 #' \item \code{sample_info}
 #' \item \code{marker_info}
-#' \item either \code{design} or \code{formula}
+#' \item either \code{design} or \code{formula} (depending on the differential testing
+#' method used)
 #' \item \code{contrast}
 #' \item \code{analysis_type}
-#' \item either \code{method_DA} or \code{method_DS}
 #' }
 #' 
 #' 
-#' @param d_input Input data. Must be a list or \code{\link[flowCore]{flowSet}} (one list
-#'   item or \code{\link[flowCore]{flowFrame}} per sample). See \code{\link{prepareData}}.
+#' @param d_input Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
+#'   \code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
+#'   \code{flowFrame} or list item per sample). See \code{\link{prepareData}}.
 #' 
 #' @param sample_info Data frame of sample information, for example sample IDs and group
 #'   IDs. Must contain a column named \code{sample}. See \code{\link{prepareData}}.
@@ -38,28 +39,25 @@
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}}.
 #' 
-#' @param formula Model formula object, created with \code{\link{createFormula}}. This
-#'   should be a list containing three elements: \code{formula}, \code{data}, and
-#'   \code{random_terms}: the model formula, data frame of corresponding variables, and
-#'   variable indicating whether the model formula contains any random effect terms. See
+#' @param formula Model formula object, created with \code{\link{createFormula}}. See
 #'   \code{\link{createFormula}}.
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}}.
 #' 
-#' @param analysis_type Type of differential discovery analysis to perform: differential
-#'   abundance (DA) of cell populations; or differential states (DS) within cell
-#'   populations. Options are \code{"DA"} and \code{"DS"}. See \code{\link{testDA_edgeR}},
+#' @param analysis_type Type of differential analysis to perform: differential abundance
+#'   (DA) of cell populations, or differential states (DS) within cell populations.
+#'   Options are \code{"DA"} and \code{"DS"}. See \code{\link{testDA_edgeR}},
 #'   \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or
 #'   \code{\link{testDS_LMM}}.
 #' 
-#' @param method_DA Differential testing method to use, for DA tests. Options are
-#'   \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and \code{"diffcyt-DA-GLMM"}.
-#'   Default = \code{"diffcyt-DA-edgeR"}. See \code{\link{testDA_edgeR}},
-#'   \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
+#' @param method_DA Method to use for calculating differential abundance (DA) tests.
+#'   Options are \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and
+#'   \code{"diffcyt-DA-GLMM"}. Default = \code{"diffcyt-DA-edgeR"}. See
+#'   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
 #' 
-#' @param method_DS Differential testing method to use, for DS tests. Options are
-#'   \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
+#' @param method_DS Method to use for calculating differential state (DS) tests. Options
+#'   are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
 #'   \code{"diffcyt-DS-limma"}. See \code{\link{testDS_limma}} or
 #'   \code{\link{testDS_LMM}}.
 #' 
@@ -111,30 +109,35 @@
 #'   \code{\link{testDS_LMM}}.
 #' 
 #' @param normalize Whether to include optional normalization factors to adjust for
-#'   composition effects (see details). Default = FALSE. See \code{\link{testDA_edgeR}},
+#'   composition effects. Default = FALSE. See \code{\link{testDA_edgeR}},
 #'   \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
 #' 
 #' @param norm_factors Normalization factors to use, if \code{normalize = TRUE}. Default =
 #'   \code{"TMM"}, in which case normalization factors are calculated automatically using
-#'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package. See
-#'   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
+#'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+#'   Alternatively, a vector of values can be provided. (Note that other normalization
+#'   methods from \code{edgeR} are not used.) See \code{\link{testDA_edgeR}},
+#'   \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
 #' 
 #' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
-#'   experimental designs, to be included as random effects. If provided, the block IDs
-#'   will be included as random effects using the \code{limma}
-#'   \code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
-#'   be included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
-#'   See details. See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.
+#'   experimental designs, to be included as random effects (for method \code{testDA_voom}
+#'   or \code{testDS_limma}). If provided, the block IDs will be included as random
+#'   effects using the \code{limma} \code{\link[limma]{duplicateCorrelation}} methodology.
+#'   Alternatively, block IDs can be included as fixed effects in the design matrix
+#'   (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
+#'   \code{\link{testDS_limma}}.
 #' 
-#' @param plot Whether to save diagnostic plots. Default = TRUE. See
+#' @param plot Whether to save diagnostic plots (for method \code{testDA_voom} or
+#'   \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
+#'   \code{\link{testDS_limma}}.
+#' 
+#' @param path Path for diagnostic plots (for method \code{testDA_voom} or
+#'   \code{testDS_limma}). Default = current working directory. See
 #'   \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.
 #' 
-#' @param path Path for diagnostic plots. Default = current working directory. See
-#'   \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.
 #' 
-#' 
-#' @return Returns a list containing the differential test results (\code{res}) and the
-#'   data objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
+#' @return Returns a list containing the results object \code{res}, as well as the data
+#'   objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
 #'   \code{d_medians_all_samples}. The structure of \code{res} depends on the differential
 #'   testing method used. See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}},
 #'   \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
@@ -208,8 +211,10 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
                     cofactor = 5, 
                     cols_to_use = NULL, xdim = 10, ydim = 10, 
                     meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, 
-                    min_cells = 3, min_samples = NULL, normalize = FALSE, norm_factors = "TMM", 
-                    block = NULL, plot = TRUE, path = ".") {
+                    min_cells = 3, min_samples = NULL, 
+                    normalize = FALSE, norm_factors = "TMM", 
+                    block = NULL, 
+                    plot = TRUE, path = ".") {
   
   # arguments
   analysis_type <- match.arg(analysis_type)
@@ -226,7 +231,7 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
   d_medians <- calcMedians(d_se)
   d_medians_all_samples <- calcMediansAllSamples(d_se)
   
-  # calculate tests
+  # DA tests
   if (analysis_type == "DA" & method_DA == "diffcyt-DA-edgeR") {
     res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors)
   }
@@ -236,6 +241,8 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
   if (analysis_type == "DA" & method_DA == "diffcyt-DA-GLMM") {
     res <- testDA_GLMM(d_counts, formula, contrast, min_cells, min_samples, normalize, norm_factors)
   }
+  
+  # DS tests
   if (analysis_type == "DS" & method_DS == "diffcyt-DS-limma") {
     res <- testDS_limma(d_counts, d_medians, design, contrast, block, min_cells, min_samples, plot, path)
   }
@@ -243,12 +250,14 @@ diffcyt <- function(d_input, sample_info, marker_info, design = NULL, formula = 
     res <- testDS_LMM(d_counts, d_medians, formula, contrast, min_cells, min_samples)
   }
   
-  # return test results and objects
-  list(res = res, 
-       d_se = d_se, 
-       d_counts = d_counts, 
-       d_medians = d_medians, 
-       d_medians_all_samples = d_medians_all_samples)
+  # return results and data objects
+  list(
+    res = res, 
+    d_se = d_se, 
+    d_counts = d_counts, 
+    d_medians = d_medians, 
+    d_medians_all_samples = d_medians_all_samples
+  )
 }
 
 
