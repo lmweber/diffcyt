@@ -31,10 +31,13 @@ environment:
     USE_RTOOLS: true
 
   matrix:
-    - R_VERSION: release
+    - R_VERSION: devel
       R_ARCH: x64
       GCC_PATH: mingw_64
-      PKGTYPE: source
+
+    - R_VERSION: devel
+      R_ARCH: i386
+      GCC_PATH: mingw_32
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
