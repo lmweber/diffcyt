@@ -16,11 +16,12 @@ cache:
 # Adapt as necessary starting from here
 
 environment:
-  R_VERSION: devel
+  - R_VERSION: devel
+  - USE_RTOOLS: true
 
 build_script:
-  - travis-tool.sh install_deps
   - travis-tool.sh install_bioc_deps
+  - travis-tool.sh install_deps
 
 test_script:
   - travis-tool.sh run_tests
