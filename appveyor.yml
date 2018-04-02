@@ -16,8 +16,6 @@ cache:
 # Adapt as necessary starting from here
 
 build_script:
-  - git config --global user.name "travis"
-  - git config --global user.email "travis@example.org"
   - travis-tool.sh install_bioc_deps
 
 test_script:
@@ -29,9 +27,7 @@ on_failure:
 
 environment:
   global:
-    WARNINGS_ARE_ERRORS: 1
-    _R_CHECK_FORCE_SUGGESTS_: 1
-    R_ARCH: x64
+    WARNINGS_ARE_ERRORS: 0
     USE_RTOOLS: true
 
   matrix:
