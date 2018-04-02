@@ -26,18 +26,21 @@ on_failure:
   - appveyor PushArtifact failure.zip
 
 environment:
+  
   global:
-    WARNINGS_ARE_ERRORS: 1
     USE_RTOOLS: true
-
+    R_BUILD_ARGS: --keep-empty-dirs --no-resave-data --no-manual
+    R_CHECK_ARGS: --timings --no-vignettes --no-manual
+## --no-manual and forward are required for Appveyor
+## R_VERSION: depending on Bioconductor version: devel or patched (or stable)
   matrix:
-    - R_VERSION: devel
-      R_ARCH: x64
-      GCC_PATH: mingw_64
+   - R_VERSION: patched
+     R_ARCH: x64
+     GCC_PATH: mingw_64
 
-    - R_VERSION: devel
-      R_ARCH: i386
-      GCC_PATH: mingw_32
+   - R_VERSION: patched
+     R_ARCH: i386
+     GCC_PATH: mingw_32
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
