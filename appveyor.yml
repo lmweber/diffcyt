@@ -27,11 +27,14 @@ on_failure:
 
 environment:
   global:
-    WARNINGS_ARE_ERRORS: 0
+    WARNINGS_ARE_ERRORS: 1
     USE_RTOOLS: true
 
   matrix:
     - R_VERSION: release
+      R_ARCH: x64
+      GCC_PATH: mingw_64
+      PKGTYPE: source
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
