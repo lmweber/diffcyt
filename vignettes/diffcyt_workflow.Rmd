@@ -22,7 +22,7 @@ package: diffcyt
 output: 
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{'diffcyt' workflow}
+  %\VignetteIndexEntry{diffcyt workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

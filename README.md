@@ -1,6 +1,7 @@
 # diffcyt
 
 [![Build Status](https://travis-ci.org/lmweber/diffcyt.svg?branch=master)](https://travis-ci.org/lmweber/diffcyt)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/lmweber/diffcyt?branch=master&svg=true)](https://ci.appveyor.com/project/lmweber/diffcyt)
 
 R package: Differential discovery in high-dimensional cytometry via high-resolution clustering
 
