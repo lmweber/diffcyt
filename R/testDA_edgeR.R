@@ -4,18 +4,18 @@
 #' 'diffcyt-DA-edgeR'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
-#' \code{\link[edgeR]{edgeR}} package.
+#' \code{edgeR} package.
 #' 
-#' This method uses the \code{\link[edgeR]{edgeR}} package (Robinson et al. 2010,
-#' \emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
-#' models and calculate moderated tests at the cluster level. Moderated tests improve
-#' statistical power by sharing information on variability (i.e. variance across samples
-#' for a single cluster) between clusters. We use the option \code{trend.method = "none"}
-#' to calculate dispersions, since the dispersion-mean relationship typically does not
-#' resemble RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods
-#' implemented in the \code{edgeR} package were originally designed for the analysis of
-#' gene expression data such as RNA-sequencing counts. Here, we apply these methods to
-#' cluster cell counts.
+#' This method uses the \code{edgeR} package (Robinson et al. 2010, \emph{Bioinformatics};
+#' McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit models and calculate
+#' moderated tests at the cluster level. Moderated tests improve statistical power by
+#' sharing information on variability (i.e. variance across samples for a single cluster)
+#' between clusters. We use the option \code{trend.method = "none"} to calculate
+#' dispersions, since the dispersion-mean relationship typically does not resemble
+#' RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods implemented
+#' in the \code{edgeR} package were originally designed for the analysis of gene
+#' expression data such as RNA-sequencing counts. Here, we apply these methods to cluster
+#' cell counts.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -46,8 +46,8 @@
 #' details.
 #' 
 #' 
-#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster cell counts, from \code{\link{calcCounts}}.
+#' @param d_counts \linkS4class{SummarizedExperiment} object containing cluster cell
+#'   counts, from \code{\link{calcCounts}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -74,11 +74,11 @@
 #'   methods from \code{edgeR} are not used.)
 #' 
 #' 
-#' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
-#'   with differential test results stored in the \code{rowData} slot. Results include raw
-#'   p-values and adjusted p-values from the \code{edgeR} moderated tests, which can be
-#'   used to rank clusters by evidence for differential abundance. The results can be
-#'   accessed with the \code{\link[SummarizedExperiment]{rowData}} accessor function.
+#' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
+#'   results stored in the \code{rowData} slot. Results include raw p-values and adjusted
+#'   p-values from the \code{edgeR} moderated tests, which can be used to rank clusters by
+#'   evidence for differential abundance. The results can be accessed with the
+#'   \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'

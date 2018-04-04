@@ -8,13 +8,12 @@
 #' markers, and cell states are characterized by the median transformed expression of cell
 #' state markers.
 #' 
-#' This method uses the \code{\link[limma]{limma}} package (Ritchie et al. 2015,
-#' \emph{Nucleic Acids Research}) to fit models and calculate moderated tests at the
-#' cluster level. Moderated tests improve statistical power by sharing information on
-#' variability (i.e. variance across samples for a single cluster) between clusters. We
-#' use the option \code{trend = TRUE} in the \code{eBayes} fitting function in order to
-#' stabilize the mean-variance relationship. Diagnostic plots are shown if \code{plot =
-#' TRUE}.
+#' This method uses the \code{limma} package (Ritchie et al. 2015, \emph{Nucleic Acids
+#' Research}) to fit models and calculate moderated tests at the cluster level. Moderated
+#' tests improve statistical power by sharing information on variability (i.e. variance
+#' across samples for a single cluster) between clusters. We use the option \code{trend =
+#' TRUE} in the \code{eBayes} fitting function in order to stabilize the mean-variance
+#' relationship. Diagnostic plots are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -26,10 +25,10 @@
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
 #' \code{block} argument here instead. This will make use of the \code{limma}
-#' \code{\link[limma]{duplicateCorrelation}} methodology. Note that >2 measures per sample
-#' are not possible in this case (fixed effects should be used instead). Block IDs should
-#' not be included in the design matrix if the \code{limma}
-#' \code{\link[limma]{duplicateCorrelation}} methodology is used.
+#' \code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
+#' possible in this case (fixed effects should be used instead). Block IDs should not be
+#' included in the design matrix if the \code{limma} \code{duplicateCorrelation}
+#' methodology is used.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
@@ -44,12 +43,12 @@
 #' per cluster.
 #' 
 #' 
-#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster cell counts, from \code{\link{calcCounts}}.
+#' @param d_counts \linkS4class{SummarizedExperiment} object containing cluster cell
+#'   counts, from \code{\link{calcCounts}}.
 #' 
-#' @param d_medians \code{\link[SummarizedExperiment]{SummarizedExperiment}} object
-#'   containing cluster medians by sample (median expression of each marker for each
-#'   cluster-sample combination), from \code{\link{calcMedians}}.
+#' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
+#'   by sample (median expression of each marker for each cluster-sample combination),
+#'   from \code{\link{calcMedians}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -59,10 +58,9 @@
 #' 
 #' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects. If provided, the block IDs
-#'   will be included as random effects using the \code{limma}
-#'   \code{\link[limma]{duplicateCorrelation}} methodology. Alternatively, block IDs can
-#'   be included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
-#'   See details.
+#'   will be included as random effects using the \code{limma} \code{duplicateCorrelation}
+#'   methodology. Alternatively, block IDs can be included as fixed effects in the design
+#'   matrix (\code{\link{createDesignMatrix}}). See details.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -78,15 +76,14 @@
 #' @param path Path for diagnostic plot. Default = current working directory.
 #' 
 #' 
-#' @return Returns a new \code{\link[SummarizedExperiment]{SummarizedExperiment}} object,
-#'   where rows = cluster-marker combinations, and columns = samples. In the rows,
-#'   clusters are repeated for each cell state marker (i.e. the sheets or \code{assays}
-#'   from the previous \code{d_medians} object are stacked into a single matrix).
-#'   Differential test results are stored in the \code{rowData} slot. Results include raw
-#'   p-values and adjusted p-values from the \code{limma} moderated tests, which can be
-#'   used to rank cluster-marker combinations by evidence for differential states within
-#'   cell populations. The results can be accessed with the
-#'   \code{\link[SummarizedExperiment]{rowData}} accessor function.
+#' @return Returns a new \linkS4class{SummarizedExperiment} object, where rows =
+#'   cluster-marker combinations, and columns = samples. In the rows, clusters are
+#'   repeated for each cell state marker (i.e. the sheets or \code{assays} from the
+#'   previous \code{d_medians} object are stacked into a single matrix). Differential test
+#'   results are stored in the \code{rowData} slot. Results include raw p-values and
+#'   adjusted p-values from the \code{limma} moderated tests, which can be used to rank
+#'   cluster-marker combinations by evidence for differential states within cell
+#'   populations. The results can be accessed with the \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'

@@ -22,9 +22,9 @@
 #' }
 #' 
 #' 
-#' @param d_input Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
-#'   \code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
-#'   \code{flowFrame} or list item per sample). See \code{\link{prepareData}}.
+#' @param d_input Input data. Must be a \linkS4class{flowSet} or list of
+#'   \code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
+#'   list item per sample). See \code{\link{prepareData}}.
 #' 
 #' @param sample_info Data frame of sample information, for example sample IDs and group
 #'   IDs. Must contain a column named \code{sample}. See \code{\link{prepareData}}.
@@ -123,7 +123,7 @@
 #' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects (for method \code{testDA_voom}
 #'   or \code{testDS_limma}). If provided, the block IDs will be included as random
-#'   effects using the \code{limma} \code{\link[limma]{duplicateCorrelation}} methodology.
+#'   effects using the \code{limma} \code{duplicateCorrelation} methodology.
 #'   Alternatively, block IDs can be included as fixed effects in the design matrix
 #'   (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.

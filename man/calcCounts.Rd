@@ -7,13 +7,13 @@
 calcCounts(d_se)
 }
 \arguments{
-\item{d_se}{Data object from previous steps, in
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
-labels as a column in the row meta-data (from \code{\link{generateClusters}}).}
+\item{d_se}{Data object from previous steps, in \linkS4class{SummarizedExperiment}
+format, containing cluster labels as a column in the row meta-data (from
+\code{\link{generateClusters}}).}
 }
 \value{
-\code{d_counts}: \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  object, where rows = clusters, columns = samples, assay = values (counts).
+\code{d_counts}: \linkS4class{SummarizedExperiment} object, where rows =
+  clusters, columns = samples, assay = values (counts).
 }
 \description{
 Calculate number of cells per cluster-sample combination
@@ -26,9 +26,9 @@ The cluster cell counts are required for testing for differential abundance of c
 populations, and are also used for weights and filtering when testing for differential
 states within cell populations.
 
-Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-object, where rows = clusters, columns = samples, assay = values (counts). (Note that
-this structure differs from the input data object.)
+Results are returned as a new \linkS4class{SummarizedExperiment} object, where rows =
+clusters, columns = samples, assay = values (counts). (Note that this structure differs
+from the input data object.)
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'

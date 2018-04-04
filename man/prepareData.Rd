@@ -8,9 +8,9 @@ prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
   n_sub = NULL, seed_sub = NULL)
 }
 \arguments{
-\item{d_input}{Input data. Must be a \code{\link[flowCore]{flowSet}} or list of
-\code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (one
-\code{flowFrame} or list item per sample).}
+\item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
+\code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
+list item per sample).}
 
 \item{sample_info}{Data frame of sample information, for example sample IDs and group
 IDs. Must contain a column named \code{sample}.}
@@ -32,10 +32,9 @@ from each sample. Default = FALSE.}
 reproducible results. Default = \code{NULL}.}
 }
 \value{
-\code{d_se}: Returns data as a
-  \code{\link[SummarizedExperiment]{SummarizedExperiment}} containing a single matrix
-  of data (expression values) in the \code{assays} slot, together with row meta-data
-  (sample information) and column meta-data (marker information). The
+\code{d_se}: Returns data as a \linkS4class{SummarizedExperiment} containing a
+  single matrix of data (expression values) in the \code{assays} slot, together with
+  row meta-data (sample information) and column meta-data (marker information). The
   \code{sample_info} data frame is also stored in the \code{metadata} slot, and can be
   accessed with \code{metadata(d_se)$sample_info}.
 }
@@ -44,13 +43,13 @@ Prepare data into format for \code{diffcyt} pipeline
 }
 \details{
 Functions in the \code{diffcyt} analysis pipeline assume that input data is provided as
-a \code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which contains a
-single matrix of expression values, together with row and column meta-data.
+a \linkS4class{SummarizedExperiment} object, which contains a single matrix of
+expression values, together with row and column meta-data.
 
-This function accepts a \code{\link[flowCore]{flowSet}} or a list of
-\code{\link[flowCore]{flowFrame}}s, \code{data.frames}, or matrices as input (i.e. one
-\code{flowFrame} or list item per sample). The function then concatenates the data
-tables into a single matrix of values, and adds row and column meta-data.
+This function accepts a \linkS4class{flowSet} or a list of \code{flowFrames},
+\code{data.frames}, or matrices as input (i.e. one \code{flowFrame} or list item per
+sample). The function then concatenates the data tables into a single matrix of values,
+and adds row and column meta-data.
 
 Row meta-data should be provided as a data frame named \code{sample_info}, containing
 columns of relevant sample information such as sample IDs and group IDs. This must
