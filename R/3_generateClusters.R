@@ -13,14 +13,15 @@
 #' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object generated with
 #' \code{\link{prepareData}} and transformed with \code{\link{transformData}}.
 #' 
-#' The input data object \code{d_se} is assumed to contain a vector \code{is_type_marker}
-#' in the column meta-data. This vector specifies the columns that contain protein markers
-#' used to define cell types; these markers will be used for clustering. For example, in
-#' immunological data, this may be the lineage markers. The choice of cell type markers is
-#' an important design choice for the user, and will depend on the underlying experimental
-#' design and research questions. It may be made based on prior biological knowledge or
-#' using data-driven methods. For an example of a data-driven method of marker ranking and
-#' selection, see Nowicka et al. (2017), \emph{F1000Research}.
+#' The input data object \code{d_se} is assumed to contain a vector \code{marker_type} in
+#' the column meta-data. This vector indicates the marker types for each column
+#' (\code{"cell_type"}, \code{"cell_state"}, or \code{NA}). By default, clustering is
+#' performed using the 'cell type' markers only. For example, in immunological data, this
+#' may be the lineage markers. The choice of cell type markers is an important design
+#' choice for the user, and will depend on the underlying experimental design and research
+#' questions. It may be made based on prior biological knowledge or using data-driven
+#' methods. For an example of a data-driven method of marker ranking and selection, see
+#' Nowicka et al. (2017), \emph{F1000Research}.
 #' 
 #' By default, we use the \code{\link[FlowSOM]{FlowSOM}} clustering algorithm (Van Gassen
 #' et al. 2015, \emph{Cytometry Part A}, available from Bioconductor) to generate the
@@ -45,8 +46,8 @@
 #'   \code{\link{transformData}}.
 #' 
 #' @param cols_to_use Columns to use for clustering. Default = \code{NULL}, in which case
-#'   the markers specified by \code{is_type_marker} in the column meta-data of \code{d_se}
-#'   will be used.
+#'   markers identified as 'cell type' markers (with entries \code{"cell_type"}) in the
+#'   vector \code{marker_type} in the column meta-data of \code{d_se} will be used.
 #' 
 #' @param xdim Horizontal length of grid for self-organizing map for FlowSOM clustering
 #'   (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).
@@ -109,8 +110,8 @@
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
-#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                        levels = c("cell_type", "cell_state")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -128,7 +129,7 @@ generateClusters <- function(d_se, cols_to_use = NULL,
                              meta_clustering = FALSE, meta_k = 40, 
                              seed_clustering = NULL, ...) {
   
-  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$is_type_marker
+  if (is.null(cols_to_use)) cols_to_use <- colData(d_se)$marker_type == "cell_type"
   
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
   d_ff <- flowFrame(assay(d_se))

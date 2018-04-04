@@ -71,8 +71,8 @@
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
-#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                        levels = c("cell_type", "cell_state")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -86,7 +86,7 @@ transformData <- function(d_se, cofactor = 5) {
   
   is_marker <- colData(d_se)$is_marker
   
-  if (is.null(is_marker)) is_marker <- rep(TRUE, ncol(d_se[[1]]))
+  if (is.null(is_marker)) is_marker <- rep(TRUE, ncol(assay(d_se)))
   
   # extract expression data
   d_ex <- assay(d_se)

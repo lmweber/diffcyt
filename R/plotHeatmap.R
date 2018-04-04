@@ -105,8 +105,8 @@
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
-#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                        levels = c("cell_type", "cell_state")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -156,9 +156,12 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   # heatmap: main panel (DA tests and DS tests): expression of 'cell type' markers
   # ------------------------------------------------------------------------------
   
-  d_heatmap <- assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_marker, drop = FALSE]
+  d_heatmap <- 
+    assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_marker, drop = FALSE]
   
-  d_heatmap_celltype <- assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_type_marker, drop = FALSE]
+  d_heatmap_celltype <- 
+    assay(d_medians_all_samples)[, colData(d_medians_all_samples)$marker_type == "cell_type", drop = FALSE]
+  
   # arrange alphabetically
   d_heatmap_celltype <- d_heatmap_celltype[, order(colnames(d_heatmap_celltype)), drop = FALSE]
   
@@ -265,7 +268,9 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   
   if (analysis_type == "DS") {
     
-    d_heatmap_state <- assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_state_marker, drop = FALSE]
+    d_heatmap_state <- 
+      assay(d_medians_all_samples)[, colData(d_medians_all_samples)$marker_type == "cell_state", drop = FALSE]
+    
     # arrange alphabetically
     d_heatmap_state <- d_heatmap_state[, order(colnames(d_heatmap_state)), drop = FALSE]
     

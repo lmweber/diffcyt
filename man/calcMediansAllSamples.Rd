@@ -10,8 +10,7 @@ calcMediansAllSamples(d_se)
 \item{d_se}{Data object from previous steps, in
 \code{\link[SummarizedExperiment]{SummarizedExperiment}} format, containing cluster
 labels as a column in the row meta-data (from \code{\link{generateClusters}}). Column
-meta-data is assumed to contain vectors \code{is_marker}, \code{is_type_marker}, and
-\code{is_state_marker}.}
+meta-data is assumed to contain vectors \code{is_marker} and \code{marker_type}.}
 }
 \value{
 \code{d_medians_all_samples}:
@@ -30,22 +29,25 @@ cluster-marker combination)
 Calculate median expression of each marker across all samples, for each cluster-marker
 combination.
 
-The data object is assumed to contain vectors \code{is_marker}, \code{is_type_marker},
-and \code{is_state_marker} in the column meta-data (see \code{\link{prepareData}}).
-These indicate the sets of all marker columns, cell type marker columns, and cell state
-marker columns. Cluster medians are calculated for all markers.
+The data object is assumed to contain vectors \code{is_marker} and \code{marker_type}
+in the column meta-data (see \code{\link{prepareData}}). These indicate (i) whether
+each column contains a protein marker, and (ii) the protein marker types
+(\code{"cell_type"}, \code{"cell_state"}, or \code{NA}). Cluster medians are calculated
+for all markers.
 
 The cluster medians (across all samples) are required for plotting functions.
 
 Variables \code{id_type_markers} and \code{id_state_markers} are saved in the
-\code{metadata} slot of the output object. These can be used to identify the cell type
-and cell state markers in later steps of the 'diffcyt' pipeline.
+\code{metadata} slot of the output object. These can be used to identify the 'cell
+type' and 'cell state' markers in the list of \code{assays} in the output
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} object, which is useful in
+later steps of the 'diffcyt' pipeline.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
 object, where rows = clusters, columns = markers, assay = values (marker expression
 values). The \code{metadata} slot also contains variables \code{id_type_markers} and
 \code{id_state_markers}, which can be used to identify the sets of cell type and cell
-state markers.
+state markers in the list of 'assays'.
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
@@ -73,8 +75,8 @@ sample_info <- data.frame(
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   is_marker = rep(TRUE, 20), 
-  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                       levels = c("cell_type", "cell_state")), 
   stringsAsFactors = FALSE
 )
 

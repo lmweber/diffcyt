@@ -16,11 +16,11 @@ prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
 IDs. Must contain a column named \code{sample}.}
 
 \item{marker_info}{Data frame of marker information for each column. This should
-contain columns named \code{marker_name}, \code{is_marker}, \code{is_type_marker},
-and \code{is_state_marker}. The first column must contain marker names or column
-names; the remaining columns are logical vectors indicating whether each column in
-the input data is (i) a protein marker, (ii) a 'cell type' marker, and (iii) a 'cell
-state' marker.}
+contain columns named \code{marker_name}, \code{is_marker}, and \code{marker_type}.
+The columns contain: (i) marker names and any other column names; (ii) a logical
+vector indicating whether each column contains a protein marker; and (iii) a factor
+indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
+\code{NA}).}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
@@ -61,14 +61,17 @@ containing the following columns of marker information. The column names must be
 shown.
 
 \itemize{
-\item \code{marker_name}: protein marker names
-\item \code{is_marker}: logical vector indicating whether each column is a marker
-\item \code{is_type_marker}: logical vector indicating whether each column is a 'cell
-type' marker (for clustering and testing for differential abundance of cell
-populations)
-\item \code{is_state_marker}: logical vector indicating whether each column is a 'cell
-state' marker (for testing for differential states within cell populations)
+\item \code{marker_name}: protein marker names (and column names for any other columns)
+\item \code{is_marker}: logical vector indicating whether each column contains a
+protein marker
+\item \code{marker_type}: factor indicating protein marker types (usually, entries will
+be either \code{"cell_type"}, \code{"cell_state"}, or \code{NA})
 }
+
+The split into 'cell type' and 'cell state' markers is crucial for the analysis. Cell
+type markers are used to define cell populations by clustering, and to test for
+differential abundance of cell populations; while cell state markers are used to test
+for differential states within cell populations.
 
 Optionally, random subsampling can be used to select an equal number of cells from each
 sample (\code{subsampling = TRUE}). This can be useful when there are large differences
@@ -103,8 +106,8 @@ sample_info <- data.frame(
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   is_marker = rep(TRUE, 20), 
-  is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-  is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                       levels = c("cell_type", "cell_state")), 
   stringsAsFactors = FALSE
 )
 

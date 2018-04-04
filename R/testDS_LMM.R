@@ -131,8 +131,8 @@
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
-#'   is_type_marker = c(rep(TRUE, 10), rep(FALSE, 10)), 
-#'   is_state_marker = c(rep(FALSE, 10), rep(TRUE, 10)), 
+#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                        levels = c("cell_type", "cell_state")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -165,7 +165,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
     min_samples <- ncol(d_counts) / 2
   }
   
-  # vector identifying state markers
+  # vector identifying 'cell state' markers in list of assays
   id_state_markers <- metadata(d_medians)$id_state_markers
   
   # note: counts are only required for filtering
