@@ -24,7 +24,7 @@
 #' object, where rows = clusters, columns = markers, assay = values (marker expression
 #' values). The \code{metadata} slot also contains variables \code{id_type_markers} and
 #' \code{id_state_markers}, which can be used to identify the sets of cell type and cell
-#' state markers in the list of 'assays'.
+#' state markers in the list of \code{assays}.
 #' 
 #' 
 #' @param d_se Data object from previous steps, in

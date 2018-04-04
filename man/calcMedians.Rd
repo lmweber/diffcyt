@@ -14,8 +14,8 @@ meta-data is assumed to contain vectors \code{is_marker} and \code{marker_type}.
 }
 \value{
 \code{d_medians}: \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-  object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
-  The \code{metadata} slot contains variables \code{id_type_markers} and
+  object, where rows = clusters, columns = samples, sheets (\code{assays} slot) =
+  markers. The \code{metadata} slot contains variables \code{id_type_markers} and
   \code{id_state_markers}, which can be accessed with
   \code{metadata(d_medians)$id_type_markers} and
   \code{metadata(d_medians)$id_state_markers}.
@@ -43,11 +43,11 @@ type' and 'cell state' markers in the list of \code{assays} in the output
 later steps of the 'diffcyt' pipeline.
 
 Results are returned as a new \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-object, where rows = clusters, columns = samples, sheets ('assay' slots) = markers.
-Note that there is a separate table of values ('assay') for each marker. The
-\code{metadata} slot also contains variables \code{id_type_markers} and
+object, where rows = clusters, columns = samples, sheets (\code{assays} slot) =
+markers. Note that there is a separate table of values (\code{assay}) for each marker.
+The \code{metadata} slot also contains variables \code{id_type_markers} and
 \code{id_state_markers}, which can be used to identify the sets of cell type and cell
-state markers in the list of 'assays'.
+state markers in the list of \code{assays}.
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
