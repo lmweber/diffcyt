@@ -152,11 +152,12 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   d_combined <- do.call(rbind, d_ex)
   
-  # assume marker names are in first column of 'marker_info'
+  # assume marker names are provided in 'marker_info'
   colnames(d_combined) <- marker_info[, "marker_name"]
   
   # create row meta-data
-  stopifnot(is.data.frame(sample_info))
+  stopifnot(is.data.frame(sample_info), 
+            "sample" %in% colnames(sample_info))
   
   row_data <- as.data.frame(lapply(sample_info, function(col) {
     as.factor(rep(col, n_cells))
@@ -170,7 +171,7 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   col_data <- marker_info
   
-  stopifnot("sample" %in% colnames(sample_info))
+  col_data$marker_name <- as.character(col_data$marker_name)
   
   # create SummarizedExperiment object
   d_se <- SummarizedExperiment(
