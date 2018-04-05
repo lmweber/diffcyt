@@ -20,7 +20,7 @@ contain columns named \code{marker_name}, \code{is_marker}, and \code{marker_typ
 The columns contain: (i) marker names and any other column names; (ii) a logical
 vector indicating whether each column contains a protein marker; and (iii) a factor
 indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
-\code{NA}).}
+\code{"none"}).}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
@@ -64,7 +64,7 @@ shown.
 \item \code{is_marker}: logical vector indicating whether each column contains a
 protein marker
 \item \code{marker_type}: factor indicating protein marker types (usually, entries will
-be either \code{"cell_type"}, \code{"cell_state"}, or \code{NA})
+be either \code{"cell_type"}, \code{"cell_state"}, or \code{"none"})
 }
 
 The split into 'cell type' and 'cell state' markers is crucial for the analysis. Cell
@@ -106,7 +106,7 @@ marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   is_marker = rep(TRUE, 20), 
   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state")), 
+                       levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 

@@ -15,7 +15,7 @@
 #' 
 #' The input data object \code{d_se} is assumed to contain a vector \code{marker_type} in
 #' the column meta-data. This vector indicates the marker types for each column
-#' (\code{"cell_type"}, \code{"cell_state"}, or \code{NA}). By default, clustering is
+#' (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}). By default, clustering is
 #' performed using the 'cell type' markers only. For example, in immunological data, this
 #' may be the lineage markers. The choice of cell type markers is an important design
 #' choice for the user, and will depend on the underlying experimental design and research
@@ -109,7 +109,7 @@
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
 #'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state")), 
+#'                        levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 

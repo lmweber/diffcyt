@@ -34,7 +34,7 @@
 #'   The columns contain: (i) marker names and any other column names; (ii) a logical
 #'   vector indicating whether each column contains a protein marker; and (iii) a factor
 #'   indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
-#'   \code{NA}). See \code{\link{prepareData}}.
+#'   \code{"none"}). See \code{\link{prepareData}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}}.
@@ -182,7 +182,7 @@
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
 #'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state")), 
+#'                        levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 

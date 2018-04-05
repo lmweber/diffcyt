@@ -9,7 +9,7 @@
 #' The data object is assumed to contain vectors \code{is_marker} and \code{marker_type}
 #' in the column meta-data (see \code{\link{prepareData}}). These indicate (i) whether
 #' each column contains a protein marker, and (ii) the protein marker types
-#' (\code{"cell_type"}, \code{"cell_state"}, or \code{NA}).
+#' (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
 #' 
 #' The cluster medians are required for testing for differential states within cell
 #' populations, and for plotting purposes.
@@ -79,7 +79,7 @@
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
 #'   is_marker = rep(TRUE, 20), 
 #'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state")), 
+#'                        levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
