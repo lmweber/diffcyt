@@ -130,10 +130,11 @@ Alternatively, block IDs can be included as fixed effects in the design matrix
 }
 \value{
 Returns a list containing the results object \code{res}, as well as the data
-  objects \code{d_se}, \code{d_counts}, \code{d_medians}, and
-  \code{d_medians_all_samples}. The structure of \code{res} depends on the differential
-  testing method used. See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}},
-  \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
+  objects \code{d_se}, \code{d_counts}, \code{d_medians},
+  \code{d_medians_by_cluster_marker}, and \code{d_medians_by_sample_marker}. The
+  structure of \code{res} depends on the differential testing method used. See
+  \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}},
+  \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
 }
 \description{
 Wrapper function to run complete 'diffcyt' pipeline

@@ -13,7 +13,7 @@ format, containing cluster labels as a column in the row meta-data (from
 }
 \value{
 \code{d_counts}: \linkS4class{SummarizedExperiment} object, where rows =
-  clusters, columns = samples, assay = values (counts).
+  clusters, columns = samples, \code{assay} = values (counts).
 }
 \description{
 Calculate number of cells per cluster-sample combination
@@ -27,8 +27,8 @@ populations, and are also used for weights and filtering when testing for differ
 states within cell populations.
 
 Results are returned as a new \linkS4class{SummarizedExperiment} object, where rows =
-clusters, columns = samples, assay = values (counts). (Note that this structure differs
-from the input data object.)
+clusters, columns = samples, \code{assay} = values (counts). (Note that this structure
+differs from the input data object.)
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'

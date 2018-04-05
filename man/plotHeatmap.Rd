@@ -6,13 +6,13 @@
 \usage{
 plotHeatmap(out = NULL, analysis_type = c("DA", "DS"), top_n = 20,
   threshold = 0.1, res = NULL, d_se = NULL, d_counts = NULL,
-  d_medians = NULL, d_medians_all_samples = NULL)
+  d_medians = NULL, d_medians_by_cluster_marker = NULL)
 }
 \arguments{
 \item{out}{Output object from \code{\link{diffcyt}} wrapper function, containing
 results object \code{res} and data objects \code{d_se}, \code{d_counts},
-\code{d_medians}, and \code{d_medians_all_samples}. Alternatively, the results and
-data objects can be provided individually.}
+\code{d_medians}, and \code{d_medians_by_cluster_marker}. Alternatively, the results
+and data objects can be provided individually.}
 
 \item{analysis_type}{Whether to plot heatmap for differential abundance (DA) or
 differential state (DS) test results.}
@@ -34,8 +34,8 @@ function \code{\link{diffcyt}} can be provided.}
 \item{d_medians}{Data object. (Required for DS tests only.) Alternatively, the combined
 output object from the wrapper function \code{\link{diffcyt}} can be provided.}
 
-\item{d_medians_all_samples}{Data object. Alternatively, the combined output object
-from the wrapper function \code{\link{diffcyt}} can be provided.}
+\item{d_medians_by_cluster_marker}{Data object. Alternatively, the combined output
+object from the wrapper function \code{\link{diffcyt}} can be provided.}
 }
 \value{
 Displays a heatmap.

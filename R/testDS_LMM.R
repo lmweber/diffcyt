@@ -60,7 +60,7 @@
 #'   counts, from \code{\link{calcCounts}}.
 #' 
 #' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
-#'   (median expression of each marker for each cluster-sample combination), from
+#'   (median marker expression for each cluster-sample combination), from
 #'   \code{\link{calcMedians}}.
 #' 
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
@@ -147,7 +147,7 @@
 #' 
 #' # Calculate counts
 #' d_counts <- calcCounts(d_se)
-#' # Calculate medians (by sample)
+#' # Calculate medians
 #' d_medians <- calcMedians(d_se)
 #' 
 #' # Create model formula

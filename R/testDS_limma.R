@@ -47,8 +47,8 @@
 #'   counts, from \code{\link{calcCounts}}.
 #' 
 #' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
-#'   by sample (median expression of each marker for each cluster-sample combination),
-#'   from \code{\link{calcMedians}}.
+#'   (median marker expression for each cluster-sample combination), from
+#'   \code{\link{calcMedians}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -141,7 +141,7 @@
 #' 
 #' # Calculate counts
 #' d_counts <- calcCounts(d_se)
-#' # Calculate medians (by sample)
+#' # Calculate medians
 #' d_medians <- calcMedians(d_se)
 #' 
 #' # Create design matrix

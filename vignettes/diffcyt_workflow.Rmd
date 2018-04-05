@@ -155,17 +155,27 @@ d_se <- generateClusters(d_se)
 
 ## Calculate features
 
-Calculate cluster cell counts, median expression of markers by sample, and median expression of markers across all samples. These objects are required to calculate the differential tests and to generate plots. See `?calcCounts`, `?calcMedians`, and `?calcMediansAllSamples` for more details.
+Calculate cluster cell counts and cluster medians (median marker expression for each cluster and sample). These objects are required to calculate the differential tests and to generate plots. See `?calcCounts` and `?calcMedians` for more details.
 
 ```{r}
 # Calculate counts
 d_counts <- calcCounts(d_se)
 
-# Calculate medians (by sample)
+# Calculate medians
 d_medians <- calcMedians(d_se)
+```
 
-# Calculate medians (across all samples)
-d_medians_all_samples <- calcMediansAllSamples(d_se)
+
+## Calculate additional features for plotting
+
+Calculate medians for each cluster-marker combination (i.e. median marker expression for each cluster, across all samples) and medians for each sample-marker combination (i.e. overall median marker expression for each sample, across all cells). These additional objects are required for plotting purposes. See ?calcMediansByClusterMarker` and `?calcMediansBySampleMarker` for more details.
+
+```{r}
+# Calculate medians (by cluster and marker)
+d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
+
+# Calculate medians (by sample and marker)
+d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
 ```
 
 

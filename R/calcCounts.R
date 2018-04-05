@@ -10,8 +10,8 @@
 #' states within cell populations.
 #' 
 #' Results are returned as a new \linkS4class{SummarizedExperiment} object, where rows =
-#' clusters, columns = samples, assay = values (counts). (Note that this structure differs
-#' from the input data object.)
+#' clusters, columns = samples, \code{assay} = values (counts). (Note that this structure
+#' differs from the input data object.)
 #' 
 #' 
 #' @param d_se Data object from previous steps, in \linkS4class{SummarizedExperiment}
@@ -20,7 +20,7 @@
 #' 
 #' 
 #' @return \code{d_counts}: \linkS4class{SummarizedExperiment} object, where rows =
-#'   clusters, columns = samples, assay = values (counts).
+#'   clusters, columns = samples, \code{assay} = values (counts).
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData colData

@@ -33,8 +33,8 @@
 #' 
 #' @param out Output object from \code{\link{diffcyt}} wrapper function, containing
 #'   results object \code{res} and data objects \code{d_se}, \code{d_counts},
-#'   \code{d_medians}, and \code{d_medians_all_samples}. Alternatively, the results and
-#'   data objects can be provided individually.
+#'   \code{d_medians}, and \code{d_medians_by_cluster_marker}. Alternatively, the results
+#'   and data objects can be provided individually.
 #' 
 #' @param analysis_type Whether to plot heatmap for differential abundance (DA) or
 #'   differential state (DS) test results.
@@ -56,8 +56,8 @@
 #' @param d_medians Data object. (Required for DS tests only.) Alternatively, the combined
 #'   output object from the wrapper function \code{\link{diffcyt}} can be provided.
 #' 
-#' @param d_medians_all_samples Data object. Alternatively, the combined output object
-#'   from the wrapper function \code{\link{diffcyt}} can be provided.
+#' @param d_medians_by_cluster_marker Data object. Alternatively, the combined output
+#'   object from the wrapper function \code{\link{diffcyt}} can be provided.
 #' 
 #' 
 #' @return Displays a heatmap.
@@ -139,14 +139,14 @@
 #' plotHeatmap(out_DS, analysis_type = "DS")
 #' 
 plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, threshold = 0.1, 
-                        res = NULL, d_se = NULL, d_counts = NULL, d_medians = NULL, d_medians_all_samples = NULL) {
+                        res = NULL, d_se = NULL, d_counts = NULL, d_medians = NULL, d_medians_by_cluster_marker = NULL) {
   
   if (!is.null(out)) {
     res <- out$res
     d_se <- out$d_se
     d_counts <- out$d_counts
     d_medians <- out$d_medians
-    d_medians_all_samples <- out$d_medians_all_samples
+    d_medians_by_cluster_marker <- out$d_medians_by_cluster_marker
   }
   
   analysis_type <- match.arg(analysis_type, choices = c("DA", "DS"))
@@ -157,10 +157,10 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   # ------------------------------------------------------------------------------
   
   d_heatmap <- 
-    assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_marker, drop = FALSE]
+    assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$is_marker, drop = FALSE]
   
   d_heatmap_celltype <- 
-    assay(d_medians_all_samples)[, colData(d_medians_all_samples)$marker_type == "cell_type", drop = FALSE]
+    assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$marker_type == "cell_type", drop = FALSE]
   
   # arrange alphabetically
   d_heatmap_celltype <- d_heatmap_celltype[, order(colnames(d_heatmap_celltype)), drop = FALSE]
@@ -188,7 +188,8 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   
   # color scale: 1%, 50%, 99% percentiles across all medians and all markers
   colors <- colorRamp2(
-    quantile(assay(d_medians_all_samples)[, colData(d_medians_all_samples)$is_marker], c(0.01, 0.5, 0.99), na.rm = TRUE), 
+    quantile(assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$is_marker], 
+             c(0.01, 0.5, 0.99), na.rm = TRUE), 
     c("royalblue3", "white", "tomato2")
   )
   
@@ -206,7 +207,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   } else if (analysis_type == "DS") {
     
     # column annotation for cell type markers
-    n_celltype <- sum(metadata(d_medians_all_samples)$id_type_markers)
+    n_celltype <- sum(metadata(d_medians_by_cluster_marker)$id_type_markers)
     
     col_annot_celltype <- data.frame(
       "marker type" = factor(c(rep("cell type", n_celltype), rep("cell state", 0)), levels = c("cell type", "cell state")), 
@@ -269,7 +270,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   if (analysis_type == "DS") {
     
     d_heatmap_state <- 
-      assay(d_medians_all_samples)[, colData(d_medians_all_samples)$marker_type == "cell_state", drop = FALSE]
+      assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$marker_type == "cell_state", drop = FALSE]
     
     # arrange alphabetically
     d_heatmap_state <- d_heatmap_state[, order(colnames(d_heatmap_state)), drop = FALSE]
@@ -287,7 +288,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
               all(rownames(d_heatmap_state) == d_top$cluster))
     
     # column annotation for cell state markers
-    n_state <- sum(metadata(d_medians_all_samples)$id_state_markers)
+    n_state <- sum(metadata(d_medians_by_cluster_marker)$id_state_markers)
     
     col_annot_state <- data.frame(
       "marker type" = factor(c(rep("cell type", 0), rep("cell state", n_state)), levels = c("cell type", "cell state")), 

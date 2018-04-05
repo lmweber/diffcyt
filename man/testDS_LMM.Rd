@@ -12,7 +12,7 @@ testDS_LMM(d_counts, d_medians, formula, contrast, min_cells = 3,
 counts, from \code{\link{calcCounts}}.}
 
 \item{d_medians}{\linkS4class{SummarizedExperiment} object containing cluster medians
-(median expression of each marker for each cluster-sample combination), from
+(median marker expression for each cluster-sample combination), from
 \code{\link{calcMedians}}.}
 
 \item{formula}{Model formula object, created with \code{\link{createFormula}}. This
@@ -147,7 +147,7 @@ d_se <- generateClusters(d_se)
 
 # Calculate counts
 d_counts <- calcCounts(d_se)
-# Calculate medians (by sample)
+# Calculate medians
 d_medians <- calcMedians(d_se)
 
 # Create model formula
