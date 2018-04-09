@@ -4,16 +4,16 @@
 \alias{generateClusters}
 \title{Generate clusters}
 \usage{
-generateClusters(d_se, cols_to_use = NULL, xdim = 10, ydim = 10,
+generateClusters(d_se, cols_clustering = NULL, xdim = 10, ydim = 10,
   meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, ...)
 }
 \arguments{
 \item{d_se}{Transformed input data, from \code{\link{prepareData}} and
 \code{\link{transformData}}.}
 
-\item{cols_to_use}{Columns to use for clustering. Default = \code{NULL}, in which case
-markers identified as 'cell type' markers (with entries \code{"cell_type"}) in the
-vector \code{marker_type} in the column meta-data of \code{d_se} will be used.}
+\item{cols_clustering}{Columns to use for clustering. Default = \code{NULL}, in which
+case markers identified as 'cell type' markers (with entries \code{"cell_type"}) in
+the vector \code{marker_class} in the column meta-data of \code{d_se} will be used.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
 (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).}
@@ -55,8 +55,8 @@ Data is assumed to be in the form of a \linkS4class{SummarizedExperiment} object
 generated with \code{\link{prepareData}} and transformed with
 \code{\link{transformData}}.
 
-The input data object \code{d_se} is assumed to contain a vector \code{marker_type} in
-the column meta-data. This vector indicates the marker types for each column
+The input data object \code{d_se} is assumed to contain a vector \code{marker_class} in
+the column meta-data. This vector indicates the marker class for each column
 (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}). By default, clustering is
 performed using the 'cell type' markers only. For example, in immunological data, this
 may be the lineage markers. The choice of cell type markers is an important design
@@ -99,22 +99,21 @@ d_input <- list(
   sample4 = d_random()
 )
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)

@@ -4,29 +4,31 @@
 \alias{diffcyt}
 \title{Run 'diffcyt' pipeline}
 \usage{
-diffcyt(d_input, sample_info, marker_info, design = NULL, formula = NULL,
-  contrast, analysis_type = c("DA", "DS"), method_DA = c("diffcyt-DA-edgeR",
-  "diffcyt-DA-voom", "diffcyt-DA-GLMM"), method_DS = c("diffcyt-DS-limma",
-  "diffcyt-DS-LMM"), subsampling = FALSE, n_sub = NULL, seed_sub = NULL,
-  cofactor = 5, cols_to_use = NULL, xdim = 10, ydim = 10,
-  meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
-  min_cells = 3, min_samples = NULL, normalize = FALSE,
-  norm_factors = "TMM", block = NULL, plot = TRUE, path = ".")
+diffcyt(d_input, experiment_info, marker_info, design = NULL,
+  formula = NULL, contrast, analysis_type = c("DA", "DS"),
+  method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"),
+  method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"),
+  cols_to_include = NULL, subsampling = FALSE, n_sub = NULL,
+  seed_sub = NULL, cofactor = 5, cols_clustering = NULL, xdim = 10,
+  ydim = 10, meta_clustering = FALSE, meta_k = 40,
+  seed_clustering = NULL, min_cells = 3, min_samples = NULL,
+  normalize = FALSE, norm_factors = "TMM", block_id = NULL, plot = TRUE,
+  path = ".", markers_to_test = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
 \code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
 list item per sample). See \code{\link{prepareData}}.}
 
-\item{sample_info}{Data frame of sample information, for example sample IDs and group
-IDs. Must contain a column named \code{sample}. See \code{\link{prepareData}}.}
+\item{experiment_info}{Data frame of experiment information, for example sample IDs and
+group IDs. Must contain a column named \code{sample_id}. See
+\code{\link{prepareData}}.}
 
-\item{marker_info}{Data frame of marker information for each column. This should
-contain columns named \code{marker_name}, \code{is_marker}, and \code{marker_type}.
-The columns contain: (i) marker names and any other column names; (ii) a logical
-vector indicating whether each column contains a protein marker; and (iii) a factor
-indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
-\code{"none"}). See \code{\link{prepareData}}.}
+\item{marker_info}{Data frame of marker information for each column of data. This
+should contain columns named \code{marker_name} and \code{marker_class}. The columns
+contain: (i) marker names (and any other column names); and (ii) a factor indicating
+the marker class for each column (with entries \code{"cell_type"},
+\code{"cell_state"}, or \code{"none"}). See \code{\link{prepareData}}.}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}
@@ -53,6 +55,9 @@ are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
 \code{"diffcyt-DS-limma"}. See \code{\link{testDS_limma}} or
 \code{\link{testDS_LMM}}.}
 
+\item{cols_to_include}{Logical vector indicating which columns to include from the
+input data. Default = all columns. See \code{\link{prepareData}}.}
+
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE. See \code{\link{prepareData}}.}
 
@@ -67,10 +72,10 @@ reproducible results. Default = \code{NULL}. See \code{\link{prepareData}}.}
 appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
 recommend cofactor = 150 instead. See \code{\link{transformData}}.}
 
-\item{cols_to_use}{Columns to use for clustering. Default = \code{NULL}, in which case
-markers identified as 'cell type' markers (with entries \code{"cell_type"}) in the
-vector \code{marker_type} in the column meta-data of \code{d_se} will be used. See
-\code{\link{generateClusters}}.}
+\item{cols_clustering}{Columns to use for clustering. Default = \code{NULL}, in which
+case markers identified as 'cell type' markers (with entries \code{"cell_type"}) in
+the vector \code{marker_class} in the column meta-data of \code{d_se} will be used.
+See \code{\link{generateClusters}}.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
 (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).
@@ -112,7 +117,7 @@ Alternatively, a vector of values can be provided. (Note that other normalizatio
 methods from \code{edgeR} are not used.) See \code{\link{testDA_edgeR}},
 \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
 
-\item{block}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+\item{block_id}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects (for method \code{testDA_voom}
 or \code{testDS_limma}). If provided, the block IDs will be included as random
 effects using the \code{limma} \code{duplicateCorrelation} methodology.
@@ -127,6 +132,13 @@ Alternatively, block IDs can be included as fixed effects in the design matrix
 \item{path}{Path for diagnostic plots (for method \code{testDA_voom} or
 \code{testDS_limma}). Default = current working directory. See
 \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
+
+\item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
+differential expression (from the set of markers stored in the \code{assays} of
+\code{d_medians}; for method \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}).
+Default = all 'cell state' markers, which are identified by the logical vector
+\code{id_state_markers} stored in the meta-data of \code{d_medians}. See
+\code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.}
 }
 \value{
 Returns a list containing the results object \code{res}, as well as the data
@@ -151,7 +163,7 @@ Minimum required arguments are:
 
 \itemize{
 \item \code{d_input}
-\item \code{sample_info}
+\item \code{experiment_info}
 \item \code{marker_info}
 \item either \code{design} or \code{formula} (depending on the differential testing
 method used)
@@ -182,32 +194,31 @@ ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Create design matrix
-design <- createDesignMatrix(sample_info, cols_include = 2)
+design <- createDesignMatrix(experiment_info, cols_design = 2)
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
-out_DA <- diffcyt(d_input, sample_info, marker_info, 
+out_DA <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
 
 # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
-out_DS <- diffcyt(d_input, sample_info, marker_info, 
+out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
                   plot = FALSE)

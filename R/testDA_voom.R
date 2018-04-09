@@ -24,7 +24,7 @@
 #' are simpler, but random effects may improve power in data sets with unbalanced designs
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
-#' \code{block} argument here instead. This will make use of the \code{limma}
+#' \code{block_id} argument here instead. This will make use of the \code{limma}
 #' \code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
 #' possible in this case (fixed effects should be used instead). Block IDs should not be
 #' included in the design matrix if the \code{limma} \code{duplicateCorrelation}
@@ -63,7 +63,7 @@
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
 #' 
-#' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+#' @param block_id (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects. If provided, the block IDs
 #'   will be included as random effects using the \code{limma} \code{duplicateCorrelation}
 #'   methodology. Alternatively, block IDs can be included as fixed effects in the design
@@ -131,22 +131,21 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -158,20 +157,20 @@
 #' d_counts <- calcCounts(d_se)
 #' 
 #' # Create design matrix
-#' design <- createDesignMatrix(sample_info, cols_include = 2)
+#' design <- createDesignMatrix(experiment_info, cols_design = 2)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential abundance (DA) of clusters
 #' res_DA <- testDA_voom(d_counts, design, contrast, plot = FALSE)
 #' 
-testDA_voom <- function(d_counts, design, contrast, block = NULL, 
+testDA_voom <- function(d_counts, design, contrast, block_id = NULL, 
                         min_cells = 3, min_samples = NULL, 
                         normalize = FALSE, norm_factors = "TMM", 
                         plot = TRUE, path = ".") {
   
-  if (!is.null(block) & !is.factor(block)) {
-    block <- factor(block, levels = unique(block))
+  if (!is.null(block_id) & !is.factor(block_id)) {
+    block_id <- factor(block_id, levels = unique(block_id))
   }
   
   if (is.null(min_samples)) {
@@ -179,14 +178,14 @@ testDA_voom <- function(d_counts, design, contrast, block = NULL,
   }
   
   counts <- assay(d_counts)
-  cluster <- rowData(d_counts)$cluster
+  cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster <- cluster[ix_keep]
+  cluster_id <- cluster_id[ix_keep]
   
   # limma-voom pipeline
   
@@ -214,14 +213,14 @@ testDA_voom <- function(d_counts, design, contrast, block = NULL,
   
   # estimate correlation between paired samples
   # (note: paired designs only; >2 measures per sample not allowed)
-  if (!is.null(block)) {
-    dupcor <- duplicateCorrelation(v, design, block = block)
+  if (!is.null(block_id)) {
+    dupcor <- duplicateCorrelation(v, design, block = block_id)
   }
   
   # fit models
-  if (!is.null(block)) {
-    message("Fitting linear models with random effects term for 'block'.")
-    vfit <- lmFit(v, design, block = block, correlation = dupcor$consensus.correlation)
+  if (!is.null(block_id)) {
+    message("Fitting linear models with random effects term for 'block_id'.")
+    vfit <- lmFit(v, design, block = block_id, correlation = dupcor$consensus.correlation)
   } else {
     vfit <- lmFit(v, design)
   }
@@ -237,19 +236,19 @@ testDA_voom <- function(d_counts, design, contrast, block = NULL,
   # results
   top <- topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
   
-  if (!all(rownames(top) == cluster)) {
+  if (!all(rownames(top) == cluster_id)) {
     stop("cluster labels do not match")
   }
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
   # fill in any missing rows (filtered clusters) with NAs
-  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster), ncol = ncol(top)))
+  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster_id), ncol = ncol(top)))
   colnames(row_data) <- colnames(top)
-  cluster_nm <- as.numeric(cluster)
-  row_data[cluster_nm, ] <- top
+  cluster_id_nm <- as.numeric(cluster_id)
+  row_data[cluster_id_nm, ] <- top
   
-  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster)), stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
                     row_data)
   
   res <- d_counts

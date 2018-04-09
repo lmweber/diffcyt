@@ -4,8 +4,8 @@
 \alias{testDS_LMM}
 \title{Test for differential states: method 'diffcyt-DS-LMM'}
 \usage{
-testDS_LMM(d_counts, d_medians, formula, contrast, min_cells = 3,
-  min_samples = NULL)
+testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test = NULL,
+  min_cells = 3, min_samples = NULL)
 }
 \arguments{
 \item{d_counts}{\linkS4class{SummarizedExperiment} object containing cluster cell
@@ -13,7 +13,10 @@ counts, from \code{\link{calcCounts}}.}
 
 \item{d_medians}{\linkS4class{SummarizedExperiment} object containing cluster medians
 (median marker expression for each cluster-sample combination), from
-\code{\link{calcMedians}}.}
+\code{\link{calcMedians}}. Assumed to contain a logical vector
+\code{id_state_markers} in the meta-data (accessed with
+\code{metadata(d_medians)$id_state_markers}), which identifies the set of 'cell
+state' markers in the list of \code{assays}.}
 
 \item{formula}{Model formula object, created with \code{\link{createFormula}}. This
 should be a list containing three elements: \code{formula}, \code{data}, and
@@ -23,6 +26,11 @@ variable indicating whether the model formula contains any random effect terms. 
 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
+
+\item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
+differential expression (from the set of markers stored in the \code{assays} of
+\code{d_medians}). Default = all 'cell state' markers, which are identified by the
+logical vector \code{id_state_markers} stored in the meta-data of \code{d_medians}.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -91,6 +99,12 @@ performed using a linear model (LM) instead of a LMM.
 The contrast matrix specifying the contrast of interest can be created with
 \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 
+By default, differential tests are performed for all cell state markers (which are
+identified with the vector \code{id_state_markers} stored in the meta-data of the
+cluster medians input object). The optional argument \code{markers_to_test} allows the
+user to specify a different set of markers to test (e.g. to investigate differences for
+cell type markers).
+
 Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 with very low cell counts across conditions, to improve power.
@@ -122,22 +136,21 @@ ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)
@@ -151,7 +164,7 @@ d_counts <- calcCounts(d_se)
 d_medians <- calcMedians(d_se)
 
 # Create model formula
-formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
 

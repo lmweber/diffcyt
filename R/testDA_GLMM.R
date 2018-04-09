@@ -125,22 +125,21 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -152,7 +151,7 @@
 #' d_counts <- calcCounts(d_se)
 #' 
 #' # Create model formula
-#' formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+#' formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
@@ -168,14 +167,14 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   }
   
   counts <- assay(d_counts)
-  cluster <- rowData(d_counts)$cluster
+  cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster <- cluster[ix_keep]
+  cluster_id <- cluster_id[ix_keep]
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
   
@@ -204,9 +203,9 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   # fit models: separate model for each cluster
   
-  p_vals <- rep(NA, length(cluster))
+  p_vals <- rep(NA, length(cluster_id))
   
-  for (i in seq_along(cluster)) {
+  for (i in seq_along(cluster_id)) {
     p_vals[i] <- tryCatch({
       # data for cluster i
       # note: divide by total number of cells per sample (after filtering) to get
@@ -235,12 +234,12 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   out <- data.frame(p_vals, p_adj, stringsAsFactors = FALSE)
   
   # fill in any missing rows (filtered clusters) with NAs
-  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster), ncol = ncol(out)))
+  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster_id), ncol = ncol(out)))
   colnames(row_data) <- colnames(out)
-  cluster_nm <- as.numeric(cluster)
-  row_data[cluster_nm, ] <- out
+  cluster_id_nm <- as.numeric(cluster_id)
+  row_data[cluster_id_nm, ] <- out
   
-  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster)), stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
                     row_data)
   
   res <- d_counts

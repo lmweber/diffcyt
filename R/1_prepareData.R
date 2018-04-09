@@ -11,9 +11,9 @@
 #' sample). The function then concatenates the data tables into a single matrix of values,
 #' and adds row and column meta-data.
 #' 
-#' Row meta-data should be provided as a data frame named \code{sample_info}, containing
-#' columns of relevant sample information such as sample IDs and group IDs. This must
-#' contain at least a column named \code{sample}.
+#' Row meta-data should be provided as a data frame named \code{experiment_info},
+#' containing columns of relevant experiment information, such as sample IDs and group
+#' IDs (for each sample). This must contain at least a column named \code{sample_id}.
 #' 
 #' Column meta-data should be provided as a data frame named \code{marker_info},
 #' containing the following columns of marker information. The column names must be as
@@ -21,16 +21,18 @@
 #' 
 #' \itemize{
 #' \item \code{marker_name}: protein marker names (and column names for any other columns)
-#' \item \code{is_marker}: logical vector indicating whether each column contains a
-#' protein marker
-#' \item \code{marker_type}: factor indicating protein marker types (usually, entries will
-#' be either \code{"cell_type"}, \code{"cell_state"}, or \code{"none"})
+#' \item \code{marker_class}: factor indicating the protein marker class for each column
+#' of data (usually, entries will be either \code{"cell_type"}, \code{"cell_state"}, or
+#' \code{"none"})
 #' }
 #' 
 #' The split into 'cell type' and 'cell state' markers is crucial for the analysis. Cell
 #' type markers are used to define cell populations by clustering, and to test for
 #' differential abundance of cell populations; while cell state markers are used to test
 #' for differential states within cell populations.
+#' 
+#' The optional argument \code{cols_to_include} allows unnecessary columns (e.g. any
+#' columns not containing protein markers) to be discarded.
 #' 
 #' Optionally, random subsampling can be used to select an equal number of cells from each
 #' sample (\code{subsampling = TRUE}). This can be useful when there are large differences
@@ -44,15 +46,17 @@
 #'   \code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
 #'   list item per sample).
 #' 
-#' @param sample_info Data frame of sample information, for example sample IDs and group
-#'   IDs. Must contain a column named \code{sample}.
+#' @param experiment_info Data frame of experiment information, for example sample IDs and
+#'   group IDs. Must contain a column named \code{sample_id}.
 #' 
-#' @param marker_info Data frame of marker information for each column. This should
-#'   contain columns named \code{marker_name}, \code{is_marker}, and \code{marker_type}.
-#'   The columns contain: (i) marker names and any other column names; (ii) a logical
-#'   vector indicating whether each column contains a protein marker; and (iii) a factor
-#'   indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
-#'   \code{"none"}).
+#' @param marker_info Data frame of marker information for each column of data. This
+#'   should contain columns named \code{marker_name} and \code{marker_class}. The columns
+#'   contain: (i) marker names (and any other column names); and (ii) a factor indicating
+#'   the marker class for each column (with entries \code{"cell_type"},
+#'   \code{"cell_state"}, or \code{"none"}).
+#' 
+#' @param cols_to_include Logical vector indicating which columns to include from the
+#'   input data. Default = all columns.
 #' 
 #' @param subsampling Whether to use random subsampling to select an equal number of cells
 #'   from each sample. Default = FALSE.
@@ -66,9 +70,10 @@
 #' 
 #' @return \code{d_se}: Returns data as a \linkS4class{SummarizedExperiment} containing a
 #'   single matrix of data (expression values) in the \code{assays} slot, together with
-#'   row meta-data (sample information) and column meta-data (marker information). The
-#'   \code{sample_info} data frame is also stored in the \code{metadata} slot, and can be
-#'   accessed with \code{metadata(d_se)$sample_info}.
+#'   row meta-data (experiment information) and column meta-data (marker information). The
+#'   \code{metadata} slot also contains the \code{experiment_info} data frame, and a
+#'   vector \code{n_cells} of the number of cells per sample; these can be accessed with
+#'   \code{metadata(d_se)$experiment_info} and \code{metadata(d_se)$n_cells}.
 #' 
 #' 
 #' @importFrom SummarizedExperiment SummarizedExperiment
@@ -94,24 +99,23 @@
 #'   sample4 = d_random()
 #' )
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
-prepareData <- function(d_input, sample_info, marker_info, 
+prepareData <- function(d_input, experiment_info, marker_info, cols_to_include = NULL, 
                         subsampling = FALSE, n_sub = NULL, seed_sub = NULL) {
   
   if (!(is(d_input, "list") | is(d_input, "flowSet"))) {
@@ -132,13 +136,27 @@ prepareData <- function(d_input, sample_info, marker_info,
     stop("input data format not recognized (should be a 'flowSet' or a list of 'flowFrames', data.frames, or matrices)")
   }
   
-  if (!(nrow(sample_info) == length(d_ex))) {
-    stop("number of rows in 'sample_info' data frame must equal the number of samples")
+  if (!is.null(cols_to_include)) {
+    if (!is.logical(cols_to_include)) {
+      stop("'cols_to_include' must be a logical vector")
+    }
+    if (length(cols_to_include) != ncol(d_ex[[1]])) {
+      stop("length of 'cols_to_include' does not match number of columns in input data")
+    }
+    d_ex <- lapply(d_ex, function(e) e[, cols_to_include])
+  }
+  
+  if (!(nrow(marker_info) == ncol(d_ex[[1]]))) {
+    stop("number of rows in 'marker_info' data frame must match number of columns in input data (after subsetting with 'cols_to_include')")
   }
   
   if (!all(sapply(d_input, function(d) is.null(colnames(d)))) | 
       !all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]]))))) {
     stop("column (marker) names do not match for all samples")
+  }
+  
+  if (!(nrow(experiment_info) == length(d_ex))) {
+    stop("number of rows in 'experiment_info' data frame must equal the number of samples")
   }
   
   n_cells <- sapply(d_ex, nrow)
@@ -156,10 +174,10 @@ prepareData <- function(d_input, sample_info, marker_info,
   colnames(d_combined) <- marker_info[, "marker_name"]
   
   # create row meta-data
-  stopifnot(is.data.frame(sample_info), 
-            "sample" %in% colnames(sample_info))
+  stopifnot(is.data.frame(experiment_info), 
+            "sample_id" %in% colnames(experiment_info))
   
-  row_data <- as.data.frame(lapply(sample_info, function(col) {
+  row_data <- as.data.frame(lapply(experiment_info, function(col) {
     as.factor(rep(col, n_cells))
   }))
   
@@ -175,10 +193,11 @@ prepareData <- function(d_input, sample_info, marker_info,
   
   # create SummarizedExperiment object
   d_se <- SummarizedExperiment(
-    d_combined, 
+    assays = list(exprs = d_combined), 
     rowData = row_data, 
     colData = col_data, 
-    metadata = list(sample_info = sample_info)
+    metadata = list(experiment_info = experiment_info, 
+                    n_cells = n_cells)
   )
   
   d_se

@@ -96,32 +96,31 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Create design matrix
-#' design <- createDesignMatrix(sample_info, cols_include = 2)
+#' design <- createDesignMatrix(experiment_info, cols_design = 2)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
-#' out_DA <- diffcyt(d_input, sample_info, marker_info, 
+#' out_DA <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
 #' 
 #' # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
-#' out_DS <- diffcyt(d_input, sample_info, marker_info, 
+#' out_DS <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
 #'                   plot = FALSE)
@@ -152,43 +151,48 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   analysis_type <- match.arg(analysis_type, choices = c("DA", "DS"))
   
   
+  is_marker <- colData(d_medians_by_cluster_marker)$marker_class != "none"
+  is_celltype_marker <- colData(d_medians_by_cluster_marker)$marker_class == "cell_type"
+  is_state_marker <- colData(d_medians_by_cluster_marker)$marker_class == "cell_state"
+  
+  
   # ------------------------------------------------------------------------------
   # heatmap: main panel (DA tests and DS tests): expression of 'cell type' markers
   # ------------------------------------------------------------------------------
   
   d_heatmap <- 
-    assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$is_marker, drop = FALSE]
+    assay(d_medians_by_cluster_marker)[, is_marker, drop = FALSE]
   
   d_heatmap_celltype <- 
-    assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$marker_type == "cell_type", drop = FALSE]
+    assay(d_medians_by_cluster_marker)[, is_celltype_marker, drop = FALSE]
   
   # arrange alphabetically
   d_heatmap_celltype <- d_heatmap_celltype[, order(colnames(d_heatmap_celltype)), drop = FALSE]
   
   if (analysis_type == "DA") {
-    stopifnot(nrow(d_heatmap) == nrow(rowData(res)$cluster), 
-              nrow(d_heatmap_celltype) == nrow(rowData(res)$cluster), 
-              all(rownames(d_heatmap) == rowData(res)$cluster), 
-              all(rownames(d_heatmap_celltype) == rowData(res)$cluster))
+    stopifnot(nrow(d_heatmap) == nrow(rowData(res)$cluster_id), 
+              nrow(d_heatmap_celltype) == nrow(rowData(res)$cluster_id), 
+              all(rownames(d_heatmap) == rowData(res)$cluster_id), 
+              all(rownames(d_heatmap_celltype) == rowData(res)$cluster_id))
   } else if (analysis_type == "DS") {
-    stopifnot(nrow(d_heatmap) == nlevels(rowData(res)$cluster), 
-              nrow(d_heatmap_celltype) == nlevels(rowData(res)$cluster), 
-              all(rownames(d_heatmap) %in% rowData(res)$cluster), 
-              all(rownames(d_heatmap_celltype) %in% rowData(res)$cluster))
+    stopifnot(nrow(d_heatmap) == nlevels(rowData(res)$cluster_id), 
+              nrow(d_heatmap_celltype) == nlevels(rowData(res)$cluster_id), 
+              all(rownames(d_heatmap) %in% rowData(res)$cluster_id), 
+              all(rownames(d_heatmap_celltype) %in% rowData(res)$cluster_id))
   }
   
   # results for top clusters
   d_top <- topClusters(res, order = TRUE, all = FALSE, top_n = top_n)
   
   # top 'n' clusters
-  d_heatmap_celltype <- d_heatmap_celltype[match(d_top$cluster, rownames(d_heatmap_celltype)), , drop = FALSE]
+  d_heatmap_celltype <- d_heatmap_celltype[match(d_top$cluster_id, rownames(d_heatmap_celltype)), , drop = FALSE]
   
   stopifnot(nrow(d_heatmap_celltype) == nrow(d_top), 
-            all(rownames(d_heatmap_celltype) == d_top$cluster))
+            all(rownames(d_heatmap_celltype) == d_top$cluster_id))
   
   # color scale: 1%, 50%, 99% percentiles across all medians and all markers
   colors <- colorRamp2(
-    quantile(assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$is_marker], 
+    quantile(assay(d_medians_by_cluster_marker)[, is_marker], 
              c(0.01, 0.5, 0.99), na.rm = TRUE), 
     c("royalblue3", "white", "tomato2")
   )
@@ -244,7 +248,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     stopifnot(nrow(d_counts) == nrow(rowData(res)), 
               all(rownames(assay(d_counts)) == rownames(rowData(res))))
     
-    d_abundance <- assay(d_counts)[d_top$cluster, , drop = FALSE]
+    d_abundance <- assay(d_counts)[d_top$cluster_id, , drop = FALSE]
     
     stopifnot(nrow(d_abundance) == nrow(d_heatmap_celltype), 
               all(rownames(d_abundance) == rownames(d_heatmap_celltype)))
@@ -270,22 +274,22 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   if (analysis_type == "DS") {
     
     d_heatmap_state <- 
-      assay(d_medians_by_cluster_marker)[, colData(d_medians_by_cluster_marker)$marker_type == "cell_state", drop = FALSE]
+      assay(d_medians_by_cluster_marker)[, is_state_marker, drop = FALSE]
     
     # arrange alphabetically
     d_heatmap_state <- d_heatmap_state[, order(colnames(d_heatmap_state)), drop = FALSE]
     
-    stopifnot(nrow(d_heatmap_state) == nlevels(rowData(res)$cluster), 
-              all(rownames(d_heatmap_state) %in% rowData(res)$cluster))
+    stopifnot(nrow(d_heatmap_state) == nlevels(rowData(res)$cluster_id), 
+              all(rownames(d_heatmap_state) %in% rowData(res)$cluster_id))
     
     # results for top cluster-marker combinations
     d_top <- topClusters(res, order = TRUE, all = FALSE, top_n = top_n)
     
     # top 'n' clusters
-    d_heatmap_state <- d_heatmap_state[match(d_top$cluster, rownames(d_heatmap_state)), , drop = FALSE]
+    d_heatmap_state <- d_heatmap_state[match(d_top$cluster_id, rownames(d_heatmap_state)), , drop = FALSE]
     
     stopifnot(nrow(d_heatmap_state) == nrow(d_top), 
-              all(rownames(d_heatmap_state) == d_top$cluster))
+              all(rownames(d_heatmap_state) == d_top$cluster_id))
     
     # column annotation for cell state markers
     n_state <- sum(metadata(d_medians_by_cluster_marker)$id_state_markers)
@@ -322,7 +326,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   if (analysis_type == "DS") {
     
     # create data frame of expression values of top 'n' cluster-marker combinations by sample
-    top_clusters <- as.list(d_top$cluster)
+    top_clusters <- as.list(d_top$cluster_id)
     top_markers <- as.character(d_top$marker)
     
     assays_ordered <- assays(d_medians)[top_markers]
@@ -386,10 +390,10 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   
   # set up data frame
   if (analysis_type == "DA") {
-    d_sig <- data.frame(cluster = d_top$cluster, 
+    d_sig <- data.frame(cluster_id = d_top$cluster_id, 
                         sig = as.numeric(sig))
   } else if (analysis_type == "DS") {
-    d_sig <- data.frame(cluster = d_top$cluster, 
+    d_sig <- data.frame(cluster_id = d_top$cluster_id, 
                         marker = d_top$marker, 
                         sig = as.numeric(sig))
   }

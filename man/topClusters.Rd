@@ -65,32 +65,31 @@ ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Create design matrix
-design <- createDesignMatrix(sample_info, cols_include = 2)
+design <- createDesignMatrix(experiment_info, cols_design = 2)
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
-out_DA <- diffcyt(d_input, sample_info, marker_info, 
+out_DA <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
 
 # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
-out_DS <- diffcyt(d_input, sample_info, marker_info, 
+out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
                   plot = FALSE)

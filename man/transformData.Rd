@@ -9,8 +9,8 @@ transformData(d_se, cofactor = 5)
 \arguments{
 \item{d_se}{Input data. Assumed to be in the form of a
 \linkS4class{SummarizedExperiment}, prepared with the function
-\code{\link{prepareData}}. Column meta-data is assumed to contain a vector of logical
-entries (\code{is_marker}) indicating protein marker columns.}
+\code{\link{prepareData}}. Column meta-data is assumed to contain a factor
+\code{marker_class}, where entries \code{"none"} indicate non-marker columns.}
 
 \item{cofactor}{Cofactor parameter for 'arcsinh' transform. Default = 5, which is
 appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
@@ -44,9 +44,9 @@ Figure S2.
 
 The transform should be applied to protein marker columns only. The
 \linkS4class{SummarizedExperiment} object created in the previous step
-(\code{\link{prepareData}}) is assumed to contain a vector of logical entries named
-\code{is_marker} in the column meta-data, indicating whether each column is a protein
-marker. (If this is not available, all columns will be transformed instead.)
+(\code{\link{prepareData}}) is assumed to contain a factor \code{marker_class} in the
+column meta-data, where entries \code{"none"} indicate non-marker columns. (If this is
+not available, all columns will be transformed instead.)
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'
@@ -65,22 +65,21 @@ d_input <- list(
   sample4 = d_random()
 )
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)

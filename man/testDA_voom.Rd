@@ -4,7 +4,7 @@
 \alias{testDA_voom}
 \title{Test for differential abundance: method 'diffcyt-DA-voom'}
 \usage{
-testDA_voom(d_counts, design, contrast, block = NULL, min_cells = 3,
+testDA_voom(d_counts, design, contrast, block_id = NULL, min_cells = 3,
   min_samples = NULL, normalize = FALSE, norm_factors = "TMM",
   plot = TRUE, path = ".")
 }
@@ -18,7 +18,7 @@ counts, from \code{\link{calcCounts}}.}
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
 
-\item{block}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+\item{block_id}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects. If provided, the block IDs
 will be included as random effects using the \code{limma} \code{duplicateCorrelation}
 methodology. Alternatively, block IDs can be included as fixed effects in the design
@@ -80,7 +80,7 @@ For paired designs, either fixed effects or random effects can be used. Fixed ef
 are simpler, but random effects may improve power in data sets with unbalanced designs
 or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
-\code{block} argument here instead. This will make use of the \code{limma}
+\code{block_id} argument here instead. This will make use of the \code{limma}
 \code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
 possible in this case (fixed effects should be used instead). Block IDs should not be
 included in the design matrix if the \code{limma} \code{duplicateCorrelation}
@@ -131,22 +131,21 @@ ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)
@@ -158,7 +157,7 @@ d_se <- generateClusters(d_se)
 d_counts <- calcCounts(d_se)
 
 # Create design matrix
-design <- createDesignMatrix(sample_info, cols_include = 2)
+design <- createDesignMatrix(experiment_info, cols_design = 2)
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
 

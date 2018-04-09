@@ -46,6 +46,12 @@
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
 #' 
+#' By default, differential tests are performed for all cell state markers (which are
+#' identified with the vector \code{id_state_markers} stored in the meta-data of the
+#' cluster medians input object). The optional argument \code{markers_to_test} allows the
+#' user to specify a different set of markers to test (e.g. to investigate differences for
+#' cell type markers).
+#' 
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, to improve power.
@@ -61,7 +67,10 @@
 #' 
 #' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
 #'   (median marker expression for each cluster-sample combination), from
-#'   \code{\link{calcMedians}}.
+#'   \code{\link{calcMedians}}. Assumed to contain a logical vector
+#'   \code{id_state_markers} in the meta-data (accessed with
+#'   \code{metadata(d_medians)$id_state_markers}), which identifies the set of 'cell
+#'   state' markers in the list of \code{assays}.
 #' 
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
 #'   should be a list containing three elements: \code{formula}, \code{data}, and
@@ -71,6 +80,11 @@
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
+#' 
+#' @param markers_to_test (Optional) Logical vector specifying which markers to test for
+#'   differential expression (from the set of markers stored in the \code{assays} of
+#'   \code{d_medians}). Default = all 'cell state' markers, which are identified by the
+#'   logical vector \code{id_state_markers} stored in the meta-data of \code{d_medians}.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -122,22 +136,21 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -151,7 +164,7 @@
 #' d_medians <- calcMedians(d_se)
 #' 
 #' # Create model formula
-#' formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+#' formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
@@ -159,25 +172,31 @@
 #' res_DS <- testDS_LMM(d_counts, d_medians, formula, contrast)
 #' 
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
+                       markers_to_test = NULL, 
                        min_cells = 3, min_samples = NULL) {
   
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
   }
   
-  # vector identifying 'cell state' markers in list of assays
-  id_state_markers <- metadata(d_medians)$id_state_markers
+  # markers to test
+  if (!is.null(markers_to_test)) {
+    markers_to_test <- markers_to_test
+  } else {
+    # vector identifying 'cell state' markers in list of assays
+    markers_to_test <- metadata(d_medians)$id_state_markers
+  }
   
   # note: counts are only required for filtering
   counts <- assay(d_counts)
-  cluster <- rowData(d_counts)$cluster
+  cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster <- cluster[ix_keep]
+  cluster_id <- cluster_id[ix_keep]
   
   # total cell counts per sample (after filtering) (for weights in model fitting)
   n_cells_smp <- colSums(counts)
@@ -190,9 +209,9 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   }
   
   # extract medians and create concatenated matrix
-  state_names <- names(assays(d_medians))[id_state_markers]
+  state_names <- names(assays(d_medians))[markers_to_test]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, , drop = FALSE])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster_id, , drop = FALSE])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
@@ -232,14 +251,14 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), 
-                                   nrow = nlevels(cluster) * length(state_names), 
+                                   nrow = nlevels(cluster_id) * length(state_names), 
                                    ncol = ncol(out)))
   colnames(row_data) <- colnames(out)
   
-  cluster_nm <- as.numeric(cluster)
-  s <- seq(0, nlevels(cluster) * (length(state_names) - 1), by = nlevels(cluster))
-  r1 <- rep(cluster_nm, length(state_names))
-  r2 <- rep(s, each = length(cluster_nm))
+  cluster_id_nm <- as.numeric(cluster_id)
+  s <- seq(0, nlevels(cluster_id) * (length(state_names) - 1), by = nlevels(cluster_id))
+  r1 <- rep(cluster_id_nm, length(state_names))
+  r2 <- rep(s, each = length(cluster_id_nm))
   
   stopifnot(length(s) == length(state_names))
   stopifnot(length(r1) == length(r2))
@@ -248,11 +267,11 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   row_data[rows, ] <- out
   
   # include cluster IDs and marker names
-  clus <- factor(rep(levels(cluster), length(state_names)), levels = levels(cluster))
-  stat <- factor(rep(state_names, each = length(levels(cluster))), levels = state_names)
+  clus <- factor(rep(levels(cluster_id), length(state_names)), levels = levels(cluster_id))
+  stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster = clus, marker = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, marker = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   col_data <- colData(d_medians)

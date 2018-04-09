@@ -4,18 +4,18 @@
 \alias{createFormula}
 \title{Create model formula and corresponding data frame of variables}
 \usage{
-createFormula(sample_info, cols_fixed = NULL, cols_random = NULL)
+createFormula(experiment_info, cols_fixed = NULL, cols_random = NULL)
 }
 \arguments{
-\item{sample_info}{Data frame of sample information (which was also previously provided
-to \code{\link{prepareData}}). This should be a data frame containing all factors and
-covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
-covariates.}
+\item{experiment_info}{Data frame of experiment information (which was also previously
+provided to \code{\link{prepareData}}). This should be a data frame containing all
+factors and covariates of interest; e.g. group IDs, block IDs, batch IDs, and
+continuous covariates.}
 
-\item{cols_fixed}{(Logical) Columns of \code{sample_info} to include as fixed effect
-terms in the model formula.}
+\item{cols_fixed}{(Logical) Columns of \code{experiment_info} to include as fixed
+effect terms in the model formula.}
 
-\item{cols_random}{(Logical) Columns of \code{sample_info} to include as random
+\item{cols_random}{(Logical) Columns of \code{experiment_info} to include as random
 intercept terms in the model formula.}
 }
 \value{
@@ -39,7 +39,7 @@ variables (one column per formula term). These can then be provided to different
 testing functions that require a model formula, together with the main data object and
 contrast matrix.
 
-The \code{sample_info} input (which was also previously provided to
+The \code{experiment_info} input (which was also previously provided to
 \code{\link{prepareData}}) should be a data frame containing all factors and covariates
 of interest. For example, depending on the experimental design, this may include the
 following columns:
@@ -57,9 +57,9 @@ an 'observation-level random effect' (OLRE); see see Nowicka et al., 2017,
 }
 
 The logical vectors \code{cols_fixed} and \code{cols_random} specify the columns in
-\code{sample_info} to include as fixed effect terms and random intercept terms
+\code{experiment_info} to include as fixed effect terms and random intercept terms
 respectively. The names for each formula term are taken from the column names of
-\code{sample_info}.
+\code{experiment_info}.
 
 Note that for some methods, random effect terms (e.g. for block IDs) must be provided
 directly to the differential testing function instead (\code{\link{testDA_voom}} and
@@ -73,12 +73,12 @@ instead of a model formula; see \code{\link{createDesignMatrix}}.
 # pipeline, see the package vignette.
 
 # Example: model formula
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:8)), 
-  group = factor(rep(paste0("group", 1:2), each = 4)), 
-  patient = factor(rep(paste0("patient", 1:4), 2)), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:8)), 
+  group_id = factor(rep(paste0("group", 1:2), each = 4)), 
+  patient_id = factor(rep(paste0("patient", 1:4), 2)), 
   stringsAsFactors = FALSE
 )
-createFormula(sample_info, cols_fixed = 2, cols_random = c(1, 3))
+createFormula(experiment_info, cols_fixed = 2, cols_random = c(1, 3))
 
 }

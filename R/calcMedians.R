@@ -6,10 +6,9 @@
 #' Calculate median marker expression for each cluster and sample (i.e. medians for each 
 #' cluster-sample-marker combination).
 #' 
-#' The data object is assumed to contain vectors \code{is_marker} and \code{marker_type}
-#' in the column meta-data (see \code{\link{prepareData}}). These indicate (i) whether
-#' each column contains a protein marker, and (ii) the protein marker types
-#' (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
+#' The data object is assumed to contain a factor \code{marker_class} in the column
+#' meta-data (see \code{\link{prepareData}}), which indicates the protein marker class for
+#' each column of data (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
 #' 
 #' The cluster medians are required for testing for differential states within cell
 #' populations, and for plotting purposes.
@@ -30,8 +29,8 @@
 #' 
 #' @param d_se Data object from previous steps, in \linkS4class{SummarizedExperiment}
 #'   format, containing cluster labels as a column in the row meta-data (from
-#'   \code{\link{generateClusters}}). Column meta-data is assumed to contain vectors
-#'   \code{is_marker} and \code{marker_type}.
+#'   \code{\link{generateClusters}}). Column meta-data is assumed to contain a factor
+#'   \code{marker_class}.
 #' 
 #' 
 #' @return \code{d_medians}: \linkS4class{SummarizedExperiment} object, where rows =
@@ -69,22 +68,21 @@
 #'   sample4 = d_random()
 #' )
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -101,37 +99,39 @@ calcMedians <- function(d_se) {
     stop("Data object must be a 'SummarizedExperiment'")
   }
   
-  if (!("cluster" %in% (colnames(rowData(d_se))))) {
+  if (!("cluster_id" %in% (colnames(rowData(d_se))))) {
     stop("Data object does not contain cluster labels. Run 'generateClusters' to generate cluster labels.")
   }
   
+  is_marker <- colData(d_se)$marker_class != "none"
+  
   # identify 'cell type' and 'cell state' markers in final list of assays
-  id_type_markers <- (colData(d_se)$marker_type == "cell_type")[colData(d_se)$is_marker]
-  id_state_markers <- (colData(d_se)$marker_type == "cell_state")[colData(d_se)$is_marker]
+  id_type_markers <- (colData(d_se)$marker_class == "cell_type")[is_marker]
+  id_state_markers <- (colData(d_se)$marker_class == "cell_state")[is_marker]
   
   # calculate cluster medians for each marker
   
   assaydata_mx <- assay(d_se)
   
-  medians <- vector("list", sum(colData(d_se)$is_marker))
-  marker_names_sub <- as.character(colData(d_se)$marker_name[colData(d_se)$is_marker])
+  medians <- vector("list", sum(is_marker))
+  marker_names_sub <- as.character(colData(d_se)$marker_name[is_marker])
   names(medians) <- marker_names_sub
   
-  clus <- rowData(d_se)$cluster
-  smp <- rowData(d_se)$sample
+  clus <- rowData(d_se)$cluster_id
+  smp <- rowData(d_se)$sample_id
   
   for (i in seq_along(medians)) {
     assaydata_i <- assaydata_mx[, marker_names_sub[i], drop = FALSE]
     assaydata_i <- as.data.frame(assaydata_i)
-    assaydata_i <- cbind(assaydata_i, sample = smp, cluster = clus)
+    assaydata_i <- cbind(assaydata_i, sample_id = smp, cluster_id = clus)
     colnames(assaydata_i)[1] <- "value"
     
     assaydata_i %>% 
-      group_by(cluster, sample) %>% 
+      group_by(cluster_id, sample_id) %>% 
       summarize(median = median(value)) -> 
       med
     
-    med <- acast(med, cluster ~ sample, value.var = "median", fill = NA)
+    med <- acast(med, cluster_id ~ sample_id, value.var = "median", fill = NA)
     
     medians[[i]] <- med
   }
@@ -149,25 +149,25 @@ calcMedians <- function(d_se) {
   # create new SummarizedExperiment (rows = clusters, columns = samples)
   
   row_data <- data.frame(
-    cluster = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster)), 
+    cluster_id = factor(rownames(medians[[1]]), levels = levels(rowData(d_se)$cluster_id)), 
     stringsAsFactors = FALSE
   )
   
-  col_data <- metadata(d_se)$sample_info
+  col_data <- metadata(d_se)$experiment_info
   
-  # rearrange sample order to match 'sample_info'
+  # rearrange sample order to match 'experiment_info'
   medians <- lapply(medians, function(m) {
-    m[, match(col_data$sample, colnames(m)), drop = FALSE]
+    m[, match(col_data$sample_id, colnames(m)), drop = FALSE]
   })
   stopifnot(all(sapply(medians, function(m) {
-    col_data$sample == colnames(m)
+    col_data$sample_id == colnames(m)
   })))
   
   metadata <- list(id_type_markers = id_type_markers, 
                    id_state_markers = id_state_markers)
   
   d_medians <- SummarizedExperiment(
-    medians, 
+    assays = list(medians = medians), 
     rowData = row_data, 
     colData = col_data, 
     metadata = metadata

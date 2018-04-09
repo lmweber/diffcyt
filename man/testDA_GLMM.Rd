@@ -124,22 +124,21 @@ ix_cols <- c(6:10, 16:20)
 d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)
@@ -151,7 +150,7 @@ d_se <- generateClusters(d_se)
 d_counts <- calcCounts(d_se)
 
 # Create model formula
-formula <- createFormula(sample_info, cols_fixed = 2, cols_random = 1)
+formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
 

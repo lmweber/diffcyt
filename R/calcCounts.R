@@ -49,22 +49,21 @@
 #'   sample4 = d_random()
 #' )
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -81,7 +80,7 @@ calcCounts <- function(d_se) {
     stop("Data object must be a 'SummarizedExperiment'")
   }
   
-  if (!("cluster" %in% (colnames(rowData(d_se))))) {
+  if (!("cluster_id" %in% (colnames(rowData(d_se))))) {
     stop("Data object does not contain cluster labels. Run 'generateClusters' to generate cluster labels.")
   }
   
@@ -90,16 +89,16 @@ calcCounts <- function(d_se) {
   rowdata_df <- as.data.frame(rowData(d_se))
   
   rowdata_df %>% 
-    group_by(cluster, sample) %>% 
+    group_by(cluster_id, sample_id) %>% 
     tally %>% 
-    complete(sample) -> 
+    complete(sample_id) -> 
     n_cells
   
-  n_cells <- acast(n_cells, cluster ~ sample, value.var = "n", fill = 0)
+  n_cells <- acast(n_cells, cluster_id ~ sample_id, value.var = "n", fill = 0)
   
   # fill in any missing clusters
-  if (nrow(n_cells) < nlevels(rowData(d_se)$cluster)) {
-    ix_missing <- which(!(levels(rowData(d_se)$cluster) %in% rownames(n_cells)))
+  if (nrow(n_cells) < nlevels(rowData(d_se)$cluster_id)) {
+    ix_missing <- which(!(levels(rowData(d_se)$cluster_id) %in% rownames(n_cells)))
     n_cells_tmp <- matrix(0, nrow = length(ix_missing), ncol = ncol(n_cells))
     rownames(n_cells_tmp) <- ix_missing
     n_cells <- rbind(n_cells, n_cells_tmp)
@@ -112,19 +111,19 @@ calcCounts <- function(d_se) {
   # create new SummarizedExperiment (with rows = clusters)
   
   row_data <- data.frame(
-    cluster = factor(rownames(n_cells), levels = levels(rowData(d_se)$cluster)), 
+    cluster_id = factor(rownames(n_cells), levels = levels(rowData(d_se)$cluster_id)), 
     n_cells = n_cells_total, 
     stringsAsFactors = FALSE
   )
   
-  col_data <- metadata(d_se)$sample_info
+  col_data <- metadata(d_se)$experiment_info
   
-  # rearrange sample order to match 'sample_info'
-  n_cells <- n_cells[, match(col_data$sample, colnames(n_cells)), drop = FALSE]
-  stopifnot(all(col_data$sample == colnames(n_cells)))
+  # rearrange sample order to match 'experiment_info'
+  n_cells <- n_cells[, match(col_data$sample_id, colnames(n_cells)), drop = FALSE]
+  stopifnot(all(col_data$sample_id == colnames(n_cells)))
   
   d_counts <- SummarizedExperiment(
-    n_cells, 
+    assays = list(counts = n_cells), 
     rowData = row_data, 
     colData = col_data
   )

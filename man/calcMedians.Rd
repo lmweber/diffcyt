@@ -9,8 +9,8 @@ calcMedians(d_se)
 \arguments{
 \item{d_se}{Data object from previous steps, in \linkS4class{SummarizedExperiment}
 format, containing cluster labels as a column in the row meta-data (from
-\code{\link{generateClusters}}). Column meta-data is assumed to contain vectors
-\code{is_marker} and \code{marker_type}.}
+\code{\link{generateClusters}}). Column meta-data is assumed to contain a factor
+\code{marker_class}.}
 }
 \value{
 \code{d_medians}: \linkS4class{SummarizedExperiment} object, where rows =
@@ -28,10 +28,9 @@ combination)
 Calculate median marker expression for each cluster and sample (i.e. medians for each 
 cluster-sample-marker combination).
 
-The data object is assumed to contain vectors \code{is_marker} and \code{marker_type}
-in the column meta-data (see \code{\link{prepareData}}). These indicate (i) whether
-each column contains a protein marker, and (ii) the protein marker types
-(\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
+The data object is assumed to contain a factor \code{marker_class} in the column
+meta-data (see \code{\link{prepareData}}), which indicates the protein marker class for
+each column of data (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
 
 The cluster medians are required for testing for differential states within cell
 populations, and for plotting purposes.
@@ -66,22 +65,21 @@ d_input <- list(
   sample4 = d_random()
 )
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 # Transform data
 d_se <- transformData(d_se)

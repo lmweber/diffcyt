@@ -4,23 +4,25 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, sample_info, marker_info, subsampling = FALSE,
-  n_sub = NULL, seed_sub = NULL)
+prepareData(d_input, experiment_info, marker_info, cols_to_include = NULL,
+  subsampling = FALSE, n_sub = NULL, seed_sub = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
 \code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
 list item per sample).}
 
-\item{sample_info}{Data frame of sample information, for example sample IDs and group
-IDs. Must contain a column named \code{sample}.}
+\item{experiment_info}{Data frame of experiment information, for example sample IDs and
+group IDs. Must contain a column named \code{sample_id}.}
 
-\item{marker_info}{Data frame of marker information for each column. This should
-contain columns named \code{marker_name}, \code{is_marker}, and \code{marker_type}.
-The columns contain: (i) marker names and any other column names; (ii) a logical
-vector indicating whether each column contains a protein marker; and (iii) a factor
-indicating marker types (with entries \code{"cell_type"}, \code{"cell_state"}, or
-\code{"none"}).}
+\item{marker_info}{Data frame of marker information for each column of data. This
+should contain columns named \code{marker_name} and \code{marker_class}. The columns
+contain: (i) marker names (and any other column names); and (ii) a factor indicating
+the marker class for each column (with entries \code{"cell_type"},
+\code{"cell_state"}, or \code{"none"}).}
+
+\item{cols_to_include}{Logical vector indicating which columns to include from the
+input data. Default = all columns.}
 
 \item{subsampling}{Whether to use random subsampling to select an equal number of cells
 from each sample. Default = FALSE.}
@@ -34,9 +36,10 @@ reproducible results. Default = \code{NULL}.}
 \value{
 \code{d_se}: Returns data as a \linkS4class{SummarizedExperiment} containing a
   single matrix of data (expression values) in the \code{assays} slot, together with
-  row meta-data (sample information) and column meta-data (marker information). The
-  \code{sample_info} data frame is also stored in the \code{metadata} slot, and can be
-  accessed with \code{metadata(d_se)$sample_info}.
+  row meta-data (experiment information) and column meta-data (marker information). The
+  \code{metadata} slot also contains the \code{experiment_info} data frame, and a
+  vector \code{n_cells} of the number of cells per sample; these can be accessed with
+  \code{metadata(d_se)$experiment_info} and \code{metadata(d_se)$n_cells}.
 }
 \description{
 Prepare data into format for \code{diffcyt} pipeline
@@ -51,9 +54,9 @@ This function accepts a \linkS4class{flowSet} or a list of \code{flowFrames},
 sample). The function then concatenates the data tables into a single matrix of values,
 and adds row and column meta-data.
 
-Row meta-data should be provided as a data frame named \code{sample_info}, containing
-columns of relevant sample information such as sample IDs and group IDs. This must
-contain at least a column named \code{sample}.
+Row meta-data should be provided as a data frame named \code{experiment_info},
+containing columns of relevant experiment information, such as sample IDs and group
+IDs (for each sample). This must contain at least a column named \code{sample_id}.
 
 Column meta-data should be provided as a data frame named \code{marker_info},
 containing the following columns of marker information. The column names must be as
@@ -61,16 +64,18 @@ shown.
 
 \itemize{
 \item \code{marker_name}: protein marker names (and column names for any other columns)
-\item \code{is_marker}: logical vector indicating whether each column contains a
-protein marker
-\item \code{marker_type}: factor indicating protein marker types (usually, entries will
-be either \code{"cell_type"}, \code{"cell_state"}, or \code{"none"})
+\item \code{marker_class}: factor indicating the protein marker class for each column
+of data (usually, entries will be either \code{"cell_type"}, \code{"cell_state"}, or
+\code{"none"})
 }
 
 The split into 'cell type' and 'cell state' markers is crucial for the analysis. Cell
 type markers are used to define cell populations by clustering, and to test for
 differential abundance of cell populations; while cell state markers are used to test
 for differential states within cell populations.
+
+The optional argument \code{cols_to_include} allows unnecessary columns (e.g. any
+columns not containing protein markers) to be discarded.
 
 Optionally, random subsampling can be used to select an equal number of cells from each
 sample (\code{subsampling = TRUE}). This can be useful when there are large differences
@@ -96,21 +101,20 @@ d_input <- list(
   sample4 = d_random()
 )
 
-sample_info <- data.frame(
-  sample = factor(paste0("sample", 1:4)), 
-  group = factor(c("group1", "group1", "group2", "group2")), 
+experiment_info <- data.frame(
+  sample_id = factor(paste0("sample", 1:4)), 
+  group_id = factor(c("group1", "group1", "group2", "group2")), 
   stringsAsFactors = FALSE
 )
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  is_marker = rep(TRUE, 20), 
-  marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                       levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+                        levels = c("cell_type", "cell_state", "none")), 
   stringsAsFactors = FALSE
 )
 
 # Prepare data
-d_se <- prepareData(d_input, sample_info, marker_info)
+d_se <- prepareData(d_input, experiment_info, marker_info)
 
 }

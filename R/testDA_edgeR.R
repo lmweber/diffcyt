@@ -109,22 +109,21 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -136,7 +135,7 @@
 #' d_counts <- calcCounts(d_se)
 #' 
 #' # Create design matrix
-#' design <- createDesignMatrix(sample_info, cols_include = 2)
+#' design <- createDesignMatrix(experiment_info, cols_design = 2)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
@@ -152,14 +151,14 @@ testDA_edgeR <- function(d_counts, design, contrast,
   }
   
   counts <- assay(d_counts)
-  cluster <- rowData(d_counts)$cluster
+  cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster <- cluster[ix_keep]
+  cluster_id <- cluster_id[ix_keep]
   
   # edgeR pipeline
   
@@ -193,19 +192,19 @@ testDA_edgeR <- function(d_counts, design, contrast,
   # results
   top <- topTags(lrt, n = Inf, adjust.method = "BH", sort.by = "none")
   
-  if (!all(rownames(top) == cluster)) {
+  if (!all(rownames(top) == cluster_id)) {
     stop("cluster labels do not match")
   }
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
   # fill in any missing rows (filtered clusters) with NAs
-  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster), ncol = ncol(top)))
+  row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster_id), ncol = ncol(top)))
   colnames(row_data) <- colnames(top)
-  cluster_nm <- as.numeric(cluster)
-  row_data[cluster_nm, ] <- top$table
+  cluster_id_nm <- as.numeric(cluster_id)
+  row_data[cluster_id_nm, ] <- top$table
   
-  row_data <- cbind(data.frame(cluster = as.numeric(levels(cluster)), stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
                     row_data)
   
   res <- d_counts

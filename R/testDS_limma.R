@@ -24,7 +24,7 @@
 #' are simpler, but random effects may improve power in data sets with unbalanced designs
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
-#' \code{block} argument here instead. This will make use of the \code{limma}
+#' \code{block_id} argument here instead. This will make use of the \code{limma}
 #' \code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
 #' possible in this case (fixed effects should be used instead). Block IDs should not be
 #' included in the design matrix if the \code{limma} \code{duplicateCorrelation}
@@ -32,6 +32,12 @@
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
 #' \code{\link{createContrast}}. See \code{\link{createContrast}} for more details.
+#' 
+#' By default, differential tests are performed for all cell state markers (which are
+#' identified with the vector \code{id_state_markers} stored in the meta-data of the
+#' cluster medians input object). The optional argument \code{markers_to_test} allows the
+#' user to specify a different set of markers to test (e.g. to investigate differences for
+#' cell type markers).
 #' 
 #' Filtering: Clusters are kept for differential testing if they have at least
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
@@ -48,7 +54,10 @@
 #' 
 #' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
 #'   (median marker expression for each cluster-sample combination), from
-#'   \code{\link{calcMedians}}.
+#'   \code{\link{calcMedians}}. Assumed to contain a logical vector
+#'   \code{id_state_markers} in the meta-data (accessed with
+#'   \code{metadata(d_medians)$id_state_markers}), which identifies the set of 'cell
+#'   state' markers in the list of \code{assays}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}} for details.
@@ -56,11 +65,16 @@
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
 #' 
-#' @param block (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
+#' @param block_id (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects. If provided, the block IDs
 #'   will be included as random effects using the \code{limma} \code{duplicateCorrelation}
 #'   methodology. Alternatively, block IDs can be included as fixed effects in the design
 #'   matrix (\code{\link{createDesignMatrix}}). See details.
+#' 
+#' @param markers_to_test (Optional) Logical vector specifying which markers to test for
+#'   differential expression (from the set of markers stored in the \code{assays} of
+#'   \code{d_medians}). Default = all 'cell state' markers, which are identified by the
+#'   logical vector \code{id_state_markers} stored in the meta-data of \code{d_medians}.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -116,22 +130,21 @@
 #' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
 #' 
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   is_marker = rep(TRUE, 20), 
-#'   marker_type = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                        levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
+#'                         levels = c("cell_type", "cell_state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
 #' # Prepare data
-#' d_se <- prepareData(d_input, sample_info, marker_info)
+#' d_se <- prepareData(d_input, experiment_info, marker_info)
 #' 
 #' # Transform data
 #' d_se <- transformData(d_se)
@@ -145,43 +158,49 @@
 #' d_medians <- calcMedians(d_se)
 #' 
 #' # Create design matrix
-#' design <- createDesignMatrix(sample_info, cols_include = 2)
+#' design <- createDesignMatrix(experiment_info, cols_design = 2)
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential states (DS) within clusters
 #' res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 #' 
-testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL, 
+testDS_limma <- function(d_counts, d_medians, design, contrast, block_id = NULL, 
+                         markers_to_test = NULL, 
                          min_cells = 3, min_samples = NULL, 
                          plot = TRUE, path = ".") {
   
-  if (!is.null(block) & !is.factor(block)) {
-    block <- factor(block, levels = unique(block))
+  if (!is.null(block_id) & !is.factor(block_id)) {
+    block_id <- factor(block_id, levels = unique(block_id))
   }
   
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
   }
   
-  # vector identifying 'cell state' markers in list of assays
-  id_state_markers <- metadata(d_medians)$id_state_markers
+  # markers to test
+  if (!is.null(markers_to_test)) {
+    markers_to_test <- markers_to_test
+  } else {
+    # vector identifying 'cell state' markers in list of assays
+    markers_to_test <- metadata(d_medians)$id_state_markers
+  }
   
   # note: counts are only required for filtering
   counts <- assay(d_counts)
-  cluster <- rowData(d_counts)$cluster
+  cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster <- cluster[ix_keep]
+  cluster_id <- cluster_id[ix_keep]
   
   # extract medians and create concatenated matrix
-  state_names <- names(assays(d_medians))[id_state_markers]
+  state_names <- names(assays(d_medians))[markers_to_test]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster, , drop = FALSE])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster_id, , drop = FALSE])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))
@@ -190,19 +209,19 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL,
   
   # estimate correlation between paired samples
   # (note: paired designs only; >2 measures per sample not allowed)
-  if (!is.null(block)) {
-    dupcor <- duplicateCorrelation(meds, design, block = block)
+  if (!is.null(block_id)) {
+    dupcor <- duplicateCorrelation(meds, design, block = block_id)
   }
   
   # weights: cluster cell counts (repeat for each marker)
-  weights <- counts[as.character(rep(cluster, length(state_names))), ]
+  weights <- counts[as.character(rep(cluster_id, length(state_names))), ]
   stopifnot(nrow(weights) == nrow(meds))
   
   # fit models
-  if (!is.null(block)) {
-    message("Fitting linear models with random effects term for 'block'.")
+  if (!is.null(block_id)) {
+    message("Fitting linear models with random effects term for 'block_id'.")
     fit <- lmFit(meds, design, weights = weights, 
-                 block = block, correlation = dupcor$consensus.correlation)
+                 block = block_id, correlation = dupcor$consensus.correlation)
   } else {
     fit <- lmFit(meds, design, weights = weights)
   }
@@ -218,7 +237,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL,
   # results
   top <- topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
   
-  if (!all(top$ID %in% cluster)) {
+  if (!all(top$ID %in% cluster_id)) {
     stop("cluster labels do not match")
   }
   
@@ -226,14 +245,14 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL,
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), 
-                                   nrow = nlevels(cluster) * length(state_names), 
+                                   nrow = nlevels(cluster_id) * length(state_names), 
                                    ncol = ncol(top)))
   colnames(row_data) <- colnames(top)
   
-  cluster_nm <- as.numeric(cluster)
-  s <- seq(0, nlevels(cluster) * (length(state_names) - 1), by = nlevels(cluster))
-  r1 <- rep(cluster_nm, length(state_names))
-  r2 <- rep(s, each = length(cluster_nm))
+  cluster_id_nm <- as.numeric(cluster_id)
+  s <- seq(0, nlevels(cluster_id) * (length(state_names) - 1), by = nlevels(cluster_id))
+  r1 <- rep(cluster_id_nm, length(state_names))
+  r2 <- rep(s, each = length(cluster_id_nm))
   
   stopifnot(length(s) == length(state_names))
   stopifnot(length(r1) == length(r2))
@@ -242,11 +261,11 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block = NULL,
   row_data[rows, ] <- top
   
   # include cluster IDs and marker names
-  clus <- factor(rep(levels(cluster), length(state_names)), levels = levels(cluster))
-  stat <- factor(rep(state_names, each = length(levels(cluster))), levels = state_names)
+  clus <- factor(rep(levels(cluster_id), length(state_names)), levels = levels(cluster_id))
+  stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster = clus, marker = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, marker = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   col_data <- colData(d_medians)

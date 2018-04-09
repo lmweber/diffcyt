@@ -9,7 +9,7 @@
 #' The design matrix can then be provided to the differential testing functions, together
 #' with the data object and contrast matrix.
 #' 
-#' The \code{sample_info} input (which was also previously provided to
+#' The \code{experiment_info} input (which was also previously provided to
 #' \code{\link{prepareData}}) should be a data frame containing all factors and covariates
 #' of interest. For example, depending on the experimental design, this may include the
 #' following columns:
@@ -21,14 +21,14 @@
 #' \item continuous covariates
 #' }
 #' 
-#' The logical vector \code{cols_include} specifies which columns in \code{sample_info} to
-#' include in the design matrix. (For example, there may be an additional column of sample
-#' IDs, which should not be included.)
+#' The logical vector \code{cols_design} specifies which columns in \code{experiment_info}
+#' to include in the design matrix. (For example, there may be an additional column of
+#' sample IDs, which should not be included.)
 #' 
 #' Columns of indicator variables (e.g. group IDs, block IDs, and batch IDs) must be
 #' formatted as factors (otherwise they will be treated as numeric values). The indicator
 #' columns will be expanded into the design matrix format. The names for each parameter
-#' are taken from the column names of \code{sample_info}.
+#' are taken from the column names of \code{experiment_info}.
 #' 
 #' All factors provided here will be included as fixed effect terms in the design matrix.
 #' Alternatively, to use random effects for some factors (e.g. for block IDs), see
@@ -37,12 +37,12 @@
 #' \code{\link{testDS_limma}}).
 #' 
 #' 
-#' @param sample_info Data frame of sample information (which was also previously provided
-#'   to \code{\link{prepareData}}). This should be a data frame containing all factors and
-#'   covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
-#'   covariates.
+#' @param experiment_info Data frame of experiment information (which was also previously
+#'   provided to \code{\link{prepareData}}). This should be a data frame containing all
+#'   factors and covariates of interest; e.g. group IDs, block IDs, batch IDs, and
+#'   continuous covariates.
 #' 
-#' @param cols_include (Logical) Columns of \code{sample_info} to include in the design
+#' @param cols_design (Logical) Columns of \code{experiment_info} to include in the design
 #'   matrix. Default = all columns.
 #' 
 #' 
@@ -60,44 +60,44 @@
 #' # pipeline, see the package vignette.
 #' 
 #' # Example: simple design matrix
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(sample_info, cols_include = 2)
+#' createDesignMatrix(experiment_info, cols_design = 2)
 #' 
 #' # Example: more complex design matrix: patient IDs and batch IDs
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:8)), 
-#'   group = factor(rep(paste0("group", 1:2), each = 4)), 
-#'   patient = factor(rep(paste0("patient", 1:4), 2)), 
-#'   batch = factor(rep(paste0("batch", 1:2), 4)), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:8)), 
+#'   group_id = factor(rep(paste0("group", 1:2), each = 4)), 
+#'   patient_id = factor(rep(paste0("patient", 1:4), 2)), 
+#'   batch_id = factor(rep(paste0("batch", 1:2), 4)), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(sample_info, cols_include = 2:4)
+#' createDesignMatrix(experiment_info, cols_design = 2:4)
 #' 
 #' # Example: more complex design matrix: continuous covariate
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:4)), 
-#'   group = factor(c("group1", "group1", "group2", "group2")), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:4)), 
+#'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   age = c(52, 35, 71, 60), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(sample_info, cols_include = 2:3)
+#' createDesignMatrix(experiment_info, cols_design = 2:3)
 #' 
-createDesignMatrix <- function(sample_info, cols_include = NULL) {
+createDesignMatrix <- function(experiment_info, cols_design = NULL) {
   
-  stopifnot(is.data.frame(sample_info))
+  stopifnot(is.data.frame(experiment_info))
   
-  if (is.null(cols_include)) cols_include <- seq_len(nrow(sample_info))
+  if (is.null(cols_design)) cols_design <- seq_len(nrow(experiment_info))
   
   # create design matrix
-  terms <- colnames(sample_info)[cols_include]
+  terms <- colnames(experiment_info)[cols_design]
   
   formula <- as.formula(paste("~", paste(terms, collapse = " + ")))
   
-  design <- model.matrix(formula, data = sample_info)
+  design <- model.matrix(formula, data = experiment_info)
   
   design
 }

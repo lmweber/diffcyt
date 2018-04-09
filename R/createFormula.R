@@ -11,7 +11,7 @@
 #' testing functions that require a model formula, together with the main data object and
 #' contrast matrix.
 #' 
-#' The \code{sample_info} input (which was also previously provided to
+#' The \code{experiment_info} input (which was also previously provided to
 #' \code{\link{prepareData}}) should be a data frame containing all factors and covariates
 #' of interest. For example, depending on the experimental design, this may include the
 #' following columns:
@@ -29,9 +29,9 @@
 #' }
 #' 
 #' The logical vectors \code{cols_fixed} and \code{cols_random} specify the columns in
-#' \code{sample_info} to include as fixed effect terms and random intercept terms
+#' \code{experiment_info} to include as fixed effect terms and random intercept terms
 #' respectively. The names for each formula term are taken from the column names of
-#' \code{sample_info}.
+#' \code{experiment_info}.
 #' 
 #' Note that for some methods, random effect terms (e.g. for block IDs) must be provided
 #' directly to the differential testing function instead (\code{\link{testDA_voom}} and
@@ -41,15 +41,15 @@
 #' instead of a model formula; see \code{\link{createDesignMatrix}}.
 #' 
 #' 
-#' @param sample_info Data frame of sample information (which was also previously provided
-#'   to \code{\link{prepareData}}). This should be a data frame containing all factors and
-#'   covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
-#'   covariates.
+#' @param experiment_info Data frame of experiment information (which was also previously
+#'   provided to \code{\link{prepareData}}). This should be a data frame containing all
+#'   factors and covariates of interest; e.g. group IDs, block IDs, batch IDs, and
+#'   continuous covariates.
 #' 
-#' @param cols_fixed (Logical) Columns of \code{sample_info} to include as fixed effect
-#'   terms in the model formula.
+#' @param cols_fixed (Logical) Columns of \code{experiment_info} to include as fixed
+#'   effect terms in the model formula.
 #' 
-#' @param cols_random (Logical) Columns of \code{sample_info} to include as random
+#' @param cols_random (Logical) Columns of \code{experiment_info} to include as random
 #'   intercept terms in the model formula.
 #' 
 #' 
@@ -71,22 +71,22 @@
 #' # pipeline, see the package vignette.
 #' 
 #' # Example: model formula
-#' sample_info <- data.frame(
-#'   sample = factor(paste0("sample", 1:8)), 
-#'   group = factor(rep(paste0("group", 1:2), each = 4)), 
-#'   patient = factor(rep(paste0("patient", 1:4), 2)), 
+#' experiment_info <- data.frame(
+#'   sample_id = factor(paste0("sample", 1:8)), 
+#'   group_id = factor(rep(paste0("group", 1:2), each = 4)), 
+#'   patient_id = factor(rep(paste0("patient", 1:4), 2)), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createFormula(sample_info, cols_fixed = 2, cols_random = c(1, 3))
+#' createFormula(experiment_info, cols_fixed = 2, cols_random = c(1, 3))
 #' 
-createFormula <- function(sample_info, cols_fixed = NULL, cols_random = NULL) {
+createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL) {
   
-  stopifnot(is.data.frame(sample_info))
+  stopifnot(is.data.frame(experiment_info))
   
   # create formula
   
   # fixed effects
-  terms_fixed <- colnames(sample_info)[cols_fixed]
+  terms_fixed <- colnames(experiment_info)[cols_fixed]
   RHS_fixed <- paste(terms_fixed, collapse = " + ")
   
   # random effects
@@ -94,7 +94,7 @@ createFormula <- function(sample_info, cols_fixed = NULL, cols_random = NULL) {
   RHS_random <- NULL
   
   if (!is.null(cols_random)) {
-    terms_random <- colnames(sample_info)[cols_random]
+    terms_random <- colnames(experiment_info)[cols_random]
     RHS_random <- paste(paste0("(1 | ", terms_random, ")"), collapse = " + ")
     random_terms <- TRUE
   }
@@ -105,8 +105,8 @@ createFormula <- function(sample_info, cols_fixed = NULL, cols_random = NULL) {
   formula <- as.formula(paste(c("y", RHS_combined), collapse = " ~ "))
   
   # create data frame of corresponding variables (in correct order)
-  cols <- c(colnames(sample_info)[cols_fixed], colnames(sample_info)[cols_random])
-  data <- sample_info[, cols, drop = FALSE]
+  cols <- c(colnames(experiment_info)[cols_fixed], colnames(experiment_info)[cols_random])
+  data <- experiment_info[, cols, drop = FALSE]
   
   # return as list
   list(formula = formula, data = data, random_terms = random_terms)
