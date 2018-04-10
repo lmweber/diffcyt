@@ -17,18 +17,19 @@ diffcyt(d_input, experiment_info, marker_info, design = NULL,
 }
 \arguments{
 \item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
-\code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
-list item per sample). See \code{\link{prepareData}}.}
+\code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices as input (one
+\code{flowFrame} or list item per sample). See \code{\link{prepareData}}.}
 
-\item{experiment_info}{Data frame of experiment information, for example sample IDs and
-group IDs. Must contain a column named \code{sample_id}. See
+\item{experiment_info}{\code{data.frame} or \code{DataFrame} of experiment information,
+for example sample IDs and group IDs. Must contain a column named \code{sample_id}.
+See \code{\link{prepareData}}.}
+
+\item{marker_info}{\code{data.frame} or \code{DataFrame} of marker information for each
+column of data. This should contain columns named \code{marker_name} and
+\code{marker_class}. The columns contain: (i) marker names (and any other column
+names); and (ii) a factor indicating the marker class for each column (with entries
+\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}). See
 \code{\link{prepareData}}.}
-
-\item{marker_info}{Data frame of marker information for each column of data. This
-should contain columns named \code{marker_name} and \code{marker_class}. The columns
-contain: (i) marker names (and any other column names); and (ii) a factor indicating
-the marker class for each column (with entries \code{"cell_type"},
-\code{"cell_state"}, or \code{"none"}). See \code{\link{prepareData}}.}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}
