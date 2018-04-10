@@ -43,17 +43,17 @@
 #' 
 #' 
 #' @param d_input Input data. Must be a \linkS4class{flowSet} or list of
-#'   \code{flowFrames}, \code{data.frames}, or matrices as input (one \code{flowFrame} or
-#'   list item per sample).
+#'   \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices as input (one
+#'   \code{flowFrame} or list item per sample).
 #' 
-#' @param experiment_info Data frame of experiment information, for example sample IDs and
-#'   group IDs. Must contain a column named \code{sample_id}.
+#' @param experiment_info \code{data.frame} or \code{DataFrame} of experiment information,
+#'   for example sample IDs and group IDs. Must contain a column named \code{sample_id}.
 #' 
-#' @param marker_info Data frame of marker information for each column of data. This
-#'   should contain columns named \code{marker_name} and \code{marker_class}. The columns
-#'   contain: (i) marker names (and any other column names); and (ii) a factor indicating
-#'   the marker class for each column (with entries \code{"cell_type"},
-#'   \code{"cell_state"}, or \code{"none"}).
+#' @param marker_info \code{data.frame} or \code{DataFrame} of marker information for each
+#'   column of data. This should contain columns named \code{marker_name} and
+#'   \code{marker_class}. The columns contain: (i) marker names (and any other column
+#'   names); and (ii) a factor indicating the marker class for each column (with entries
+#'   \code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns.
@@ -128,7 +128,8 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   
   if (all(sapply(d_input, class) == "flowFrame")) {
     d_ex <- lapply(d_input, exprs)
-  } else if (all(sapply(d_input, is.data.frame))) {
+  } else if (all(sapply(d_input, is.data.frame)) | 
+             all(sapply(d_input, class) == "DataFrame")) {
     d_ex <- lapply(d_input, as.matrix)
   } else if (all(sapply(d_input, is.matrix))) {
     d_ex <- d_input
@@ -174,8 +175,11 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   colnames(d_combined) <- marker_info[, "marker_name"]
   
   # create row meta-data
-  stopifnot(is.data.frame(experiment_info), 
+  stopifnot(class(experiment_info) %in% c("data.frame", "DataFrame"), 
             "sample_id" %in% colnames(experiment_info))
+  if (class(experiment_info) == "DataFrame") {
+    experiment_info <- as.data.frame(experiment_info)
+  }
   
   row_data <- as.data.frame(lapply(experiment_info, function(col) {
     as.factor(rep(col, n_cells))
@@ -184,8 +188,11 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   stopifnot(nrow(row_data) == sum(n_cells))
   
   # create column meta-data
-  stopifnot(is.data.frame(marker_info), 
+  stopifnot(class(marker_info) %in% c("data.frame", "DataFrame"), 
             nrow(marker_info) == ncol(d_combined))
+  if (class(marker_info) == "DataFrame") {
+    marker_info <- as.data.frame(marker_info)
+  }
   
   col_data <- marker_info
   

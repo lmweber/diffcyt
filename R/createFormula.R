@@ -41,10 +41,10 @@
 #' instead of a model formula; see \code{\link{createDesignMatrix}}.
 #' 
 #' 
-#' @param experiment_info Data frame of experiment information (which was also previously
-#'   provided to \code{\link{prepareData}}). This should be a data frame containing all
-#'   factors and covariates of interest; e.g. group IDs, block IDs, batch IDs, and
-#'   continuous covariates.
+#' @param experiment_info \code{data.frame} or \code{DataFrame} of experiment information
+#'   (which was also previously provided to \code{\link{prepareData}}). This should be a
+#'   data frame containing all factors and covariates of interest; e.g. group IDs, block
+#'   IDs, batch IDs, and continuous covariates.
 #' 
 #' @param cols_fixed (Logical) Columns of \code{experiment_info} to include as fixed
 #'   effect terms in the model formula.
@@ -81,7 +81,10 @@
 #' 
 createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL) {
   
-  stopifnot(is.data.frame(experiment_info))
+  stopifnot(class(experiment_info) %in% c("data.frame", "DataFrame"))
+  if (class(experiment_info) == "DataFrame") {
+    experiment_info <- as.data.frame(experiment_info)
+  }
   
   # create formula
   
