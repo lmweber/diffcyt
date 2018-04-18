@@ -75,10 +75,11 @@
 #' 
 #' 
 #' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
-#'   results stored in the \code{rowData} slot. Results include raw p-values and adjusted
-#'   p-values from the \code{edgeR} moderated tests, which can be used to rank clusters by
-#'   evidence for differential abundance. The results can be accessed with the
-#'   \code{rowData} accessor function.
+#'   results stored in the \code{rowData} slot. Results include raw p-values
+#'   (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{edgeR} moderated
+#'   tests, which can be used to rank clusters by evidence for differential abundance.
+#'   Additional output columns from the \code{edgeR} tests are also included. The results
+#'   can be accessed with the \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
@@ -206,6 +207,9 @@ testDA_edgeR <- function(d_counts, design, contrast,
   
   row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
                     row_data)
+  
+  colnames(row_data)[colnames(row_data) == "PValue"] <- "p_val"
+  colnames(row_data)[colnames(row_data) == "FDR"] <- "p_adj"
   
   res <- d_counts
   

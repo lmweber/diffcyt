@@ -101,7 +101,7 @@
 topClusters <- function(res, order = TRUE, all = FALSE, top_n = 20) {
   
   # identify column of adjusted p-values
-  ix_p_adj <- which(colnames(rowData(res)) %in% c("FDR", "adj.P.Val", "p_adj"))
+  ix_p_adj <- which(colnames(rowData(res)) == "p_adj")
   
   res_df <- rowData(res)
   

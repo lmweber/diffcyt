@@ -200,7 +200,7 @@ contrast <- createContrast(c(0, 1))
 
 Calculate tests for differential abundance (DA) of clusters, using one of the DA testing methods (`diffcyt-DA-edgeR`, `diffcyt-DA-voom`, or `diffcyt-DA-GLMM`). Here, we use the default method, `diffcyt-DA-edgeR`. The results consist of p-values and adjusted p-values for each cluster, which can be used to rank the clusters by their evidence for differential abundance. The p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?testDA_edgeR`, `?testDA_voom`, or `?testDA_GLMM`.
 
-The function `topClusters` can be used to display the results for the top (most highly significant) detected DA clusters. This extracts the results from the `rowData` of the `SummarizedExperiment` output object. The displayed results include cluster labels, p-values, and adjusted p-values. For method `diffcyt-DA-edgeR`, the adjusted p-values are stored in the column labeled `FDR`. See `?topClusters` for more details.
+The function `topClusters` can be used to display the results for the top (most highly significant) detected DA clusters. This extracts the results from the `rowData` of the `SummarizedExperiment` output object. The displayed results include cluster labels, p-values, and adjusted p-values. The adjusted p-values are stored in the column labeled `p_adj`. See `?topClusters` for more details.
 
 We also generate a table summarizing the number of detected DA clusters at a given adjusted p-value threshold.
 
@@ -214,7 +214,7 @@ topClusters(res_DA)
 # Number of significant detected DA clusters
 threshold <- 0.1
 res_DA_all <- topClusters(res_DA, all = TRUE)
-table(res_DA_all$FDR <= threshold)
+table(res_DA_all$p_adj <= threshold)
 ```
 
 
@@ -222,7 +222,7 @@ table(res_DA_all$FDR <= threshold)
 
 Calculate tests for differential states (DS) within clusters, using one of the DS testing methods (`diffcyt-DS-limma` or `diffcyt-DS-LMM`). Here, we use the default method, `diffcyt-DS-limma`. The results consist of p-values and adjusted p-values for each cluster-marker combination (cell state markers only), which can be used to rank the cluster-marker combinations by their evidence for differential states. The results are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?diffcyt-DS-limma` or `?diffcyt-DS-LMM`.
 
-As above, we use the function `topClusters` to display the results for the top (most highly significant) detected DS cluster-marker combinations. (Note that there is now one test result for each cluster-marker combination, instead of one per cluster as above). The displayed results include cluster labels, marker names, p-values, and adjusted p-values. For method `diffcyt-DS-limma`, the adjusted p-values are stored in the column labeled `adj.P.Val`. See `?topClusters` for more details.
+As above, we use the function `topClusters` to display the results for the top (most highly significant) detected DS cluster-marker combinations. (Note that there is now one test result for each cluster-marker combination, instead of one per cluster as above). The displayed results include cluster labels, marker names, p-values, and adjusted p-values. The adjusted p-values are stored in the column labeled `p_adj`. See `?topClusters` for more details.
 
 We also generate a table summarizing the number of detected DS cluster-marker combinations at a given adjusted p-value threshold.
 
@@ -236,7 +236,7 @@ topClusters(res_DS)
 # Number of significant detected DS cluster-marker combinations
 threshold <- 0.1
 res_DS_all <- topClusters(res_DS, all = TRUE)
-table(res_DS_all$adj.P.Val <= threshold)
+table(res_DS_all$p_adj <= threshold)
 ```
 
 

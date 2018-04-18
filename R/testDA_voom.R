@@ -94,10 +94,11 @@
 #' 
 #' 
 #' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
-#'   results stored in the \code{rowData} slot. Results include raw p-values and adjusted
-#'   p-values from the \code{limma} moderated tests, which can be used to rank clusters by
-#'   evidence for differential abundance. The results can be accessed with the
-#'   \code{rowData} accessor function.
+#'   results stored in the \code{rowData} slot. Results include raw p-values
+#'   (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{limma} moderated
+#'   tests, which can be used to rank clusters by evidence for differential abundance.
+#'   Additional output columns from the \code{limma} tests are also included. The results
+#'   can be accessed with the \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
@@ -250,6 +251,9 @@ testDA_voom <- function(d_counts, design, contrast, block_id = NULL,
   
   row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
                     row_data)
+  
+  colnames(row_data)[colnames(row_data) == "P.Value"] <- "p_val"
+  colnames(row_data)[colnames(row_data) == "adj.P.Val"] <- "p_adj"
   
   res <- d_counts
   

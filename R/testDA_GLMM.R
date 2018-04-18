@@ -89,9 +89,10 @@
 #' 
 #' 
 #' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
-#'   results stored in the \code{rowData} slot. Results include raw p-values and adjusted
-#'   p-values, which can be used to rank clusters by evidence for differential abundance.
-#'   The results can be accessed with the \code{rowData} accessor function.
+#'   results stored in the \code{rowData} slot. Results include raw p-values
+#'   (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
+#'   clusters by evidence for differential abundance. The results can be accessed with the
+#'   \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
@@ -231,7 +232,7 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   
   # return results in 'rowData' of new 'SummarizedExperiment' object
   
-  out <- data.frame(p_vals, p_adj, stringsAsFactors = FALSE)
+  out <- data.frame(p_val = p_vals, p_adj = p_adj, stringsAsFactors = FALSE)
   
   # fill in any missing rows (filtered clusters) with NAs
   row_data <- as.data.frame(matrix(as.numeric(NA), nrow = nlevels(cluster_id), ncol = ncol(out)))

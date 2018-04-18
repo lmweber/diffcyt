@@ -49,10 +49,11 @@ transformations. Default = TRUE.}
 }
 \value{
 Returns a new \linkS4class{SummarizedExperiment} object, with differential test
-  results stored in the \code{rowData} slot. Results include raw p-values and adjusted
-  p-values from the \code{limma} moderated tests, which can be used to rank clusters by
-  evidence for differential abundance. The results can be accessed with the
-  \code{rowData} accessor function.
+  results stored in the \code{rowData} slot. Results include raw p-values
+  (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{limma} moderated
+  tests, which can be used to rank clusters by evidence for differential abundance.
+  Additional output columns from the \code{limma} tests are also included. The results
+  can be accessed with the \code{rowData} accessor function.
 }
 \description{
 Calculate tests for differential abundance of cell populations using method

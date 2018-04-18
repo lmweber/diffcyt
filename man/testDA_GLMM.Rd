@@ -40,9 +40,10 @@ methods from \code{edgeR} are not used.)}
 }
 \value{
 Returns a new \linkS4class{SummarizedExperiment} object, with differential test
-  results stored in the \code{rowData} slot. Results include raw p-values and adjusted
-  p-values, which can be used to rank clusters by evidence for differential abundance.
-  The results can be accessed with the \code{rowData} accessor function.
+  results stored in the \code{rowData} slot. Results include raw p-values
+  (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
+  clusters by evidence for differential abundance. The results can be accessed with the
+  \code{rowData} accessor function.
 }
 \description{
 Calculate tests for differential abundance of cell populations using method

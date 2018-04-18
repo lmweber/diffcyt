@@ -94,10 +94,12 @@
 #'   cluster-marker combinations, and columns = samples. In the rows, clusters are
 #'   repeated for each cell state marker (i.e. the sheets or \code{assays} from the
 #'   previous \code{d_medians} object are stacked into a single matrix). Differential test
-#'   results are stored in the \code{rowData} slot. Results include raw p-values and
-#'   adjusted p-values from the \code{limma} moderated tests, which can be used to rank
-#'   cluster-marker combinations by evidence for differential states within cell
-#'   populations. The results can be accessed with the \code{rowData} accessor function.
+#'   results are stored in the \code{rowData} slot. Results include raw p-values
+#'   (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{limma} moderated
+#'   tests, which can be used to rank cluster-marker combinations by evidence for
+#'   differential states within cell populations. Additional output columns from the
+#'   \code{limma} tests are also included. The results can be accessed with the
+#'   \code{rowData} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'
@@ -267,6 +269,9 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block_id = NULL,
   
   row_data <- cbind(data.frame(cluster_id = clus, marker = stat, stringsAsFactors = FALSE), 
                     row_data)
+  
+  colnames(row_data)[colnames(row_data) == "P.Value"] <- "p_val"
+  colnames(row_data)[colnames(row_data) == "adj.P.Val"] <- "p_adj"
   
   col_data <- colData(d_medians)
   
