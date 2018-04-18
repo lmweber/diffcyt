@@ -13,7 +13,7 @@ diffcyt(d_input, experiment_info, marker_info, design = NULL,
   ydim = 10, meta_clustering = FALSE, meta_k = 40,
   seed_clustering = NULL, min_cells = 3, min_samples = NULL,
   normalize = FALSE, norm_factors = "TMM", block_id = NULL, plot = TRUE,
-  path = ".", markers_to_test = NULL)
+  path = ".", markers_to_test = NULL, verbose = TRUE)
 }
 \arguments{
 \item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
@@ -140,6 +140,9 @@ differential expression (from the set of markers stored in the \code{assays} of
 Default = all 'cell state' markers, which are identified by the logical vector
 \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
 \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.}
+
+\item{verbose}{Whether to print status messages during each step of the pipeline.
+Default = TRUE.}
 }
 \value{
 Returns a list containing the results object \code{res}, as well as the data
@@ -216,13 +219,14 @@ contrast <- createContrast(c(0, 1))
 # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
 out_DA <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
-                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
+                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
+                  verbose = FALSE)
 
 # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
 out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-                  plot = FALSE)
+                  plot = FALSE, verbose = FALSE)
 
 # Display results for top DA clusters
 topClusters(out_DA$res)

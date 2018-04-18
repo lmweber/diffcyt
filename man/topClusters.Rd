@@ -86,13 +86,14 @@ contrast <- createContrast(c(0, 1))
 # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
 out_DA <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
-                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
+                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
+                  verbose = FALSE)
 
 # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
 out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-                  plot = FALSE)
+                  plot = FALSE, verbose = FALSE)
 
 # Display results for top DA clusters
 topClusters(out_DA$res)

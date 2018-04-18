@@ -253,13 +253,14 @@ See `?diffcyt` for more details, including the minimum required arguments for th
 # Test for differential abundance (DA) of clusters
 out_DA <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
-                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
+                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
+                  verbose = FALSE)
 
 # Test for differential states (DS) within clusters
 out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-                  plot = FALSE)
+                  plot = FALSE, verbose = FALSE)
 
 # Display results for top DA clusters
 # (note: results object is stored in list 'out_DA')

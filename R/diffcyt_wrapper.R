@@ -147,6 +147,9 @@
 #'   \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
 #'   \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.
 #' 
+#' @param verbose Whether to print status messages during each step of the pipeline.
+#'   Default = TRUE.
+#' 
 #' 
 #' @return Returns a list containing the results object \code{res}, as well as the data
 #'   objects \code{d_se}, \code{d_counts}, \code{d_medians},
@@ -204,13 +207,14 @@
 #' # Test for differential abundance (DA) of clusters (using default method 'diffcyt-DA-edgeR')
 #' out_DA <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
-#'                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR")
+#'                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
+#'                   verbose = FALSE)
 #' 
 #' # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
 #' out_DS <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-#'                   plot = FALSE)
+#'                   plot = FALSE, verbose = FALSE)
 #' 
 #' # Display results for top DA clusters
 #' topClusters(out_DA$res)
@@ -237,27 +241,36 @@ diffcyt <- function(d_input, experiment_info, marker_info, design = NULL, formul
                     normalize = FALSE, norm_factors = "TMM", 
                     block_id = NULL, 
                     plot = TRUE, path = ".", 
-                    markers_to_test = NULL) {
+                    markers_to_test = NULL, 
+                    verbose = TRUE) {
   
-  # arguments
+  # get arguments
   analysis_type <- match.arg(analysis_type)
   method_DA <- match.arg(method_DA)
   method_DS <- match.arg(method_DS)
   
-  # prepare data, transformation, clustering
+  # prepare data
+  if (verbose) message("preparing data...")
   d_se <- prepareData(d_input, experiment_info, marker_info, cols_to_include, subsampling, n_sub, seed_sub)
+  
+  # transformation
+  if (verbose) message("transforming data...")
   d_se <- transformData(d_se, cofactor)
+  
+  # clustering
+  if (verbose) message("generating clusters...")
   d_se <- generateClusters(d_se, cols_clustering, xdim, ydim, meta_clustering, meta_k, seed_clustering)
   
   # calculate features
+  if (verbose) message("calculating features...")
   d_counts <- calcCounts(d_se)
   d_medians <- calcMedians(d_se)
-  
   # calculate additional features for plotting
   d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
   d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
   
   # DA tests
+  if (analysis_type == "DA" & verbose) message("calculating DA tests...")
   if (analysis_type == "DA" & method_DA == "diffcyt-DA-edgeR") {
     res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors)
   }
@@ -269,6 +282,7 @@ diffcyt <- function(d_input, experiment_info, marker_info, design = NULL, formul
   }
   
   # DS tests
+  if (analysis_type == "DS" & verbose) message("calculating DS tests...")
   if (analysis_type == "DS" & method_DS == "diffcyt-DS-limma") {
     res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, markers_to_test, min_cells, min_samples, plot, path)
   }
