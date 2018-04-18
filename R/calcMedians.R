@@ -8,7 +8,7 @@
 #' 
 #' The data object is assumed to contain a factor \code{marker_class} in the column
 #' meta-data (see \code{\link{prepareData}}), which indicates the protein marker class for
-#' each column of data (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
+#' each column of data (\code{"type"}, \code{"state"}, or \code{"none"}).
 #' 
 #' The cluster medians are required for testing for differential states within cell
 #' populations, and for plotting purposes.
@@ -76,8 +76,8 @@
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                         levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+#'                         levels = c("type", "state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -106,8 +106,8 @@ calcMedians <- function(d_se) {
   is_marker <- colData(d_se)$marker_class != "none"
   
   # identify 'cell type' and 'cell state' markers in final list of assays
-  id_type_markers <- (colData(d_se)$marker_class == "cell_type")[is_marker]
-  id_state_markers <- (colData(d_se)$marker_class == "cell_state")[is_marker]
+  id_type_markers <- (colData(d_se)$marker_class == "type")[is_marker]
+  id_state_markers <- (colData(d_se)$marker_class == "state")[is_marker]
   
   # calculate cluster medians for each marker
   

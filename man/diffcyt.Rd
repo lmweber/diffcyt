@@ -28,8 +28,7 @@ See \code{\link{prepareData}}.}
 column of data. This should contain columns named \code{marker_name} and
 \code{marker_class}. The columns contain: (i) marker names (and any other column
 names); and (ii) a factor indicating the marker class for each column (with entries
-\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}). See
-\code{\link{prepareData}}.}
+\code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}.}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}
@@ -74,9 +73,9 @@ appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
 recommend cofactor = 150 instead. See \code{\link{transformData}}.}
 
 \item{cols_clustering}{Columns to use for clustering. Default = \code{NULL}, in which
-case markers identified as 'cell type' markers (with entries \code{"cell_type"}) in
-the vector \code{marker_class} in the column meta-data of \code{d_se} will be used.
-See \code{\link{generateClusters}}.}
+case markers identified as 'cell type' markers (with entries \code{"type"}) in the
+vector \code{marker_class} in the column meta-data of \code{d_se} will be used. See
+\code{\link{generateClusters}}.}
 
 \item{xdim}{Horizontal length of grid for self-organizing map for FlowSOM clustering
 (number of clusters = \code{xdim} * \code{ydim}). Default = 10 (i.e. 100 clusters).
@@ -206,8 +205,8 @@ experiment_info <- data.frame(
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                        levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+                        levels = c("type", "state", "none")), 
   stringsAsFactors = FALSE
 )
 

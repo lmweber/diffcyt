@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The `diffcyt` package implements statistical methods for differential discovery in high-dimensional cytometry, based on high-resolution clustering and moderated tests.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data, based on high-resolution clustering and moderated tests adapted from transcriptomics.
 
 High-dimensional cytometry includes multi-color flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry. These technologies measure expression levels of dozens (around 10 to 100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations, between groups of samples in different conditions.
 
@@ -113,8 +113,8 @@ experiment_info <- data.frame(
 # Marker information
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                        levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+                        levels = c("type", "state", "none")), 
   stringsAsFactors = FALSE
 )
 ```

@@ -104,8 +104,8 @@
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                         levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+#'                         levels = c("type", "state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 
@@ -153,8 +153,8 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   
   
   is_marker <- colData(d_medians_by_cluster_marker)$marker_class != "none"
-  is_celltype_marker <- colData(d_medians_by_cluster_marker)$marker_class == "cell_type"
-  is_state_marker <- colData(d_medians_by_cluster_marker)$marker_class == "cell_state"
+  is_celltype_marker <- colData(d_medians_by_cluster_marker)$marker_class == "type"
+  is_state_marker <- colData(d_medians_by_cluster_marker)$marker_class == "state"
   
   
   # ------------------------------------------------------------------------------

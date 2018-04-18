@@ -22,7 +22,7 @@
 #' \itemize{
 #' \item \code{marker_name}: protein marker names (and column names for any other columns)
 #' \item \code{marker_class}: factor indicating the protein marker class for each column
-#' of data (usually, entries will be either \code{"cell_type"}, \code{"cell_state"}, or
+#' of data (usually, entries will be either \code{"type"}, \code{"state"}, or
 #' \code{"none"})
 #' }
 #' 
@@ -53,7 +53,7 @@
 #'   column of data. This should contain columns named \code{marker_name} and
 #'   \code{marker_class}. The columns contain: (i) marker names (and any other column
 #'   names); and (ii) a factor indicating the marker class for each column (with entries
-#'   \code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
+#'   \code{"type"}, \code{"state"}, or \code{"none"}).
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns.
@@ -107,8 +107,8 @@
 #' 
 #' marker_info <- data.frame(
 #'   marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-#'   marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-#'                         levels = c("cell_type", "cell_state", "none")), 
+#'   marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+#'                         levels = c("type", "state", "none")), 
 #'   stringsAsFactors = FALSE
 #' )
 #' 

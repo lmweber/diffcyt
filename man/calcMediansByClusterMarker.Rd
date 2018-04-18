@@ -29,8 +29,8 @@ for each cluster-marker combination).
 
 The data object is assumed to contain a factor \code{marker_class} in the column
 meta-data (see \code{\link{prepareData}}), which indicates the protein marker class for
-each column of data (\code{"cell_type"}, \code{"cell_state"}, or \code{"none"}).
-Cluster medians are calculated for all markers.
+each column of data (\code{"type"}, \code{"state"}, or \code{"none"}). Cluster medians
+are calculated for all markers.
 
 The medians by cluster and marker are required for plotting purposes.
 
@@ -70,8 +70,8 @@ experiment_info <- data.frame(
 
 marker_info <- data.frame(
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
-  marker_class = factor(c(rep("cell_type", 10), rep("cell_state", 10)), 
-                        levels = c("cell_type", "cell_state", "none")), 
+  marker_class = factor(c(rep("type", 10), rep("state", 10)), 
+                        levels = c("type", "state", "none")), 
   stringsAsFactors = FALSE
 )
 
