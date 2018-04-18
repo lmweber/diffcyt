@@ -4,31 +4,36 @@
 \alias{diffcyt}
 \title{Run 'diffcyt' pipeline}
 \usage{
-diffcyt(d_input, experiment_info, marker_info, design = NULL,
-  formula = NULL, contrast, analysis_type = c("DA", "DS"),
+diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
+  design = NULL, formula = NULL, contrast, analysis_type = c("DA", "DS"),
   method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"),
   method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"),
+  markers_to_test = NULL, clustering_to_use = NULL,
   cols_to_include = NULL, subsampling = FALSE, n_sub = NULL,
   seed_sub = NULL, cofactor = 5, cols_clustering = NULL, xdim = 10,
   ydim = 10, meta_clustering = FALSE, meta_k = 40,
   seed_clustering = NULL, min_cells = 3, min_samples = NULL,
   normalize = FALSE, norm_factors = "TMM", block_id = NULL, plot = TRUE,
-  path = ".", markers_to_test = NULL, verbose = TRUE)
+  path = ".", verbose = TRUE)
 }
 \arguments{
-\item{d_input}{Input data. Must be a \linkS4class{flowSet} or list of
+\item{d_input}{Input data. Must be either: (i) a \linkS4class{flowSet} or list of
 \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices as input (one
-\code{flowFrame} or list item per sample). See \code{\link{prepareData}}.}
+\code{flowFrame} or list item per sample) (see \code{\link{prepareData}}); or (ii) a
+\code{CATALYST} \linkS4class{daFrame} (containing cluster labels in \code{rowData};
+see vignette for an example).}
 
 \item{experiment_info}{\code{data.frame} or \code{DataFrame} of experiment information,
 for example sample IDs and group IDs. Must contain a column named \code{sample_id}.
-See \code{\link{prepareData}}.}
+See \code{\link{prepareData}}. (Not required when providing a \code{CATALYST}
+\linkS4class{daFrame} for \code{d_input}.)}
 
 \item{marker_info}{\code{data.frame} or \code{DataFrame} of marker information for each
 column of data. This should contain columns named \code{marker_name} and
 \code{marker_class}. The columns contain: (i) marker names (and any other column
 names); and (ii) a factor indicating the marker class for each column (with entries
-\code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}.}
+\code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}. (Not
+required when providing a \code{CATALYST} \linkS4class{daFrame} for \code{d_input}.)}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}
@@ -54,6 +59,21 @@ Options are \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and
 are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
 \code{"diffcyt-DS-limma"}. See \code{\link{testDS_limma}} or
 \code{\link{testDS_LMM}}.}
+
+\item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
+differential expression (from the set of markers stored in the \code{assays} of
+\code{d_medians}; for method \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}).
+Default = all 'cell state' markers, which are identified by the logical vector
+\code{id_state_markers} stored in the meta-data of \code{d_medians}. See
+\code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.}
+
+\item{clustering_to_use}{(Optional) Column index indicating which column of cluster
+labels to use for differential testing, when input data are provided as a
+\code{CATALYST} \linkS4class{daFrame} object containing multiple columns of cluster
+labels. (The selected column will be given the column name \code{cluster_id}, so if
+this argument is provided, no other column should already have this name.) Default =
+NULL, in which case a single column of cluster labels with column name
+\code{cluster_id} is expected.}
 
 \item{cols_to_include}{Logical vector indicating which columns to include from the
 input data. Default = all columns. See \code{\link{prepareData}}.}
@@ -133,13 +153,6 @@ Alternatively, block IDs can be included as fixed effects in the design matrix
 \code{testDS_limma}). Default = current working directory. See
 \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 
-\item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
-differential expression (from the set of markers stored in the \code{assays} of
-\code{d_medians}; for method \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}).
-Default = all 'cell state' markers, which are identified by the logical vector
-\code{id_state_markers} stored in the meta-data of \code{d_medians}. See
-\code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.}
-
 \item{verbose}{Whether to print status messages during each step of the pipeline.
 Default = TRUE.}
 }
@@ -155,19 +168,41 @@ Returns a list containing the results object \code{res}, as well as the data
 Wrapper function to run complete 'diffcyt' pipeline
 }
 \details{
-This wrapper function runs the complete 'diffcyt' analysis pipeline, by calling each
-individual function in the correct sequence.
+This wrapper function runs the complete 'diffcyt' analysis pipeline, by calling the
+functions for the individual steps in the pipeline in the correct sequence.
 
-For more details about the functions for each step in the pipeline, see the package
-vignette and the individual function help pages. Running the individual functions may
-provide additional flexibility, especially for complex analyses.
+For more details about the functions for the individual steps, see the package vignette
+and the function help pages. Running the individual functions may provide additional
+flexibility, especially for complex analyses.
 
-Minimum required arguments are:
+The input data can be provided as a \linkS4class{flowSet} or a list of
+\code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices (one
+\code{flowFrame} or list item per sample). Alternatively, it is also possible to
+provide the input as a \linkS4class{daFrame} object from the \code{CATALYST}
+Bioconductor package (Chevrier, Crowell, Zanotelli et al., 2018). This can be useful
+when initial exploratory analyses and clustering have been performed using
+\code{CATALYST}; the \code{daFrame} object from \code{CATALYST} (containing cluster
+labels in the \code{rowData}) can then be provided directly to the \code{diffcyt}
+functions for differential testing.
+
+Minimum required arguments when not providing a \linkS4class{flowSet} or list of
+\code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices:
 
 \itemize{
 \item \code{d_input}
 \item \code{experiment_info}
 \item \code{marker_info}
+\item either \code{design} or \code{formula} (depending on the differential testing
+method used)
+\item \code{contrast}
+\item \code{analysis_type}
+}
+
+Minimum required arguments when providing a \code{CATALYST} \linkS4class{daFrame}
+object:
+
+\itemize{
+\item \code{d_input}
 \item either \code{design} or \code{formula} (depending on the differential testing
 method used)
 \item \code{contrast}

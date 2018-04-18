@@ -2,14 +2,25 @@
 #' 
 #' Wrapper function to run complete 'diffcyt' pipeline
 #' 
-#' This wrapper function runs the complete 'diffcyt' analysis pipeline, by calling each
-#' individual function in the correct sequence.
+#' This wrapper function runs the complete 'diffcyt' analysis pipeline, by calling the
+#' functions for the individual steps in the pipeline in the correct sequence.
 #' 
-#' For more details about the functions for each step in the pipeline, see the package
-#' vignette and the individual function help pages. Running the individual functions may
-#' provide additional flexibility, especially for complex analyses.
+#' For more details about the functions for the individual steps, see the package vignette
+#' and the function help pages. Running the individual functions may provide additional
+#' flexibility, especially for complex analyses.
 #' 
-#' Minimum required arguments are:
+#' The input data can be provided as a \linkS4class{flowSet} or a list of
+#' \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices (one
+#' \code{flowFrame} or list item per sample). Alternatively, it is also possible to
+#' provide the input as a \linkS4class{daFrame} object from the \code{CATALYST}
+#' Bioconductor package (Chevrier, Crowell, Zanotelli et al., 2018). This can be useful
+#' when initial exploratory analyses and clustering have been performed using
+#' \code{CATALYST}; the \code{daFrame} object from \code{CATALYST} (containing cluster
+#' labels in the \code{rowData}) can then be provided directly to the \code{diffcyt}
+#' functions for differential testing.
+#' 
+#' Minimum required arguments when not providing a \linkS4class{flowSet} or list of
+#' \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices:
 #' 
 #' \itemize{
 #' \item \code{d_input}
@@ -21,20 +32,35 @@
 #' \item \code{analysis_type}
 #' }
 #' 
+#' Minimum required arguments when providing a \code{CATALYST} \linkS4class{daFrame}
+#' object:
 #' 
-#' @param d_input Input data. Must be a \linkS4class{flowSet} or list of
+#' \itemize{
+#' \item \code{d_input}
+#' \item either \code{design} or \code{formula} (depending on the differential testing
+#' method used)
+#' \item \code{contrast}
+#' \item \code{analysis_type}
+#' }
+#' 
+#' 
+#' @param d_input Input data. Must be either: (i) a \linkS4class{flowSet} or list of
 #'   \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices as input (one
-#'   \code{flowFrame} or list item per sample). See \code{\link{prepareData}}.
+#'   \code{flowFrame} or list item per sample) (see \code{\link{prepareData}}); or (ii) a
+#'   \code{CATALYST} \linkS4class{daFrame} (containing cluster labels in \code{rowData};
+#'   see vignette for an example).
 #' 
 #' @param experiment_info \code{data.frame} or \code{DataFrame} of experiment information,
 #'   for example sample IDs and group IDs. Must contain a column named \code{sample_id}.
-#'   See \code{\link{prepareData}}.
+#'   See \code{\link{prepareData}}. (Not required when providing a \code{CATALYST}
+#'   \linkS4class{daFrame} for \code{d_input}.)
 #' 
 #' @param marker_info \code{data.frame} or \code{DataFrame} of marker information for each
 #'   column of data. This should contain columns named \code{marker_name} and
 #'   \code{marker_class}. The columns contain: (i) marker names (and any other column
 #'   names); and (ii) a factor indicating the marker class for each column (with entries
-#'   \code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}.
+#'   \code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}. (Not
+#'   required when providing a \code{CATALYST} \linkS4class{daFrame} for \code{d_input}.)
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
 #'   \code{\link{createDesignMatrix}}.
@@ -60,6 +86,21 @@
 #'   are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
 #'   \code{"diffcyt-DS-limma"}. See \code{\link{testDS_limma}} or
 #'   \code{\link{testDS_LMM}}.
+#' 
+#' @param markers_to_test (Optional) Logical vector specifying which markers to test for
+#'   differential expression (from the set of markers stored in the \code{assays} of
+#'   \code{d_medians}; for method \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}).
+#'   Default = all 'cell state' markers, which are identified by the logical vector
+#'   \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
+#'   \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.
+#' 
+#' @param clustering_to_use (Optional) Column index indicating which column of cluster
+#'   labels to use for differential testing, when input data are provided as a
+#'   \code{CATALYST} \linkS4class{daFrame} object containing multiple columns of cluster
+#'   labels. (The selected column will be given the column name \code{cluster_id}, so if
+#'   this argument is provided, no other column should already have this name.) Default =
+#'   NULL, in which case a single column of cluster labels with column name
+#'   \code{cluster_id} is expected.
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns. See \code{\link{prepareData}}.
@@ -138,13 +179,6 @@
 #' @param path Path for diagnostic plots (for method \code{testDA_voom} or
 #'   \code{testDS_limma}). Default = current working directory. See
 #'   \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.
-#' 
-#' @param markers_to_test (Optional) Logical vector specifying which markers to test for
-#'   differential expression (from the set of markers stored in the \code{assays} of
-#'   \code{d_medians}; for method \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}).
-#'   Default = all 'cell state' markers, which are identified by the logical vector
-#'   \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
-#'   \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.
 #' 
 #' @param verbose Whether to print status messages during each step of the pipeline.
 #'   Default = TRUE.
@@ -227,10 +261,13 @@
 #' # Plot heatmap for DS tests
 #' plotHeatmap(out_DS, analysis_type = "DS")
 #' 
-diffcyt <- function(d_input, experiment_info, marker_info, design = NULL, formula = NULL, contrast, 
+diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL, 
+                    design = NULL, formula = NULL, contrast, 
                     analysis_type = c("DA", "DS"), 
                     method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"), 
                     method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"), 
+                    markers_to_test = NULL, 
+                    clustering_to_use = NULL, 
                     cols_to_include = NULL, 
                     subsampling = FALSE, n_sub = NULL, seed_sub = NULL, 
                     cofactor = 5, 
@@ -240,7 +277,6 @@ diffcyt <- function(d_input, experiment_info, marker_info, design = NULL, formul
                     normalize = FALSE, norm_factors = "TMM", 
                     block_id = NULL, 
                     plot = TRUE, path = ".", 
-                    markers_to_test = NULL, 
                     verbose = TRUE) {
   
   # get arguments
@@ -248,17 +284,40 @@ diffcyt <- function(d_input, experiment_info, marker_info, design = NULL, formul
   method_DA <- match.arg(method_DA)
   method_DS <- match.arg(method_DS)
   
-  # prepare data
-  if (verbose) message("preparing data...")
-  d_se <- prepareData(d_input, experiment_info, marker_info, cols_to_include, subsampling, n_sub, seed_sub)
+  # preliminary steps (if input object is not a CATALYST 'daFrame')
+  if (class(d_input) != "daFrame") {
+    if (is.null(experiment_info) | is.null(marker_info)) {
+      stop("'experiment_info' and 'marker_info' inputs must be provided when not using CATALYST ", 
+           "'daFrame' object as input")
+    }
+    # prepare data
+    if (verbose) message("preparing data...")
+    d_se <- prepareData(d_input, experiment_info, marker_info, cols_to_include, subsampling, n_sub, seed_sub)
+    # transformation
+    if (verbose) message("transforming data...")
+    d_se <- transformData(d_se, cofactor)
+    # clustering
+    if (verbose) message("generating clusters...")
+    d_se <- generateClusters(d_se, cols_clustering, xdim, ydim, meta_clustering, meta_k, seed_clustering)
+  }
   
-  # transformation
-  if (verbose) message("transforming data...")
-  d_se <- transformData(d_se, cofactor)
-  
-  # clustering
-  if (verbose) message("generating clusters...")
-  d_se <- generateClusters(d_se, cols_clustering, xdim, ydim, meta_clustering, meta_k, seed_clustering)
+  # alternatively, use CATALYST 'daFrame' (which already contains cluster labels) as input
+  else if (class(d_input) == "daFrame") {
+    if (verbose) message("using CATALYST 'daFrame' input object")
+    if (!is.null(clustering_to_use)) {
+      if ("cluster_id" %in% colnames(rowData(d_input))) {
+        stop("'rowData' of 'daFrame' already contains a column labeled 'cluster_id'")
+      } else {
+        colnames(rowData(d_input))[clustering_to_use] <- "cluster_id"
+      }
+    }
+    if (!("cluster_id" %in% colnames(rowData(d_input)))) {
+      stop("When using CATALYST 'daFrame' as input, cluster labels must either be stored in ", 
+           "column with name 'cluster_id' in 'rowData' of 'daFrame' object; or argument ", 
+           "'clustering_to_use' provided.")
+    }
+    d_se <- d_input
+  }
   
   # calculate features
   if (verbose) message("calculating features...")
