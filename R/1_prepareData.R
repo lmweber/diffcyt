@@ -126,6 +126,11 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
     d_input <- as(d_input, "list")
   }
   
+  if (!(all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]])))) | 
+        all(sapply(d_input, function(d) is.null(colnames(d)))))) {
+    stop("column (marker) names do not match for all samples")
+  }
+  
   if (all(sapply(d_input, class) == "flowFrame")) {
     d_ex <- lapply(d_input, exprs)
   } else if (all(sapply(d_input, is.data.frame)) | 
@@ -149,11 +154,6 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   
   if (!(nrow(marker_info) == ncol(d_ex[[1]]))) {
     stop("number of rows in 'marker_info' data frame must match number of columns in input data (after subsetting with 'cols_to_include')")
-  }
-  
-  if (!all(sapply(d_input, function(d) is.null(colnames(d)))) | 
-      !all(sapply(d_input, function(d) all(colnames(d) == colnames(d_input[[1]]))))) {
-    stop("column (marker) names do not match for all samples")
   }
   
   if (!(nrow(experiment_info) == length(d_ex))) {
