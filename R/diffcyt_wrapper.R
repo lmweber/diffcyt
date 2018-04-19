@@ -185,7 +185,9 @@
 #' 
 #' @return Returns a list containing the results object \code{res}, as well as the data
 #'   objects \code{d_se}, \code{d_counts}, \code{d_medians},
-#'   \code{d_medians_by_cluster_marker}, and \code{d_medians_by_sample_marker}. The
+#'   \code{d_medians_by_cluster_marker}, and \code{d_medians_by_sample_marker}. (If a
+#'   \code{CATALYST} \code{daFrame} object was used as input, the output list contains
+#'   objects \code{res}, \code{d_cat}, \code{d_counts}, and \code{d_medians}.) The
 #'   structure of \code{res} depends on the differential testing method used. See
 #'   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}},
 #'   \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
@@ -322,9 +324,11 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   if (verbose) message("calculating features...")
   d_counts <- calcCounts(d_se)
   d_medians <- calcMedians(d_se)
-  # calculate additional features for plotting
-  d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
-  d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
+  # calculate additional features for plotting (not required if using CATALYST 'daFrame')
+  if (class(d_input) != "daFrame") {
+    d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
+    d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
+  }
   
   # DA tests
   if (analysis_type == "DA" & verbose) message("calculating DA tests...")
@@ -348,14 +352,24 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   
   # return results and data objects
-  list(
-    res = res, 
-    d_se = d_se, 
-    d_counts = d_counts, 
-    d_medians = d_medians, 
-    d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
-    d_medians_by_sample_marker = d_medians_by_sample_marker
-  )
+  if (class(d_input) != "daFrame") {
+    return(list(
+      res = res, 
+      d_se = d_se, 
+      d_counts = d_counts, 
+      d_medians = d_medians, 
+      d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
+      d_medians_by_sample_marker = d_medians_by_sample_marker
+    ))
+  } else if (class(d_input) == "daFrame") {
+    return(list(
+      res = res, 
+      d_cat = d_se, 
+      d_counts = d_counts, 
+      d_medians = d_medians
+    ))
+  }
+  
 }
 
 

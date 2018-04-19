@@ -159,7 +159,9 @@ Default = TRUE.}
 \value{
 Returns a list containing the results object \code{res}, as well as the data
   objects \code{d_se}, \code{d_counts}, \code{d_medians},
-  \code{d_medians_by_cluster_marker}, and \code{d_medians_by_sample_marker}. The
+  \code{d_medians_by_cluster_marker}, and \code{d_medians_by_sample_marker}. (If a
+  \code{CATALYST} \code{daFrame} object was used as input, the output list contains
+  objects \code{res}, \code{d_cat}, \code{d_counts}, and \code{d_medians}.) The
   structure of \code{res} depends on the differential testing method used. See
   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}},
   \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
