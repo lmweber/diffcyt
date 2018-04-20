@@ -70,9 +70,9 @@ Default = all 'cell state' markers, which are identified by the logical vector
 \item{clustering_to_use}{(Optional) Column index indicating which set of cluster labels
 to use for differential testing, when input data are provided as a \code{CATALYST}
 \code{daFrame} object containing multiple sets of cluster labels. (In this case, the
-\code{metadata} of the \code{daFrame} object should contain a data frame named
+\code{metadata} of the \code{daFrame} object is assumed to contain a data frame named
 \code{cluster_codes}.) Default = NULL, in which case cluster labels stored in column
-\code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.}
+named \code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.}
 
 \item{cols_to_include}{Logical vector indicating which columns to include from the
 input data. Default = all columns. See \code{\link{prepareData}}.}

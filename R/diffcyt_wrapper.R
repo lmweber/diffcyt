@@ -96,9 +96,9 @@
 #' @param clustering_to_use (Optional) Column index indicating which set of cluster labels
 #'   to use for differential testing, when input data are provided as a \code{CATALYST}
 #'   \code{daFrame} object containing multiple sets of cluster labels. (In this case, the
-#'   \code{metadata} of the \code{daFrame} object should contain a data frame named
+#'   \code{metadata} of the \code{daFrame} object is assumed to contain a data frame named
 #'   \code{cluster_codes}.) Default = NULL, in which case cluster labels stored in column
-#'   \code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.
+#'   named \code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns. See \code{\link{prepareData}}.
@@ -305,18 +305,26 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # alternatively, use CATALYST 'daFrame' (which already contains cluster labels) as input
   else if (class(d_input) == "daFrame") {
     if (verbose) message("using CATALYST 'daFrame' input object")
-    stopifnot("cluster_id" %in% colnames(rowData(d_input)))
     
     if (is.null(clustering_to_use)) {
-      message("using cluster IDs stored in column 'cluster_id' in 'rowData' of 'daFrame' object")
+      stopifnot("cluster_id" %in% colnames(rowData(d_input)))
+      message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(is.numeric(clustering_to_use))
-      message("using cluster IDs from clustering stored in column ", clustering_to_use, " in 'cluster_codes'")
-      cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][rowData(d_input)$cluster_id]
-      # store cluster labels in 'rowData'
+      stopifnot("cluster_id" %in% colnames(rowData(d_input)))
+      message("using cluster IDs from clustering stored in column ", clustering_to_use, " of 'cluster_codes' ", 
+              "data frame in 'metadata' of 'daFrame' object")
+      code_id <- rowData(d_input)$cluster_id
+      cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][code_id]
+      # store cluster labels in column 'cluster_id' in 'rowData'; and add column 'code_id'
+      # for original FlowSOM clustering codes
+      stopifnot(length(cluster_id) == nrow(rowData(d_input)), 
+                length(code_id) == nrow(rowData(d_input)))
+      rowData(d_input)$code_id <- code_id
       rowData(d_input)$cluster_id <- cluster_id
     }
+    
     d_se <- d_input
   }
   
@@ -364,7 +372,6 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   } else if (class(d_input) == "daFrame") {
     return(list(
       res = res, 
-      d_cat = d_se, 
       d_counts = d_counts, 
       d_medians = d_medians
     ))
