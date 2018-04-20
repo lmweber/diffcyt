@@ -93,13 +93,12 @@
 #'   \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
 #'   \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.
 #' 
-#' @param clustering_to_use (Optional) Column index indicating which column of cluster
-#'   labels to use for differential testing, when input data are provided as a
-#'   \code{CATALYST} \code{daFrame} object containing multiple columns of cluster labels.
-#'   (The selected column will be given the column name \code{cluster_id}, so if this
-#'   argument is provided, no other column should already have this name.) Default = NULL,
-#'   in which case a single column of cluster labels with column name \code{cluster_id} is
-#'   expected.
+#' @param clustering_to_use (Optional) Column index indicating which set of cluster labels
+#'   to use for differential testing, when input data are provided as a \code{CATALYST}
+#'   \code{daFrame} object containing multiple sets of cluster labels. (In this case, the
+#'   \code{metadata} of the \code{daFrame} object should contain a data frame named
+#'   \code{cluster_codes}.) Default = NULL, in which case cluster labels stored in column
+#'   \code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns. See \code{\link{prepareData}}.
@@ -194,6 +193,7 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment colData
+#' @importFrom S4Vectors metadata
 #' 
 #' @export
 #' 
@@ -305,17 +305,17 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # alternatively, use CATALYST 'daFrame' (which already contains cluster labels) as input
   else if (class(d_input) == "daFrame") {
     if (verbose) message("using CATALYST 'daFrame' input object")
-    if (!is.null(clustering_to_use)) {
-      if ("cluster_id" %in% colnames(rowData(d_input))) {
-        stop("'rowData' of 'daFrame' already contains a column labeled 'cluster_id'")
-      } else {
-        colnames(rowData(d_input))[clustering_to_use] <- "cluster_id"
-      }
-    }
-    if (!("cluster_id" %in% colnames(rowData(d_input)))) {
-      stop("When using CATALYST 'daFrame' as input, cluster labels must either be stored in ", 
-           "column with name 'cluster_id' in 'rowData' of 'daFrame' object; or argument ", 
-           "'clustering_to_use' provided.")
+    stopifnot("cluster_id" %in% colnames(rowData(d_input)))
+    
+    if (is.null(clustering_to_use)) {
+      message("using cluster IDs stored in column 'cluster_id' in 'rowData' of 'daFrame' object")
+      
+    } else if (!is.null(clustering_to_use)) {
+      stopifnot(is.numeric(clustering_to_use))
+      message("using cluster IDs from clustering stored in column ", clustering_to_use, " in 'cluster_codes'")
+      cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][rowData(d_input)$cluster_id]
+      # store cluster labels in 'rowData'
+      rowData(d_input)$cluster_id <- cluster_id
     }
     d_se <- d_input
   }
