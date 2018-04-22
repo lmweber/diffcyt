@@ -1,5 +1,5 @@
 Package: diffcyt
-Version: 0.99.14
+Version: 0.99.15
 Title: Differential discovery in high-dimensional cytometry via high-resolution clustering
 Description: Statistical methods for differential discovery in high-dimensional cytometry (including flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry) using high-resolution clustering and moderated tests.
 Authors@R: person("Lukas M.", "Weber", email = "lukmweber@gmail.com", role = c("aut", "cre"))

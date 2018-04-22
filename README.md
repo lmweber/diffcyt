@@ -7,7 +7,7 @@
 
 `diffcyt`: R package for differential discovery in high-dimensional cytometry via high-resolution clustering
 
-The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and DNA-tagged cytometry), based on high-resolution clustering and moderated tests.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on high-resolution clustering and moderated tests adapted from transcriptomics.
 
 
 ## Details
@@ -24,7 +24,7 @@ For a tutorial and examples of usage, see the package vignette.
 
 The stable release version of the `diffyt` package will be made available from [Bioconductor](http://bioconductor.org/).
 
-The development version is available from the `bioc-devel` version of Bioconductor, or from GitHub.
+The development version is available from the `devel` version of Bioconductor, or from GitHub.
 
 To install from GitHub, the Bioconductor installer (`biocLite`) can be used. This will also install all required dependencies from CRAN and Bioconductor. First, ensure that the Bioconductor installer and `devtools` package are installed:
 
