@@ -240,8 +240,7 @@ testDA_GLMM <- function(d_counts, formula, contrast,
   cluster_id_nm <- as.numeric(cluster_id)
   row_data[cluster_id_nm, ] <- out
   
-  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
-                    row_data)
+  row_data <- cbind(cluster_id = rowData(d_counts)$cluster_id, row_data)
   
   res <- d_counts
   

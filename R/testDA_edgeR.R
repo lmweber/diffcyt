@@ -205,8 +205,7 @@ testDA_edgeR <- function(d_counts, design, contrast,
   cluster_id_nm <- as.numeric(cluster_id)
   row_data[cluster_id_nm, ] <- top$table
   
-  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
-                    row_data)
+  row_data <- cbind(cluster_id = rowData(d_counts)$cluster_id, row_data)
   
   colnames(row_data)[colnames(row_data) == "PValue"] <- "p_val"
   colnames(row_data)[colnames(row_data) == "FDR"] <- "p_adj"

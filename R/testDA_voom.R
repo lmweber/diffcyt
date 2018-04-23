@@ -249,8 +249,7 @@ testDA_voom <- function(d_counts, design, contrast, block_id = NULL,
   cluster_id_nm <- as.numeric(cluster_id)
   row_data[cluster_id_nm, ] <- top
   
-  row_data <- cbind(data.frame(cluster_id = as.numeric(levels(cluster_id)), stringsAsFactors = FALSE), 
-                    row_data)
+  row_data <- cbind(cluster_id = rowData(d_counts)$cluster_id, row_data)
   
   colnames(row_data)[colnames(row_data) == "P.Value"] <- "p_val"
   colnames(row_data)[colnames(row_data) == "adj.P.Val"] <- "p_adj"
