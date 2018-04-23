@@ -8,7 +8,7 @@ testDA_GLMM(d_counts, formula, contrast, min_cells = 3, min_samples = NULL,
   normalize = FALSE, norm_factors = "TMM")
 }
 \arguments{
-\item{d_counts}{\linkS4class{SummarizedExperiment} object containing cluster cell
+\item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
 counts, from \code{\link{calcCounts}}.}
 
 \item{formula}{Model formula object, created with \code{\link{createFormula}}. This
@@ -39,11 +39,11 @@ Alternatively, a vector of values can be provided. (Note that other normalizatio
 methods from \code{edgeR} are not used.)}
 }
 \value{
-Returns a new \linkS4class{SummarizedExperiment} object, with differential test
+Returns a new \code{\link{SummarizedExperiment}} object, with differential test
   results stored in the \code{rowData} slot. Results include raw p-values
   (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
   clusters by evidence for differential abundance. The results can be accessed with the
-  \code{rowData} accessor function.
+  \code{\link{rowData}} accessor function.
 }
 \description{
 Calculate tests for differential abundance of cell populations using method

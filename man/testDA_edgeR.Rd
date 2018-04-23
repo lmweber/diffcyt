@@ -8,7 +8,7 @@ testDA_edgeR(d_counts, design, contrast, min_cells = 3, min_samples = NULL,
   normalize = FALSE, norm_factors = "TMM")
 }
 \arguments{
-\item{d_counts}{\linkS4class{SummarizedExperiment} object containing cluster cell
+\item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
 counts, from \code{\link{calcCounts}}.}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
@@ -36,12 +36,12 @@ Alternatively, a vector of values can be provided. (Note that other normalizatio
 methods from \code{edgeR} are not used.)}
 }
 \value{
-Returns a new \linkS4class{SummarizedExperiment} object, with differential test
+Returns a new \code{\link{SummarizedExperiment}} object, with differential test
   results stored in the \code{rowData} slot. Results include raw p-values
   (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{edgeR} moderated
   tests, which can be used to rank clusters by evidence for differential abundance.
   Additional output columns from the \code{edgeR} tests are also included. The results
-  can be accessed with the \code{rowData} accessor function.
+  can be accessed with the \code{\link{rowData}} accessor function.
 }
 \description{
 Calculate tests for differential abundance of cell populations using method
@@ -49,18 +49,18 @@ Calculate tests for differential abundance of cell populations using method
 }
 \details{
 Calculates tests for differential abundance of clusters, using functions from the
-\code{edgeR} package.
+\code{\link{edgeR}} package.
 
-This method uses the \code{edgeR} package (Robinson et al. 2010, \emph{Bioinformatics};
-McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit models and calculate
-moderated tests at the cluster level. Moderated tests improve statistical power by
-sharing information on variability (i.e. variance across samples for a single cluster)
-between clusters. We use the option \code{trend.method = "none"} to calculate
-dispersions, since the dispersion-mean relationship typically does not resemble
-RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods implemented
-in the \code{edgeR} package were originally designed for the analysis of gene
-expression data such as RNA-sequencing counts. Here, we apply these methods to cluster
-cell counts.
+This method uses the \code{\link{edgeR}} package (Robinson et al. 2010,
+\emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
+models and calculate moderated tests at the cluster level. Moderated tests improve
+statistical power by sharing information on variability (i.e. variance across samples
+for a single cluster) between clusters. We use the option \code{trend.method = "none"}
+to calculate dispersions, since the dispersion-mean relationship typically does not
+resemble RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods
+implemented in the \code{edgeR} package were originally designed for the analysis of
+gene expression data such as RNA-sequencing counts. Here, we apply these methods to
+cluster cell counts.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,

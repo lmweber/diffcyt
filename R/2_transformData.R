@@ -22,14 +22,14 @@
 #' Figure S2.
 #' 
 #' The transform should be applied to protein marker columns only. The
-#' \linkS4class{SummarizedExperiment} object created in the previous step
+#' \code{\link{SummarizedExperiment}} object created in the previous step
 #' (\code{\link{prepareData}}) is assumed to contain a factor \code{marker_class} in the
 #' column meta-data, where entries \code{"none"} indicate non-marker columns. (If this is
 #' not available, all columns will be transformed instead.)
 #' 
 #' 
 #' @param d_se Input data. Assumed to be in the form of a
-#'   \linkS4class{SummarizedExperiment}, prepared with the function
+#'   \code{\link{SummarizedExperiment}}, prepared with the function
 #'   \code{\link{prepareData}}. Column meta-data is assumed to contain a factor
 #'   \code{marker_class}, where entries \code{"none"} indicate non-marker columns.
 #' 

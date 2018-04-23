@@ -62,10 +62,10 @@
 #' details.
 #' 
 #' 
-#' @param d_counts \linkS4class{SummarizedExperiment} object containing cluster cell
+#' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
 #'   counts, from \code{\link{calcCounts}}.
 #' 
-#' @param d_medians \linkS4class{SummarizedExperiment} object containing cluster medians
+#' @param d_medians \code{\link{SummarizedExperiment}} object containing cluster medians
 #'   (median marker expression for each cluster-sample combination), from
 #'   \code{\link{calcMedians}}. Assumed to contain a logical vector
 #'   \code{id_state_markers} in the meta-data (accessed with
@@ -96,14 +96,15 @@
 #'   \code{min_samples} samples.
 #' 
 #' 
-#' @return Returns a new \linkS4class{SummarizedExperiment} object, where rows =
+#' @return Returns a new \code{\link{SummarizedExperiment}} object, where rows =
 #'   cluster-marker combinations, and columns = samples. In the rows, clusters are
 #'   repeated for each cell state marker (i.e. the sheets or \code{assays} from the
 #'   previous \code{d_medians} object are stacked into a single matrix). Differential test
 #'   results are stored in the \code{rowData} slot. Results include raw p-values
 #'   (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
 #'   cluster-marker combinations by evidence for differential states within cell
-#'   populations. The results can be accessed with the \code{rowData} accessor function.
+#'   populations. The results can be accessed with the \code{\link{rowData}} accessor
+#'   function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'

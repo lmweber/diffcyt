@@ -9,10 +9,10 @@ testDS_limma(d_counts, d_medians, design, contrast, block_id = NULL,
   plot = TRUE, path = ".")
 }
 \arguments{
-\item{d_counts}{\linkS4class{SummarizedExperiment} object containing cluster cell
+\item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
 counts, from \code{\link{calcCounts}}.}
 
-\item{d_medians}{\linkS4class{SummarizedExperiment} object containing cluster medians
+\item{d_medians}{\code{\link{SummarizedExperiment}} object containing cluster medians
 (median marker expression for each cluster-sample combination), from
 \code{\link{calcMedians}}. Assumed to contain a logical vector
 \code{id_state_markers} in the meta-data (accessed with
@@ -27,9 +27,10 @@ state' markers in the list of \code{assays}.}
 
 \item{block_id}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects. If provided, the block IDs
-will be included as random effects using the \code{limma} \code{duplicateCorrelation}
-methodology. Alternatively, block IDs can be included as fixed effects in the design
-matrix (\code{\link{createDesignMatrix}}). See details.}
+will be included as random effects using the \code{limma}
+\code{\link{duplicateCorrelation}} methodology. Alternatively, block IDs can be
+included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
+See details.}
 
 \item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
 differential expression (from the set of markers stored in the \code{assays} of
@@ -50,7 +51,7 @@ differential testing if they have at least \code{min_cells} cells in at least
 \item{path}{Path for diagnostic plot. Default = current working directory.}
 }
 \value{
-Returns a new \linkS4class{SummarizedExperiment} object, where rows =
+Returns a new \code{\link{SummarizedExperiment}} object, where rows =
   cluster-marker combinations, and columns = samples. In the rows, clusters are
   repeated for each cell state marker (i.e. the sheets or \code{assays} from the
   previous \code{d_medians} object are stacked into a single matrix). Differential test
@@ -59,7 +60,7 @@ Returns a new \linkS4class{SummarizedExperiment} object, where rows =
   tests, which can be used to rank cluster-marker combinations by evidence for
   differential states within cell populations. Additional output columns from the
   \code{limma} tests are also included. The results can be accessed with the
-  \code{rowData} accessor function.
+  \code{\link{rowData}} accessor function.
 }
 \description{
 Calculate tests for differential states within cell populations using method
@@ -71,12 +72,12 @@ expression of cell state markers within clusters). Clusters are defined using ce
 markers, and cell states are characterized by the median transformed expression of cell
 state markers.
 
-This method uses the \code{limma} package (Ritchie et al. 2015, \emph{Nucleic Acids
-Research}) to fit models and calculate moderated tests at the cluster level. Moderated
-tests improve statistical power by sharing information on variability (i.e. variance
-across samples for a single cluster) between clusters. We use the option \code{trend =
-TRUE} in the \code{eBayes} fitting function in order to stabilize the mean-variance
-relationship. Diagnostic plots are shown if \code{plot = TRUE}.
+This method uses the \code{\link{limma}} package (Ritchie et al. 2015, \emph{Nucleic
+Acids Research}) to fit models and calculate moderated tests at the cluster level.
+Moderated tests improve statistical power by sharing information on variability (i.e.
+variance across samples for a single cluster) between clusters. We use the option
+\code{trend = TRUE} in the \code{\link{eBayes}} fitting function in order to stabilize
+the mean-variance relationship. Diagnostic plots are shown if \code{plot = TRUE}.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -88,9 +89,9 @@ are simpler, but random effects may improve power in data sets with unbalanced d
 or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
 \code{block_id} argument here instead. This will make use of the \code{limma}
-\code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
-possible in this case (fixed effects should be used instead). Block IDs should not be
-included in the design matrix if the \code{limma} \code{duplicateCorrelation}
+\code{\link{duplicateCorrelation}} methodology. Note that >2 measures per sample are
+not possible in this case (fixed effects should be used instead). Block IDs should not
+be included in the design matrix if the \code{limma} \code{duplicateCorrelation}
 methodology is used.
 
 The contrast matrix specifying the contrast of interest can be created with

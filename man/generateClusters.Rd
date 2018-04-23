@@ -31,13 +31,13 @@ Default = 40.}
 reproducible results. Default = \code{NULL}.}
 
 \item{...}{Other parameters to pass to the FlowSOM clustering algorithm (through the
-function \code{BuildSOM}).}
+function \code{\link{BuildSOM}}).}
 }
 \value{
-\code{d_se}: Returns the \linkS4class{SummarizedExperiment} input object, with
+\code{d_se}: Returns the \code{\link{SummarizedExperiment}} input object, with
   cluster labels for each cell stored in an additional column of row meta-data. Row
-  meta-data can be accessed with \code{rowData}. The minimum spanning tree (MST) object
-  is also stored in the \code{metadata} slot, and can be accessed with
+  meta-data can be accessed with \code{\link{rowData}}. The minimum spanning tree (MST)
+  object is also stored in the \code{metadata} slot, and can be accessed with
   \code{metadata(d_se)$MST}.
 }
 \description{
@@ -51,7 +51,7 @@ high-resolution clustering or over-clustering (i.e. we generate a large number o
 clusters), which helps ensure that rare populations are adequately separated from
 larger ones.
 
-Data is assumed to be in the form of a \linkS4class{SummarizedExperiment} object
+Data is assumed to be in the form of a \code{\link{SummarizedExperiment}} object
 generated with \code{\link{prepareData}} and transformed with
 \code{\link{transformData}}.
 
@@ -65,9 +65,9 @@ may be made based on prior biological knowledge or using data-driven methods. Fo
 example of a data-driven method of marker ranking and selection, see Nowicka et al.
 (2017), \emph{F1000Research}.
 
-By default, we use the \code{FlowSOM} clustering algorithm (Van Gassen et al. 2015,
-\emph{Cytometry Part A}, available from Bioconductor) to generate the clusters. We
-previously showed that \code{FlowSOM} gives very good clustering performance for
+By default, we use the \code{\link{FlowSOM}} clustering algorithm (Van Gassen et al.
+2015, \emph{Cytometry Part A}, available from Bioconductor) to generate the clusters.
+We previously showed that \code{FlowSOM} gives very good clustering performance for
 high-dimensional cytometry data, for both major and rare cell populations, and is
 extremely fast (Weber and Robinson, 2016, \emph{Cytometry Part A}).
 
@@ -78,9 +78,9 @@ clustering step in the \code{FlowSOM} algorithm, i.e. without the final
 separated from larger populations, which is crucial for detecting differential signals
 for extremely rare populations.
 
-The minimum spanning tree (MST) object from \code{BuildMST} is stored in the experiment
-\code{metadata} slot in the \linkS4class{SummarizedExperiment} object \code{d_se}, and
-can be accessed with \code{metadata(d_se)$MST}.
+The minimum spanning tree (MST) object from \code{\link{BuildMST}} is stored in the
+experiment \code{metadata} slot in the \code{\link{SummarizedExperiment}} object
+\code{d_se}, and can be accessed with \code{metadata(d_se)$MST}.
 }
 \examples{
 # For a full workflow example demonstrating the use of each function in the 'diffcyt'

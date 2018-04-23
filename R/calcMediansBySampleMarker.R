@@ -17,20 +17,20 @@
 #' type' and 'cell state' markers in the sequence of markers (columns) in the output
 #' object, which is useful in later steps of the 'diffcyt' pipeline.
 #' 
-#' Results are returned as a new \linkS4class{SummarizedExperiment} object, where rows =
+#' Results are returned as a new \code{\link{SummarizedExperiment}} object, where rows =
 #' samples, columns = markers, \code{assay} = values (marker expression values). The
 #' \code{metadata} slot also contains variables \code{id_type_markers} and
 #' \code{id_state_markers}, which can be used to identify the sets of cell type and cell
 #' state markers in the columns.
 #' 
 #' 
-#' @param d_se Data object from previous steps, in \linkS4class{SummarizedExperiment}
+#' @param d_se Data object from previous steps, in \code{\link{SummarizedExperiment}}
 #'   format, containing cluster labels as a column in the row meta-data (from
 #'   \code{\link{generateClusters}}). Column meta-data is assumed to contain a factor
 #'   \code{marker_class}.
 #' 
 #' 
-#' @return \code{d_medians_by_sample_marker}: \linkS4class{SummarizedExperiment} object,
+#' @return \code{d_medians_by_sample_marker}: \code{\link{SummarizedExperiment}} object,
 #'   where rows = samples, columns = markers, \code{assay} = values (marker expression
 #'   values). The \code{metadata} slot contains variables \code{id_type_markers} and
 #'   \code{id_state_markers}, which can be accessed with

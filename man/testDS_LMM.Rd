@@ -8,10 +8,10 @@ testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test = NULL,
   min_cells = 3, min_samples = NULL)
 }
 \arguments{
-\item{d_counts}{\linkS4class{SummarizedExperiment} object containing cluster cell
+\item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
 counts, from \code{\link{calcCounts}}.}
 
-\item{d_medians}{\linkS4class{SummarizedExperiment} object containing cluster medians
+\item{d_medians}{\code{\link{SummarizedExperiment}} object containing cluster medians
 (median marker expression for each cluster-sample combination), from
 \code{\link{calcMedians}}. Assumed to contain a logical vector
 \code{id_state_markers} in the meta-data (accessed with
@@ -42,14 +42,15 @@ differential testing if they have at least \code{min_cells} cells in at least
 \code{min_samples} samples.}
 }
 \value{
-Returns a new \linkS4class{SummarizedExperiment} object, where rows =
+Returns a new \code{\link{SummarizedExperiment}} object, where rows =
   cluster-marker combinations, and columns = samples. In the rows, clusters are
   repeated for each cell state marker (i.e. the sheets or \code{assays} from the
   previous \code{d_medians} object are stacked into a single matrix). Differential test
   results are stored in the \code{rowData} slot. Results include raw p-values
   (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
   cluster-marker combinations by evidence for differential states within cell
-  populations. The results can be accessed with the \code{rowData} accessor function.
+  populations. The results can be accessed with the \code{\link{rowData}} accessor
+  function.
 }
 \description{
 Calculate tests for differential states within cell populations using method

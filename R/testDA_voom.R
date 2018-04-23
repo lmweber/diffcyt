@@ -4,16 +4,16 @@
 #' 'diffcyt-DA-voom'
 #' 
 #' Calculates tests for differential abundance of clusters, using functions from the
-#' \code{limma} package and \code{voom} method.
+#' \code{\link{limma}} package and \code{\link{voom}} method.
 #' 
-#' This method uses the \code{limma} package (Ritchie et al. 2015, \emph{Nucleic Acids
-#' Research}) to fit models and calculate moderated tests at the cluster level. Moderated
-#' tests improve statistical power by sharing information on variability (i.e. variance
-#' across samples for a single cluster) between clusters. Since count data are often
-#' heteroscedastic, we use the \code{voom} method (Law et al. 2014, \emph{Genome Biology})
-#' to transform the raw cluster cell counts and estimate observation-level weights to
-#' stabilize the mean-variance relationship. Diagnostic plots are shown if \code{plot =
-#' TRUE}.
+#' This method uses the \code{\link{limma}} package (Ritchie et al. 2015, \emph{Nucleic
+#' Acids Research}) to fit models and calculate moderated tests at the cluster level.
+#' Moderated tests improve statistical power by sharing information on variability (i.e.
+#' variance across samples for a single cluster) between clusters. Since count data are
+#' often heteroscedastic, we use the \code{\link{voom}} method (Law et al. 2014,
+#' \emph{Genome Biology}) to transform the raw cluster cell counts and estimate
+#' observation-level weights to stabilize the mean-variance relationship. Diagnostic plots
+#' are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -25,9 +25,9 @@
 #' or very large numbers of samples. To use fixed effects, provide the block IDs (e.g.
 #' patient IDs) to \code{\link{createDesignMatrix}}. To use random effects, provide the
 #' \code{block_id} argument here instead. This will make use of the \code{limma}
-#' \code{duplicateCorrelation} methodology. Note that >2 measures per sample are not
-#' possible in this case (fixed effects should be used instead). Block IDs should not be
-#' included in the design matrix if the \code{limma} \code{duplicateCorrelation}
+#' \code{\link{duplicateCorrelation}} methodology. Note that >2 measures per sample are
+#' not possible in this case (fixed effects should be used instead). Block IDs should not
+#' be included in the design matrix if the \code{limma} \code{duplicateCorrelation}
 #' methodology is used.
 #' 
 #' The contrast matrix specifying the contrast of interest can be created with
@@ -54,7 +54,7 @@
 #' not differentially abundant; see the \code{edgeR} User's Guide for more details.
 #' 
 #' 
-#' @param d_counts \linkS4class{SummarizedExperiment} object containing cluster cell
+#' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
 #'   counts, from \code{\link{calcCounts}}.
 #' 
 #' @param design Design matrix, created with \code{\link{createDesignMatrix}}. See
@@ -65,9 +65,10 @@
 #' 
 #' @param block_id (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects. If provided, the block IDs
-#'   will be included as random effects using the \code{limma} \code{duplicateCorrelation}
-#'   methodology. Alternatively, block IDs can be included as fixed effects in the design
-#'   matrix (\code{\link{createDesignMatrix}}). See details.
+#'   will be included as random effects using the \code{limma}
+#'   \code{\link{duplicateCorrelation}} methodology. Alternatively, block IDs can be
+#'   included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
+#'   See details.
 #' 
 #' @param min_cells Filtering parameter. Default = 3. Clusters are kept for differential
 #'   testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -87,18 +88,18 @@
 #'   Alternatively, a vector of values can be provided. (Note that other normalization
 #'   methods from \code{edgeR} are not used.)
 #' 
-#' @param plot Whether to save diagnostic plots for the \code{limma} \code{voom}
+#' @param plot Whether to save diagnostic plots for the \code{limma} \code{\link{voom}}
 #'   transformations. Default = TRUE.
 #' 
 #' @param path Path for diagnostic plots. Default = current working directory.
 #' 
 #' 
-#' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
+#' @return Returns a new \code{\link{SummarizedExperiment}} object, with differential test
 #'   results stored in the \code{rowData} slot. Results include raw p-values
 #'   (\code{p_val}) and adjusted p-values (\code{p_adj}) from the \code{limma} moderated
 #'   tests, which can be used to rank clusters by evidence for differential abundance.
 #'   Additional output columns from the \code{limma} tests are also included. The results
-#'   can be accessed with the \code{rowData} accessor function.
+#'   can be accessed with the \code{\link{rowData}} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'

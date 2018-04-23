@@ -9,9 +9,9 @@
 #' and the function help pages. Running the individual functions may provide additional
 #' flexibility, especially for complex analyses.
 #' 
-#' The input data can be provided as a \linkS4class{flowSet} or a list of
-#' \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices (one
-#' \code{flowFrame} or list item per sample). Alternatively, it is also possible to
+#' The input data can be provided as a \code{\link{flowSet}} or a list of
+#' \code{\link{flowFrame}s}, \code{\link{DataFrame}s}, \code{data.frames}, or matrices
+#' (one \code{flowFrame} or list item per sample). Alternatively, it is also possible to
 #' provide the input as a \code{daFrame} object from the \code{CATALYST} Bioconductor
 #' package (Chevrier, Crowell, Zanotelli et al., 2018). This can be useful when initial
 #' exploratory analyses and clustering have been performed using \code{CATALYST}; the
@@ -19,8 +19,8 @@
 #' \code{rowData}) can then be provided directly to the \code{diffcyt} functions for
 #' differential testing.
 #' 
-#' Minimum required arguments when not providing a \linkS4class{flowSet} or list of
-#' \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices:
+#' Minimum required arguments when not providing a \code{\link{flowSet}} or list of
+#' \code{\link{flowFrame}s}, \code{\link{DataFrame}s}, \code{data.frames}, or matrices:
 #' 
 #' \itemize{
 #' \item \code{d_input}
@@ -43,19 +43,19 @@
 #' }
 #' 
 #' 
-#' @param d_input Input data. Must be either: (i) a \linkS4class{flowSet} or list of
-#'   \code{flowFrames}, \code{DataFrames}, \code{data.frames}, or matrices as input (one
-#'   \code{flowFrame} or list item per sample) (see \code{\link{prepareData}}); or (ii) a
-#'   \code{CATALYST} \code{daFrame} (containing cluster labels in \code{rowData}; see
-#'   vignette for an example).
+#' @param d_input Input data. Must be either: (i) a \code{\link{flowSet}} or list of
+#'   \code{\link{flowFrame}s}, \code{\link{DataFrame}s}, \code{data.frames}, or matrices
+#'   as input (one \code{flowFrame} or list item per sample) (see
+#'   \code{\link{prepareData}}); or (ii) a \code{CATALYST} \code{daFrame} (containing
+#'   cluster labels in \code{rowData}; see vignette for an example).
 #' 
-#' @param experiment_info \code{data.frame} or \code{DataFrame} of experiment information,
-#'   for example sample IDs and group IDs. Must contain a column named \code{sample_id}.
-#'   See \code{\link{prepareData}}. (Not required when providing a \code{CATALYST}
-#'   \code{daFrame} for \code{d_input}.)
+#' @param experiment_info \code{data.frame} or \code{\link{DataFrame}} of experiment
+#'   information, for example sample IDs and group IDs. Must contain a column named
+#'   \code{sample_id}. See \code{\link{prepareData}}. (Not required when providing a
+#'   \code{CATALYST} \code{daFrame} for \code{d_input}.)
 #' 
-#' @param marker_info \code{data.frame} or \code{DataFrame} of marker information for each
-#'   column of data. This should contain columns named \code{marker_name} and
+#' @param marker_info \code{data.frame} or \code{\link{DataFrame}} of marker information
+#'   for each column of data. This should contain columns named \code{marker_name} and
 #'   \code{marker_class}. The columns contain: (i) marker names (and any other column
 #'   names); and (ii) a factor indicating the marker class for each column (with entries
 #'   \code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}. (Not
@@ -165,7 +165,7 @@
 #' @param block_id (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects (for method \code{testDA_voom}
 #'   or \code{testDS_limma}). If provided, the block IDs will be included as random
-#'   effects using the \code{limma} \code{duplicateCorrelation} methodology.
+#'   effects using the \code{limma} \code{\link{duplicateCorrelation}} methodology.
 #'   Alternatively, block IDs can be included as fixed effects in the design matrix
 #'   (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.

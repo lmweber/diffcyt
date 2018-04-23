@@ -9,17 +9,17 @@
 #' populations, and are also used for weights and filtering when testing for differential
 #' states within cell populations.
 #' 
-#' Results are returned as a new \linkS4class{SummarizedExperiment} object, where rows =
+#' Results are returned as a new \code{\link{SummarizedExperiment}} object, where rows =
 #' clusters, columns = samples, \code{assay} = values (counts). (Note that this structure
 #' differs from the input data object.)
 #' 
 #' 
-#' @param d_se Data object from previous steps, in \linkS4class{SummarizedExperiment}
+#' @param d_se Data object from previous steps, in \code{\link{SummarizedExperiment}}
 #'   format, containing cluster labels as a column in the row meta-data (from
 #'   \code{\link{generateClusters}}).
 #' 
 #' 
-#' @return \code{d_counts}: \linkS4class{SummarizedExperiment} object, where rows =
+#' @return \code{d_counts}: \code{\link{SummarizedExperiment}} object, where rows =
 #'   clusters, columns = samples, \code{assay} = values (counts).
 #' 
 #' 

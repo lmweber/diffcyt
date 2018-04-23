@@ -57,7 +57,7 @@
 #' see the \code{edgeR} User's Guide for more details.
 #' 
 #' 
-#' @param d_counts \linkS4class{SummarizedExperiment} object containing cluster cell
+#' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
 #'   counts, from \code{\link{calcCounts}}.
 #' 
 #' @param formula Model formula object, created with \code{\link{createFormula}}. This
@@ -88,11 +88,11 @@
 #'   methods from \code{edgeR} are not used.)
 #' 
 #' 
-#' @return Returns a new \linkS4class{SummarizedExperiment} object, with differential test
+#' @return Returns a new \code{\link{SummarizedExperiment}} object, with differential test
 #'   results stored in the \code{rowData} slot. Results include raw p-values
 #'   (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
 #'   clusters by evidence for differential abundance. The results can be accessed with the
-#'   \code{rowData} accessor function.
+#'   \code{\link{rowData}} accessor function.
 #' 
 #' 
 #' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
