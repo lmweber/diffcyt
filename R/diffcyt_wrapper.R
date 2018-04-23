@@ -192,6 +192,8 @@
 #'   \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
 #' 
 #' 
+#' @aliases diffcyt-package
+#' 
 #' @importFrom SummarizedExperiment colData
 #' @importFrom S4Vectors metadata
 #' 

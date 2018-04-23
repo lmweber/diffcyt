@@ -2,6 +2,7 @@
 % Please edit documentation in R/diffcyt_wrapper.R
 \name{diffcyt}
 \alias{diffcyt}
+\alias{diffcyt-package}
 \title{Run 'diffcyt' pipeline}
 \usage{
 diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
