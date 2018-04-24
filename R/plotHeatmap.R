@@ -200,46 +200,22 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     c("royalblue3", "white", "tomato2")
   )
   
-  # note: no additional scaling (using asinh-transformed values directly)
   if (analysis_type == "DA") {
-    ht_main <- Heatmap(
-      d_heatmap_celltype, col = colors, name = "expression", 
-      row_title = "clusters", row_title_gp = gpar(fontsize = 14), 
-      column_title = "markers", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
-      column_names_gp = gpar(fontsize = 12), 
-      heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
-      cluster_columns = FALSE, row_names_side = "left", row_names_gp = gpar(fontsize = 11), 
-      clustering_distance_rows = "euclidean", clustering_method_rows = "median"
-    )
+    column_title <- "markers"
   } else if (analysis_type == "DS") {
-    
-    # column annotation for cell type markers
-    n_celltype <- sum(metadata(d_medians_by_cluster_marker)$id_type_markers)
-    
-    col_annot_celltype <- data.frame(
-      "marker type" = factor(c(rep("cell type", n_celltype), rep("cell state", 0)), levels = c("cell type", "cell state")), 
-      check.names = FALSE
-    )
-    
-    ha_col_celltype <- columnAnnotation(
-      df = col_annot_celltype, show_legend = FALSE, 
-      col = list("marker type" = c("cell type" = "gold", "cell state" = "darkgreen")), 
-      colname = anno_text(colnames(d_heatmap_celltype), rot = 90, just = "right", offset = unit(1, "npc") - unit(2, "mm")), 
-      annotation_height = unit.c(unit(5, "mm"), max_text_width(colnames(d_heatmap_celltype)) + unit(2, "mm")), 
-      annotation_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12))
-    )
-    
-    ht_main <- Heatmap(
-      d_heatmap_celltype, col = colors, name = "expression", 
-      row_title = "clusters", row_title_gp = gpar(fontsize = 14), 
-      column_title = "markers (cell type)", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
-      show_column_names = FALSE, 
-      heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
-      cluster_columns = FALSE, row_names_side = "left", row_names_gp = gpar(fontsize = 11), 
-      clustering_distance_rows = "euclidean", clustering_method_rows = "median", 
-      bottom_annotation = ha_col_celltype
-    )
+    column_title <- "markers (cell type)"
   }
+  
+  # note: no additional scaling (using asinh-transformed values directly)
+  ht_main <- Heatmap(
+    d_heatmap_celltype, col = colors, name = "expression", 
+    row_title = "clusters", row_title_gp = gpar(fontsize = 14), 
+    column_title = column_title, column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
+    column_names_gp = gpar(fontsize = 12), 
+    heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
+    cluster_columns = FALSE, row_names_side = "left", row_names_gp = gpar(fontsize = 11), 
+    clustering_distance_rows = "euclidean", clustering_method_rows = "median"
+  )
   
   
   # --------------------------------------------------------------
@@ -270,61 +246,9 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   }
   
   
-  # --------------------------------------------------------------------
-  # heatmap: second panel (DS tests): expression of 'cell state' markers
-  # --------------------------------------------------------------------
-  
-  if (analysis_type == "DS") {
-    
-    d_heatmap_state <- 
-      assay(d_medians_by_cluster_marker)[, is_state_marker, drop = FALSE]
-    
-    # arrange alphabetically
-    d_heatmap_state <- d_heatmap_state[, order(colnames(d_heatmap_state)), drop = FALSE]
-    
-    stopifnot(nrow(d_heatmap_state) == nlevels(rowData(res)$cluster_id), 
-              all(rownames(d_heatmap_state) %in% rowData(res)$cluster_id))
-    
-    # results for top cluster-marker combinations
-    d_top <- topClusters(res, order = TRUE, all = FALSE, top_n = top_n)
-    
-    # top 'n' clusters
-    d_heatmap_state <- d_heatmap_state[match(d_top$cluster_id, rownames(d_heatmap_state)), , drop = FALSE]
-    
-    stopifnot(nrow(d_heatmap_state) == nrow(d_top), 
-              all(rownames(d_heatmap_state) == d_top$cluster_id))
-    
-    # column annotation for cell state markers
-    n_state <- sum(metadata(d_medians_by_cluster_marker)$id_state_markers)
-    
-    col_annot_state <- data.frame(
-      "marker type" = factor(c(rep("cell type", 0), rep("cell state", n_state)), levels = c("cell type", "cell state")), 
-      check.names = FALSE
-    )
-    
-    ha_col_state <- columnAnnotation(
-      df = col_annot_state, show_legend = FALSE, 
-      col = list("marker type" = c("cell type" = "gold", "cell state" = "darkgreen")), 
-      colname = anno_text(colnames(d_heatmap_state), rot = 90, just = "right", offset = unit(1, "npc") - unit(2, "mm")), 
-      annotation_height = unit.c(unit(5, "mm"), max_text_width(colnames(d_heatmap_state)) + unit(2, "mm")), 
-      annotation_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12))
-    )
-    
-    ht_state <- Heatmap(
-      d_heatmap_state, col = colors, 
-      show_heatmap_legend = FALSE, 
-      column_title = "markers (cell state)", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
-      show_column_names = FALSE, 
-      column_names_gp = gpar(fontsize = 12), 
-      cluster_columns = FALSE, show_row_names = FALSE, 
-      bottom_annotation = ha_col_state
-    )
-  }
-  
-  
-  # -----------------------------------------------------------------------------
-  # heatmap: third panel (DS tests): expression of 'cell state' markers by sample
-  # -----------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------
+  # heatmap: second panel (DS tests): expression of 'cell state' markers by sample
+  # ------------------------------------------------------------------------------
   
   if (analysis_type == "DS") {
     
@@ -347,21 +271,6 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     
     rownames(d_markers) <- paste0(top_markers, " (", rownames(d_markers), ")")
     
-    # column annotation (empty: need for formatting purposes)
-    col_annot_markers <- data.frame(
-      "state marker" = factor(rep("markers", ncol(d_markers)), levels = "markers"), 
-      check.names = FALSE
-    )
-    
-    ha_col_markers <- columnAnnotation(
-      df = col_annot_markers, show_legend = FALSE, 
-      col = list("state marker" = c("markers" = "gray")), 
-      colname = anno_text(colnames(d_markers), rot = 90, just = "right", offset = unit(1, "npc") - unit(2, "mm")), 
-      # use zero height
-      annotation_height = unit.c(unit(0, "mm"), max_text_width(colnames(d_markers)) + unit(2, "mm")), 
-      annotation_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12))
-    )
-    
     # color scale: full range
     colors_markers <- colorRamp2(range(d_markers, na.rm = TRUE), c("navy", "yellow"))
     
@@ -369,12 +278,10 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     ht_markers <- Heatmap(
       d_markers, col = colors_markers, name = "expression\n(by sample)",
       column_title = "samples", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
-      show_column_names = FALSE, 
       column_names_gp = gpar(fontsize = 12), 
       heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
       cluster_columns = FALSE, 
-      show_row_names = TRUE, row_names_side = "right", row_names_gp = gpar(fontsize = 11), 
-      bottom_annotation = ha_col_markers
+      show_row_names = TRUE, row_names_side = "right", row_names_gp = gpar(fontsize = 11)
     )
   }
   
@@ -384,7 +291,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   # ---------------------------------
   
   # identify column of adjusted p-values
-  ix_p_adj <- which(colnames(d_top) %in% c("FDR", "adj.P.Val", "p_adj"))
+  ix_p_adj <- which(colnames(d_top) == "p_adj")
   
   # significant differential clusters or cluster-marker combinations
   sig <- d_top[, ix_p_adj] <= threshold
@@ -435,7 +342,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
          column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12))
     
   } else if (analysis_type == "DS") {
-    draw("+.AdditiveUnit"("+.AdditiveUnit"("+.AdditiveUnit"(ht_main, ht_state), ht_markers), ha_row), 
+    draw("+.AdditiveUnit"("+.AdditiveUnit"(ht_main, ht_markers), ha_row), 
          column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12))
   }
   
