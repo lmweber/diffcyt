@@ -69,8 +69,8 @@ If there are no random effect terms, it will usually be simpler to use a design 
 instead of a model formula; see \code{\link{createDesignMatrix}}.
 }
 \examples{
-# For a full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline, see the package vignette.
+# For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 
+# see the package vignette.
 
 # Example: model formula
 experiment_info <- data.frame(

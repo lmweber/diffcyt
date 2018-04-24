@@ -58,8 +58,8 @@ the differential testing function (\code{\link{testDA_voom}} and
 \code{\link{testDS_limma}}).
 }
 \examples{
-# For a full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline, see the package vignette.
+# For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 
+# see the package vignette.
 
 # Example: simple design matrix
 experiment_info <- data.frame(

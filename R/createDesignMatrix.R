@@ -56,8 +56,8 @@
 #' @export
 #' 
 #' @examples
-#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline, see the package vignette.
+#' # For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 
+#' # see the package vignette.
 #' 
 #' # Example: simple design matrix
 #' experiment_info <- data.frame(

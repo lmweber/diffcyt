@@ -46,12 +46,14 @@ clusters, columns = markers, \code{assay} = values (marker expression values). T
 state markers in the columns.
 }
 \examples{
-# For a full workflow example demonstrating the use of each function in the 'diffcyt'
-# pipeline, see the package vignette.
+# For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 
+# see the package vignette.
 
 # Function to create random data (one sample)
 d_random <- function(n = 20000, mean = 0, sd = 1, ncol = 20, cofactor = 5) {
-  sinh(matrix(rnorm(n, mean, sd), ncol = ncol)) * cofactor
+  d <- sinh(matrix(rnorm(n, mean, sd), ncol = ncol)) * cofactor
+  colnames(d) <- paste0("marker", sprintf("\%02d", 1:ncol))
+  d
 }
 # Create random data (without differential signal)
 set.seed(123)
@@ -69,6 +71,7 @@ experiment_info <- data.frame(
 )
 
 marker_info <- data.frame(
+  channel_name = paste0("channel", sprintf("\%03d", 1:20)), 
   marker_name = paste0("marker", sprintf("\%02d", 1:20)), 
   marker_class = factor(c(rep("type", 10), rep("state", 10)), 
                         levels = c("type", "state", "none")), 

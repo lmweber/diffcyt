@@ -37,8 +37,8 @@
 #' @export
 #' 
 #' @examples
-#' # For a full workflow example demonstrating the use of each function in the 'diffcyt'
-#' # pipeline, see the package vignette.
+#' # For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 
+#' # see the package vignette.
 #' 
 #' # Example: contrast matrix
 #' createContrast(c(0, 1, 0, 0, 0))
