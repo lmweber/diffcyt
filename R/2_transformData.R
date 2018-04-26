@@ -55,6 +55,7 @@
 #'   colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
 #'   d
 #' }
+#' 
 #' # Create random data (without differential signal)
 #' set.seed(123)
 #' d_input <- list(

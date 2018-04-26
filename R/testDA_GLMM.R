@@ -114,6 +114,7 @@
 #'   colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
 #'   d
 #' }
+#' 
 #' # Create random data (without differential signal)
 #' set.seed(123)
 #' d_input <- list(
@@ -122,11 +123,12 @@
 #'   sample3 = d_random(), 
 #'   sample4 = d_random()
 #' )
-#' # Add differential signal (for some cells and markers in one group)
-#' ix_rows <- 901:1000
-#' ix_cols <- c(6:10, 16:20)
-#' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
-#' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' 
+#' # Add differential abundance (DA) signal
+#' ix_DA <- 801:900
+#' ix_cols_type <- 1:10
+#' d_input[[3]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
+#' d_input[[4]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
 #' 
 #' experiment_info <- data.frame(
 #'   sample_id = factor(paste0("sample", 1:4)), 
@@ -156,6 +158,7 @@
 #' 
 #' # Create model formula
 #' formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
+#' 
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 

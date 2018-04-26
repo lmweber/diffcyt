@@ -125,6 +125,7 @@
 #'   colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
 #'   d
 #' }
+#' 
 #' # Create random data (without differential signal)
 #' set.seed(123)
 #' d_input <- list(
@@ -133,11 +134,15 @@
 #'   sample3 = d_random(), 
 #'   sample4 = d_random()
 #' )
-#' # Add differential signal (for some cells and markers in one group)
-#' ix_rows <- 901:1000
-#' ix_cols <- c(6:10, 16:20)
-#' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
-#' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' 
+#' # Add differential states (DS) signal
+#' ix_DS <- 901:1000
+#' ix_cols_type <- 1:10
+#' ix_cols_DS <- 19:20
+#' d_input[[1]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' d_input[[2]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' d_input[[3]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
+#' d_input[[4]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
 #' 
 #' experiment_info <- data.frame(
 #'   sample_id = factor(paste0("sample", 1:4)), 
@@ -164,11 +169,13 @@
 #' 
 #' # Calculate counts
 #' d_counts <- calcCounts(d_se)
+#' 
 #' # Calculate medians
 #' d_medians <- calcMedians(d_se)
 #' 
 #' # Create model formula
-#' formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
+#' formula <- createFormula(experiment_info, cols_fixed = 2)
+#' 
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
@@ -215,7 +222,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   # extract medians and create concatenated matrix
   state_names <- names(assays(d_medians))[markers_to_test]
   meds <- do.call("rbind", {
-    lapply(as.list(assays(d_medians)[state_names]), function(a) a[cluster_id, , drop = FALSE])
+    lapply(as.list(assays(d_medians)[state_names]), function(a) a[as.character(cluster_id), , drop = FALSE])
   })
   
   meds_all <- do.call("rbind", as.list(assays(d_medians)[state_names]))

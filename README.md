@@ -22,21 +22,27 @@ For a tutorial and examples of usage, see the package vignette.
 
 ## Availability and installation
 
-The stable release version of the `diffyt` package will be made available from [Bioconductor](http://bioconductor.org/).
-
-The development version is available from the `devel` version of Bioconductor, or from GitHub.
-
-To install from GitHub, the Bioconductor installer (`biocLite`) can be used. This will also install all required dependencies from CRAN and Bioconductor. First, ensure that the Bioconductor installer and `devtools` package are installed:
+The `diffcyt` package is available from [Bioconductor](http://bioconductor.org/packages/diffcyt). It can be installed using the Bioconductor installer (`biocLite`):
 
 ```{r}
+# Download the Bioconductor installer
 source("https://bioconductor.org/biocLite.R")
-install.packages("devtools")
+
+# Install 'diffcyt' package
+biocLite("diffcyt")
 ```
 
-Then, install the `diffcyt` package from GitHub using `biocLite`, with the option `dependencies = TRUE`.
+
+The development version of the `diffcyt` package is available from the `devel` version of Bioconductor or from GitHub. See the Bioconductor help pages for how to set up the `devel` version of Bioconductor.
+
+To install the development version from GitHub, the `devtools` package can be used. Note that dependency packages will need to be installed separately from Bioconductor and CRAN.
 
 ```{r}
-biocLite("lmweber/diffcyt", dependencies = TRUE)
-```
+# Install and load 'devtools' package
+install.packages("devtools")
+library(devtools)
 
+# Install development version of 'diffcyt' from GitHub
+install_github("lmweber/diffcyt")
+```
 

@@ -209,6 +209,7 @@
 #'   colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
 #'   d
 #' }
+#' 
 #' # Create random data (without differential signal)
 #' set.seed(123)
 #' d_input <- list(
@@ -217,11 +218,20 @@
 #'   sample3 = d_random(), 
 #'   sample4 = d_random()
 #' )
-#' # Add differential signal (for some cells and markers in one group)
-#' ix_rows <- 901:1000
-#' ix_cols <- c(6:10, 16:20)
-#' d_input[[3]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
-#' d_input[[4]][ix_rows, ix_cols] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' 
+#' # Add differential abundance (DA) signal
+#' ix_DA <- 801:900
+#' ix_cols_type <- 1:10
+#' d_input[[3]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
+#' d_input[[4]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
+#' 
+#' # Add differential states (DS) signal
+#' ix_DS <- 901:1000
+#' ix_cols_DS <- 19:20
+#' d_input[[1]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' d_input[[2]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
+#' d_input[[3]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
+#' d_input[[4]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
 #' 
 #' experiment_info <- data.frame(
 #'   sample_id = factor(paste0("sample", 1:4)), 
@@ -239,6 +249,7 @@
 #' 
 #' # Create design matrix
 #' design <- createDesignMatrix(experiment_info, cols_design = 2)
+#' 
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))
 #' 
@@ -246,13 +257,13 @@
 #' out_DA <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
-#'                   verbose = FALSE)
+#'                   seed_clustering = 123, verbose = FALSE)
 #' 
 #' # Test for differential states (DS) within clusters (using default method 'diffcyt-DS-limma')
 #' out_DS <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-#'                   plot = FALSE, verbose = FALSE)
+#'                   seed_clustering = 123, plot = FALSE, verbose = FALSE)
 #' 
 #' # Display results for top DA clusters
 #' topClusters(out_DA$res)

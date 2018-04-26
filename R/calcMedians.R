@@ -61,6 +61,7 @@
 #'   colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
 #'   d
 #' }
+#' 
 #' # Create random data (without differential signal)
 #' set.seed(123)
 #' d_input <- list(
@@ -135,6 +136,16 @@ calcMedians <- function(d_se) {
       med
     
     med <- acast(med, cluster_id ~ sample_id, value.var = "median", fill = NA)
+    
+    # fill in any missing clusters
+    if (nrow(med) < nlevels(rowData(d_se)$cluster_id)) {
+      ix_missing <- which(!(levels(rowData(d_se)$cluster_id) %in% rownames(med)))
+      med_tmp <- matrix(NA, nrow = length(ix_missing), ncol = ncol(med))
+      rownames(med_tmp) <- ix_missing
+      med <- rbind(med, med_tmp)
+      # re-order rows
+      med <- med[order(as.numeric(rownames(med))), , drop = FALSE]
+    }
     
     medians[[i]] <- med
   }
