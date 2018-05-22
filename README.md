@@ -7,7 +7,7 @@
 
 `diffcyt`: R package for differential discovery in high-dimensional cytometry via high-resolution clustering
 
-The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on high-resolution clustering and moderated tests adapted from transcriptomics.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on (i) high-resolution clustering and (ii) moderated tests adapted from transcriptomics.
 
 
 ## Details
