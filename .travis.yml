@@ -3,22 +3,12 @@ r: bioc-devel
 sudo: required
 cache: packages
 r_binary_packages:
-    - flowCore
-    - FlowSOM
-    - SummarizedExperiment
-    - S4Vectors
-    - limma
-    - edgeR
-    - lme4
-    - multcomp
-    - dplyr
-    - tidyr
-    - reshape2
-    - magrittr
-    - ComplexHeatmap
-    - circlize
-    - BiocStyle
-    - knitr
-    - rmarkdown
-    - HDCytoData
-    - CATALYST
+  - lme4
+  - multcomp
+  - dplyr
+  - tidyr
+  - reshape2
+  - magrittr
+  - circlize
+  - knitr
+  - rmarkdown
