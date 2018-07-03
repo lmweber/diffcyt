@@ -44,7 +44,6 @@ r_binary_packages:
   - rematch
   - cellranger
   - readxl
-  - car
   - gtools
   - plotrix
   - dichromat
