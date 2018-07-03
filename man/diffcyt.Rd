@@ -68,12 +68,14 @@ Default = all 'cell state' markers, which are identified by the logical vector
 \code{id_state_markers} stored in the meta-data of \code{d_medians}. See
 \code{\link{testDS_limma}} or \code{\link{testDS_LMM}}.}
 
-\item{clustering_to_use}{(Optional) Column index indicating which set of cluster labels
+\item{clustering_to_use}{(Optional) Column name indicating which set of cluster labels
 to use for differential testing, when input data are provided as a \code{CATALYST}
 \code{daFrame} object containing multiple sets of cluster labels. (In this case, the
 \code{metadata} of the \code{daFrame} object is assumed to contain a data frame named
-\code{cluster_codes}.) Default = NULL, in which case cluster labels stored in column
-named \code{cluster_id} in the \code{rowData} of the \code{daFrame} object are used.}
+\code{cluster_codes}; \code{clustering_to_use} is the column name of the selected
+column in \code{cluster_codes}.) Default = NULL, in which case cluster labels stored
+in column named \code{cluster_id} in the \code{rowData} of the \code{daFrame} object
+are used.}
 
 \item{cols_to_include}{Logical vector indicating which columns to include from the
 input data. Default = all columns. See \code{\link{prepareData}}.}

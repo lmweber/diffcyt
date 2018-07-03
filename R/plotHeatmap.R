@@ -59,6 +59,10 @@
 #' @param d_medians_by_cluster_marker Data object. Alternatively, the combined output
 #'   object from the wrapper function \code{\link{diffcyt}} can be provided.
 #' 
+#' @param sample_order (Optional) Custom ordering for samples (columns) in right-hand
+#'   panel of heatmap. (This is useful when the default ordering does not group samples by
+#'   condition; e.g. samples are ordered alphabetically by sample IDs instead.)
+#' 
 #' 
 #' @return Displays a heatmap.
 #' 
@@ -152,7 +156,8 @@
 #' plotHeatmap(out_DS, analysis_type = "DS")
 #' 
 plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, threshold = 0.1, 
-                        res = NULL, d_se = NULL, d_counts = NULL, d_medians = NULL, d_medians_by_cluster_marker = NULL) {
+                        res = NULL, d_se = NULL, d_counts = NULL, d_medians = NULL, d_medians_by_cluster_marker = NULL, 
+                        sample_order = NULL) {
   
   if (!is.null(out)) {
     res <- out$res
@@ -246,7 +251,8 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
       column_title = "samples", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
       column_names_gp = gpar(fontsize = 12), 
       heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
-      cluster_columns = FALSE, show_row_names = FALSE
+      column_order = sample_order, cluster_columns = FALSE, 
+      show_row_names = FALSE
     )
   }
   
@@ -285,7 +291,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
       column_title = "samples", column_title_side = "bottom", column_title_gp = gpar(fontsize = 14), 
       column_names_gp = gpar(fontsize = 12), 
       heatmap_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
-      cluster_columns = FALSE, 
+      column_order = sample_order, cluster_columns = FALSE, 
       show_row_names = TRUE, row_names_side = "right", row_names_gp = gpar(fontsize = 11)
     )
   }

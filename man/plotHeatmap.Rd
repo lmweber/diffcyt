@@ -6,7 +6,8 @@
 \usage{
 plotHeatmap(out = NULL, analysis_type = c("DA", "DS"), top_n = 20,
   threshold = 0.1, res = NULL, d_se = NULL, d_counts = NULL,
-  d_medians = NULL, d_medians_by_cluster_marker = NULL)
+  d_medians = NULL, d_medians_by_cluster_marker = NULL,
+  sample_order = NULL)
 }
 \arguments{
 \item{out}{Output object from \code{\link{diffcyt}} wrapper function, containing
@@ -36,6 +37,10 @@ output object from the wrapper function \code{\link{diffcyt}} can be provided.}
 
 \item{d_medians_by_cluster_marker}{Data object. Alternatively, the combined output
 object from the wrapper function \code{\link{diffcyt}} can be provided.}
+
+\item{sample_order}{(Optional) Custom ordering for samples (columns) in right-hand
+panel of heatmap. (This is useful when the default ordering does not group samples by
+condition; e.g. samples are ordered alphabetically by sample IDs instead.)}
 }
 \value{
 Displays a heatmap.

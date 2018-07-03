@@ -34,30 +34,34 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data, based on high-resolution clustering and moderated tests adapted from transcriptomics.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data, based on (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
 
-High-dimensional cytometry includes multi-color flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry. These technologies use antibodies to measure expression levels of dozens (around 10 to 100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations, between groups of samples in different conditions.
+High-dimensional cytometry includes multi-color flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry. These technologies use antibodies to measure expression levels of dozens (around 10 to 100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations, between groups of samples in different conditions (e.g. diseased vs. healthy, or treated vs. untreated).
 
 This vignette provides a complete example workflow for running the `diffcyt` pipeline, using either the wrapper function `diffcyt()`, or the individual functions for each step.
 
-The input to the `diffcyt` pipeline can either be raw data, or a pre-prepared `daFrame` object from the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for differential testing.
+The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object prepared with the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for formal differential testing.
 
 
 
-# Overview of methodology
 
-The `diffcyt` methodology consists of two main components: high-resolution clustering and moderated tests.
+# Overview of 'diffcyt' methodology
 
-We use high-resolution clustering to define a large number of small clusters representing cell populations. By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clusters, since we previously showed that this clustering algorithm gives excellent clustering performance and fast runtimes for high-dimensional cytometry data (Weber and Robinson, 2016). However, in principle, other algorithms that can generate high-resolution clusters could also be used.
 
-For the differential analyses, we use methods from the [edgeR](http://bioconductor.org/packages/edgeR) package (Robinson et al., 2010; McCarthy et al., 2012), [limma](http://bioconductor.org/packages/limma) package (Ritchie et al., 2015), and `voom` method (Law et al., 2014). These methods are widely used in the transcriptomics field, and have been adapted here for analyzing high-dimensional cytometry data. In addition, we provide alternative methods based on generalized linear mixed models (GLMMs), linear mixed models (LMMs), and linear models (LMs), developed by Nowicka et al. (2017) (available in the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/)).
+## Summary
+
+The `diffcyt` methodology consists of two main components: (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
+
+We use high-resolution clustering to define a large number of small clusters representing cell populations. By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clusters, since we previously showed that this clustering algorithm gives excellent clustering performance together with fast runtimes for high-dimensional cytometry data (Weber and Robinson, 2016). However, in principle, other algorithms that can generate high-resolution clusters could also be used.
+
+For the differential analyses, we use methods from the [edgeR](http://bioconductor.org/packages/edgeR) package (Robinson et al., 2010; McCarthy et al., 2012), [limma](http://bioconductor.org/packages/limma) package (Ritchie et al., 2015), and `voom` method (Law et al., 2014). These methods are widely used in the transcriptomics field, and have been adapted here for analyzing high-dimensional cytometry data. In addition, we provide alternative methods based on generalized linear mixed models (GLMMs), linear mixed models (LMMs), and linear models (LMs), originally implemented by Nowicka et al. (2017) (available in the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) from Bioconductor).
 
 
 ## Differential abundance (DA) and differential states (DS)
 
 The `diffcyt` methods can be used to test for differential abundance (DA) of cell populations, and differential states (DS) within cell populations.
 
-To do this, the methodology requires the set of protein markers to be grouped into 'cell type' and 'cell state' markers. Cell type markers are used to define clusters, which are tested for DA; cell state marker signals are used to test for DS within clusters.
+To do this, the methodology requires the set of protein markers to be grouped into 'cell type' and 'cell state' markers. Cell type markers are used to define clusters representing cell populations, which are tested for differential abundance; and median cell state marker signals per cluster are used to test for differential states within populations.
 
 The conceptual split into cell type and cell state markers also facilitates biological interpretability, since it allows the results to be linked back to known cell types or populations of interest.
 
@@ -69,136 +73,280 @@ The `diffcyt` model setup enables the user to specify flexible experimental desi
 
 ## More details
 
-A complete description of the statistical methodology, as well as comparisons with existing approaches, are provided in the accompanying paper.
+A complete description of the statistical methodology and comparisons with existing approaches are provided in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
 
 
 
-# diffcyt pipeline
 
-## Create random data
+# Installation
 
-First, we create some random raw data containing a true differential signal.
+The stable release version of the `diffcyt` package can be installed using the Bioconductor installer. Note that this requires R version 3.5.0 or later.
 
-```{r}
-# Function to create random data (one sample)
-d_random <- function(n = 20000, mean = 0, sd = 1, ncol = 20, cofactor = 5) {
-  d <- sinh(matrix(rnorm(n, mean, sd), ncol = ncol)) * cofactor
-  colnames(d) <- paste0("marker", sprintf("%02d", 1:ncol))
-  d
-}
+```{r, eval=FALSE}
+# Install Bioconductor installer from CRAN
+install.packages("BiocManager")
 
-# Create random data (without differential signal)
-set.seed(123)
-d_input <- list(
-  sample1 = d_random(), 
-  sample2 = d_random(), 
-  sample3 = d_random(), 
-  sample4 = d_random()
-)
+# Install 'diffcyt' package from Bioconductor
+BiocManager::install("diffcyt")
+```
 
-# Add DA signal
-ix_DA <- 801:900
-ix_cols_type <- 1:10
-d_input[[3]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
-d_input[[4]][ix_DA, ix_cols_type] <- d_random(n = 1000, mean = 2, ncol = 10)
 
-# Add DS signal
-ix_DS <- 901:1000
-ix_cols_DS <- 19:20
-d_input[[1]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
-d_input[[2]][ix_DS, ix_cols_type] <- d_random(n = 1000, mean = 3, ncol = 10)
-d_input[[3]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
-d_input[[4]][ix_DS, c(ix_cols_type, ix_cols_DS)] <- d_random(n = 1200, mean = 3, ncol = 12)
+To run the examples in this vignette, you will also need the `HDCytoData` and `CATALYST` packages from Bioconductor.
+
+```{r, eval=FALSE}
+BiocManager::install("HDCytoData")
+BiocManager::install("CATALYST")
 ```
 
 
 
-## Create meta-data
 
-The 'meta-data' describing the data set is summarized in two data frames: `experiment_info` and `marker_info`.
+# 'diffcyt' pipeline
 
-The `experiment_info` data frame contains information about each sample, including sample IDs, group IDs, batch IDs or patient IDs (if relevant), and continuous covariates (if relevant). The `marker_info` data frame contains information about the protein markers, including channel names, marker names, and a vector to identify the class of each marker (cell type or cell state).
+
+## Dataset
+
+For the example workflow in this vignette, we use the `Bodenmiller_BCR_XL` dataset, originally from Bodenmiller et al. (2012).
+
+This is a publicly available mass cytometry (CyTOF) dataset, consisting of paired samples of healthy peripheral blood mononuclear cells (PBMCs), where one sample from each pair was stimulated with B cell receptor / Fc receptor cross-linker (BCR-XL). The dataset contains 16 samples (8 paired samples); a total of 172,791 cells; and a total of 24 protein markers. The markers consist of 10 'cell type' markers (which can be used to define cell populations or clusters), and 14 'cell state' or signaling markers.
+
+This dataset contains known strong differential expression signals for several signaling markers in several cell populations, especially B cells. In particular, the strongest observed differential signal is for the signaling marker phosphorylated S6 (pS6) in B cells (see Nowicka et al., 2017, Figure 29). In this workflow, we will show how to perform differential tests to recover this signal.
+
+
+## Load data from 'HDCytoData' package
+
+The `Bodenmiller_BCR_XL` dataset can be downloaded and loaded conveniently from the [HDCytoData](http://bioconductor.org/packages/HDCytoData) Bioconductor 'experiment data' package. It can be loaded in either `SummarizedExperiment` or `flowSet` format. Here, we use the `flowSet` format, which is standard in the flow and mass cytometry community. For some alternative analysis pipelines, the `SummarizedExperiment` format may be more convenient. For more details, see the help file for this dataset in the `HDCytoData` package (run `library(HDCytoData)` and `?Bodenmiller_BCR_XL`).
+
 
 ```{r}
-# Experiment information
-experiment_info <- data.frame(
-  sample_id = factor(paste0("sample", 1:4)), 
-  group_id = factor(c("group1", "group1", "group2", "group2")), 
-  stringsAsFactors = FALSE
-)
+suppressPackageStartupMessages(library(HDCytoData))
 
+# Download and load 'Bodenmiller_BCR_XL' dataset in 'flowSet' format
+d_flowSet <- Bodenmiller_BCR_XL_flowSet()
+
+suppressPackageStartupMessages(library(flowCore))
+
+# check data format
+d_flowSet
+# sample names
+pData(d_flowSet)
+# number of cells
+fsApply(d_flowSet, nrow)
+# number of columns
+dim(exprs(d_flowSet[[1]]))
+# expression values
+exprs(d_flowSet[[1]])[1:6, 1:6]
+```
+
+
+## Alternatively: load data from '.fcs' files
+
+Alternatively, you can load data directly from a set of `.fcs` files using the following code. Note that we use the options `transformation = FALSE` and `truncate_max_range = FALSE` to disable automatic transformations and data truncation performed by the `flowCore` package. (The automatic options in the `flowCore` package are optimized for flow cytometry instead of mass cytometry data, so these options should be disabled for mass cytometry data.)
+
+
+```{r, eval=FALSE}
+# Alternatively: load data from '.fcs' files
+files <- list.files(
+  path = "path/to/files", pattern = "\\.fcs$", full.names = TRUE
+)
+d_flowSet <- read.flowSet(
+  files, transformation = FALSE, truncate_max_range = FALSE
+)
+```
+
+
+
+## Set up meta-data
+
+Next, we set up the 'meta-data' required for the `diffcyt` pipeline. The meta-data describes the samples and protein markers for this experiment or dataset. The meta-data should be saved in two data frames: `experiment_info` and `marker_info`.
+
+The `experiment_info` data frame contains information about each sample, including sample IDs, group IDs, batch IDs or patient IDs (if relevant), continuous covariates such as age (if relevant), and any other factors or covariates. In many experiments, the main comparison of interest will be between levels of the group IDs factor (which may also be referred to as condition or treatment; e.g. diseased vs. healthy, or treated vs. untreated).
+
+The `marker_info` data frame contains information about the protein markers, including channel names, marker names, and a vector to identify the class of each marker (cell type or cell state).
+
+Below, we create these data frames manually. Depending on your experiment, it may be more convenient to save the meta-data in spreadsheets in `.csv` format, which can then be loaded using `read.csv`.
+
+Extra care should be taken here to ensure that all samples and markers are in the correct order. In the code below, we display the final data frames to check them.
+
+
+```{r}
+# Meta-data: experiment information
+
+# check sample order
+filenames <- as.character(pData(d_flowSet)$name)
+
+# sample information
+sample_id <- gsub("^PBMC8_30min_", "", gsub("\\.fcs$", "", filenames))
+group_id <- factor(
+  gsub("^patient[0-9]+_", "", sample_id), levels = c("Reference", "BCR-XL")
+)
+patient_id <- factor(gsub("_.*$", "", sample_id))
+
+experiment_info <- data.frame(
+  group_id, patient_id, sample_id, stringsAsFactors = FALSE
+)
 experiment_info
 
-# Marker information
-marker_info <- data.frame(
-  channel_name = paste0("channel", sprintf("%03d", 1:20)), 
-  marker_name = paste0("marker", sprintf("%02d", 1:20)), 
-  marker_class = factor(c(rep("type", 10), rep("state", 10)), 
-                        levels = c("type", "state", "none")), 
-  stringsAsFactors = FALSE
-)
 
+# Meta-data: marker information
+
+# source: Bruggner et al. (2014), Table 1
+
+# column indices of all markers, lineage markers, and functional markers
+cols_markers <- c(3:4, 7:9, 11:19, 21:22, 24:26, 28:31, 33)
+cols_lineage <- c(3:4, 9, 11, 12, 14, 21, 29, 31, 33)
+cols_func <- setdiff(cols_markers, cols_lineage)
+
+# channel and marker names
+channel_name <- colnames(d_flowSet)
+marker_name <- gsub("\\(.*$", "", channel_name)
+
+# marker classes
+# note: using lineage markers for 'cell type', and functional markers for 
+# 'cell state'
+marker_class <- rep("none", ncol(d_flowSet[[1]]))
+marker_class[cols_lineage] <- "type"
+marker_class[cols_func] <- "state"
+marker_class <- factor(marker_class, levels = c("type", "state", "none"))
+
+marker_info <- data.frame(
+  channel_name, marker_name, marker_class, stringsAsFactors = FALSE
+)
 marker_info
 ```
 
 
 
-## Design matrix (or model formula) and contrast matrix
+## Set up design matrix (or model formula)
 
-For differential testing, the `diffcyt` functions require the experimental design to be specified using a design matrix or model formula (depending on the testing function used; see the help files for the differential testing methods for details). Flexible experimental designs are possible, including blocking (e.g. batch effects or paired designs) and continuous covariates. See `?createDesignMatrix` or `?createFormula` for more details.
+To calculate differential tests, the `diffcyt` functions require a design matrix (or model formula) describing the experimental design. (The choice between design matrix and model formula depends on the differential testing method used; see help files for the differential testing methods for details.)
 
-In addition, a contrast matrix is required to specify the comparison of interest (i.e. the combination of model parameters assumed to equal zero under the null hypothesis). See `?createContrast` for more details.
+Design matrices can be created in the required format using the function `createDesignMatrix()`. Design matrices are required for methods `diffcyt-DA-edgeR` (default method for DA testing), `diffcyt-DA-voom`, and `diffcyt-DS-limma` (default method for DS testing).
+
+Similarly, model formulas can be created with the function `createFormula()`. Model formulas are required for the alternative methods `diffcyt-DA-GLMM` (DA testing) and `diffcyt-DS-LMM` (DS testing).
+
+In both cases, flexible experimental designs are possible, including blocking (e.g. batch effects or paired designs) and continuous covariates. See `?createDesignMatrix` or `?createFormula` for more details and examples.
+
 
 ```{r}
-library(diffcyt)
+suppressPackageStartupMessages(library(diffcyt))
 
 # Create design matrix
-design <- createDesignMatrix(experiment_info, cols_design = 2)
+# note: selecting columns 1 and 2, which contain group IDs and patient IDs
+design <- createDesignMatrix(experiment_info, cols_design = 1:2)
+```
 
-# Alternatively: create model formula (required for some methods)
-formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
 
+
+## Set up contrast matrix
+
+A contrast matrix is also required in order to calculate differential tests. The contrast matrix specifies the comparison of interest, i.e. the combination of model parameters assumed to equal zero under the null hypothesis.
+
+Contrast matrices can be created in the required format using the function `createContrast()`. See `?createContrast` for more details.
+
+Here, we are interested in comparing condition `BCR-XL` against `Reference`, i.e. comparing the `BCR-XL` level against the `Reference` level for the `group_id` factor in the `experiment_info` data frame. This corresponds to testing whether the coefficient for column `group_idBCR-XL` in the design matrix `design` is equal to zero. This contrast can be specified as follows. (Note that there is one value per coefficient, including the intercept term; and rows in the final contrast matrix correspond to columns in the design matrix.)
+
+
+```{r}
 # Create contrast matrix
-contrast <- createContrast(c(0, 1))
+contrast <- createContrast(c(0, 1, rep(0, 7)))
+
+# check dimensions
+nrow(contrast) == ncol(design)
 ```
 
 
 
 ## Differential testing
 
-### Option 1: Wrapper function using raw data
+The steps above show how to load the data, set up the meta-data, set up the design matrix, and set up the contrast matrix. Now, we can begin calculating differential tests.
 
-The `diffcyt` package includes a wrapper function `diffcyt()`, which accepts input data in various formats and runs all steps in the `diffcyt` pipeline in the correct sequence.
+Several alternative options are available for running the `diffcyt` differential testing functions. Which of these is most convenient will depend on the types of analyses or pipeline that you are running. The options are:
 
-The first option for running the `diffcyt` pipeline is to provide the raw data and meta-data directly to the wrapper function, along with arguments to specify the type of analysis and parameter choices, as well as the design matrix (or model formula) and contrast matrix. The input data can be provided as a `flowSet` or a list of `flowFrames`, `DataFrames`, `data.frames`, or matrices. See `?diffcyt` for more details.
+- Option 1: Run wrapper function using input data loaded from `.fcs` files. The input data can be provided as a `flowSet`, or a `list` of `flowFrames`, `DataFrames`, or `data.frames`.
 
-Here, we run the wrapper function twice: to calculate tests for differential abundance (DA) of clusters, and tests for differential states (DS) within clusters. The results consist of p-values and adjusted p-values for each cluster (DA tests) or cluster-marker combination (DS tests), which can be used to rank the clusters or cluster-marker combinations by the strength of their differential evidence. The function `topClusters` can be used to display the results for the top (most highly significant) detected clusters or cluster-marker combinations. See `?diffcyt` and `?topClusters` for more details.
+- Option 2: Run wrapper function using previously created `CATALYST` `daFrame` object.
 
-```{r, fig.show = 'hide'}
+- Option 3: Run individual functions for the pipeline.
+
+The following sections demonstrate these options using the `Bodenmiller_BCR_XL` example dataset described above.
+
+
+
+### Option 1: Wrapper function using input data from '.fcs' files
+
+The `diffcyt` package includes a 'wrapper function' called `diffcyt()`, which accepts input data in various formats and runs all the steps in the `diffcyt` pipeline in the correct sequence.
+
+In this section, we show how to run the wrapper function using input data loaded from `.fcs` files as a `flowSet` object. The procedure is identical for data loaded from `.fcs` files as a `list` of `flowFrames`, `DataFrames`, or `data.frames`. See `?diffcyt` for more details.
+
+The main inputs required by the `diffcyt()` wrapper function for this option are:
+
+- `d_input` (input data)
+- `experiment_info` (meta-data describing samples)
+- `marker_info` (meta-data describing markers)
+- `design` (design matrix)
+- `contrast` (contrast matrix)
+
+In addition, we require arguments to specify the type of analysis and (optionally) the method to use.
+
+- `analysis_type` (type of analysis: DA or DS)
+- `method_DA` (optional: method for DA testing; default is `diffcyt-DA-edgeR`)
+- `method_DS` (optional: method for DS testing; default is `diffcyt-DS-limma`)
+
+A number of additional arguments for optional parameter choices are also available; e.g. to specify the markers to use for differential testing, the markers to use for clustering, subsampling, transformation options, clustering options, filtering, and normalization. For complete details, see the help file for the wrapper function (`?diffcyt`).
+
+Below, we run the wrapper function twice: once to test for differential abundance (DA) of clusters, and again to test for differential states (DS) within clusters. Note that in the `Bodenmiller_BCR_XL` dataset, the main differential signal of interest (the signal we are trying to recover) is differential expression of phosphorylated S6 (pS6) within B cells (i.e. DS testing). Therefore, the DA tests are not particularly meaningful in biological terms in this case; but we include them here for demonstration purposes in order to show how to run the methods.
+
+The main results from the differential tests consist of adjusted p-values for each cluster (for DA tests) or each cluster-marker combination (for DS tests), which can be used to rank the clusters or cluster-marker combinations by the strength of their differential evidence. The function `topClusters()` can be used to display the results for the top (most highly significant) detected clusters or cluster-marker combinations. We also use the output from `topClusters()` to generate a summary table of the number of detected clusters or cluster-marker combinations at a given adjusted p-value threshold. See `?diffcyt` and `?topClusters` for more details.
+
+
+```{r}
 # Test for differential abundance (DA) of clusters
-out_DA <- diffcyt(d_input, experiment_info, marker_info, 
-                  design = design, contrast = contrast, 
-                  analysis_type = "DA", method_DA = "diffcyt-DA-edgeR", 
-                  seed_clustering = 123, verbose = FALSE)
 
-# Test for differential states (DS) within clusters
-out_DS <- diffcyt(d_input, experiment_info, marker_info, 
-                  design = design, contrast = contrast, 
-                  analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-                  seed_clustering = 123, plot = FALSE, verbose = FALSE)
+# note: using default method 'diffcyt-DA-edgeR' and default parameters
+# note: include random seed for reproducible clustering
+out_DA <- diffcyt(
+  d_input = d_flowSet, 
+  experiment_info = experiment_info, 
+  marker_info = marker_info, 
+  design = design, 
+  contrast = contrast, 
+  analysis_type = "DA", 
+  seed_clustering = 123
+)
 
-# Display results for top DA clusters
-topClusters(out_DA$res)
+# display results for top DA clusters
+head(topClusters(out_DA$res))
 
-# Number of significant detected DA clusters at 10% FDR
+# calculate number of significant detected DA clusters at 10% false discovery 
+# rate (FDR)
 threshold <- 0.1
 res_DA_all <- topClusters(out_DA$res, all = TRUE)
 table(res_DA_all$p_adj <= threshold)
+```
 
-# Display results for top DS cluster-marker combinations
-topClusters(out_DS$res)
 
-# Number of significant detected DS cluster-marker combinations at 10% FDR
+```{r, fig.show='hide'}
+# Test for differential states (DS) within clusters
+
+# note: using default method 'diffcyt-DS-limma' and default parameters
+# note: include random seed for reproducible clustering
+out_DS <- diffcyt(
+  d_input = d_flowSet, 
+  experiment_info = experiment_info, 
+  marker_info = marker_info, 
+  design = design, 
+  contrast = contrast, 
+  analysis_type = "DS", 
+  seed_clustering = 123, 
+  plot = FALSE
+)
+
+# display results for top DS cluster-marker combinations
+head(topClusters(out_DS$res))
+
+# calculate number of significant detected DS cluster-marker combinations at 
+# 10% false discovery rate (FDR)
 threshold <- 0.1
 res_DS_all <- topClusters(out_DS$res, all = TRUE)
 table(res_DS_all$p_adj <= threshold)
@@ -206,34 +354,32 @@ table(res_DS_all$p_adj <= threshold)
 
 
 
-### Option 2: Wrapper function using CATALYST 'daFrame'
+### Option 2: Wrapper function using CATALYST 'daFrame' object
 
-The second option for running the `diffcyt` pipeline is to provide a [CATALYST](http://bioconductor.org/packages/CATALYST) `daFrame` as the input to the `diffcyt()` wrapper function. This is particularly useful when `CATALYST` has already been used to perform exploratory data analyses and clustering, and to generate visualizations. The `diffcyt` methods can then be used to perform differential analyses using the existing object.
+The second option for running the `diffcyt` pipeline is to provide a previously created [CATALYST](http://bioconductor.org/packages/CATALYST) `daFrame` object as the input to the `diffcyt()` wrapper function. This is useful when `CATALYST` has already been used to perform exploratory data analyses and clustering, and to generate visualizations. The `diffcyt` methods can then be used to calculate differential tests using the existing `daFrame` object (in particular, re-using the existing cluster labels).
 
-As in option 1, the `diffcyt()` wrapper function also requires arguments to specify the type of analysis and parameter choices, as well as the design matrix (or model formula) and contrast matrix. See `?diffcyt` for more details.
-
-Once a `CATALYST` `daFrame` object has been created, and the `CATALYST` functions have been used to add cluster labels, the `daFrame` can be provided as the input data object to the `diffcyt()` wrapper function (i.e. replacing `d_input` in the code shown for option 1 above). The results can then be accessed as in option 1. See `?diffcyt` for more details.
+As shown above for option 1, the `diffcyt()` wrapper function requires several arguments to specify the inputs and analysis type, and provides additional arguments to specify optional parameter choices. Note that the arguments `experiment_info` and `marker_info` are not required in this case, since this information is already contained within the `daFrame` object. An additional argument `clustering_to_use` is also provided, which allows the user to choose from one of several columns of cluster labels stored within the `daFrame` object; this set of cluster labels will then be used for the differential tests. See `?diffcyt` for more details.
 
 
 
 ### Option 3: Individual functions
 
-To provide more insight into the steps in the `diffcyt` pipeline, we also run the pipeline using the individual functions for each step. In some cases, this may provide some additional flexibility, for example if a user wishes to customize or modify certain parts of the pipeline.
+To provide additional flexibility, it is also possible to run the functions for the individual steps in the `diffcyt` pipeline, instead of using the wrapper function. This may be useful if you wish to customize or modify certain parts of the pipeline; for example, to adjust the data transformation, or to substitute a different clustering algorithm. Running the individual steps can also provide additional insight into the `diffcyt` methodology.
 
 
 #### Prepare data into required format
 
-The first step is to prepare the input data into the format required by subsequent functions in the `diffcyt` pipeline. Here, the data object `d_se` contains cells in rows, and markers in columns. See `?prepareData()` for more details.
+The first step is to prepare the input data into the required format for subsequent functions in the `diffcyt` pipeline. The data object `d_se` contains cells in rows, and markers in columns. See `?prepareData()` for more details.
 
 ```{r}
 # Prepare data
-d_se <- prepareData(d_input, experiment_info, marker_info)
+d_se <- prepareData(d_flowSet, experiment_info, marker_info)
 ```
 
 
 #### Transform data
 
-Next, we transform the data using an `arcsinh` transform with `cofactor = 5`. This is a standard transform used for mass cytometry (CyTOF) data, which brings the data closer to a normal distribution, improving clustering performance and visualizations. See `?transformData()` for more details.
+Next, transform the data using an `arcsinh` transform with `cofactor = 5`. This is a standard transform used for mass cytometry (CyTOF) data, which brings the data closer to a normal distribution, improving clustering performance and visualizations. See `?transformData()` for more details.
 
 ```{r}
 # Transform data
@@ -243,139 +389,135 @@ d_se <- transformData(d_se)
 
 #### Generate clusters
 
-By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clustering. In principle, other clustering algorithms that can generate large numbers of clusters could also be used. See `?generateClusters()` for more details.
+By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clustering. In principle, other clustering algorithms that can generate large numbers of clusters could also be substituted. See `?generateClusters()` for more details.
 
 ```{r}
 # Generate clusters
+# note: include random seed for reproducible clustering
 d_se <- generateClusters(d_se, seed_clustering = 123)
 ```
 
 
 #### Calculate features
 
-Next, calculate cluster cell counts and cluster medians (median marker expression for each cluster and sample). These objects are required to calculate the differential tests. See `?calcCounts` and `?calcMedians` for more details.
+Next, calculate data features: cluster cell counts and cluster medians (median marker expression for each cluster and sample). These objects are required to calculate the differential tests. See `?calcCounts` and `?calcMedians` for more details.
 
 ```{r}
-# Calculate counts
+# Calculate cluster cell counts
 d_counts <- calcCounts(d_se)
 
-# Calculate medians
+# Calculate cluster medians
 d_medians <- calcMedians(d_se)
-```
-
-
-#### Create design matrix (or model formula) and contrast matrix
-
-The design matrix (or model formula) specifies the experimental design. Flexible experimental designs are possible, including blocking (e.g. batch effects or paired designs) and continuous covariates. Note that some of the differential testing methods require a model formula instead of a design matrix (see the help files for the differential testing methods for details). See `?createDesignMatrix` or `?createFormula` for more details.
-
-The contrast matrix specifies the comparison of interest, i.e. the combination of model parameters assumed to equal zero under the null hypothesis. See `?createContrast` for more details.
-
-```{r}
-# Create design matrix
-design <- createDesignMatrix(experiment_info, cols_design = 2)
-
-# Alternatively: create model formula (required for some methods)
-formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
-
-# Create contrast matrix
-contrast <- createContrast(c(0, 1))
 ```
 
 
 #### Test for differential abundance (DA) of cell populations
 
-Calculate tests for differential abundance (DA) of clusters, using one of the DA testing methods (`diffcyt-DA-edgeR`, `diffcyt-DA-voom`, or `diffcyt-DA-GLMM`). Here, we use the default method, `diffcyt-DA-edgeR`. The results consist of p-values and adjusted p-values for each cluster, which can be used to rank the clusters by their evidence for differential abundance. The p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?testDA_edgeR`, `?testDA_voom`, or `?testDA_GLMM`.
+Calculate tests for differential abundance (DA) of clusters, using one of the DA testing methods (`diffcyt-DA-edgeR`, `diffcyt-DA-voom`, or `diffcyt-DA-GLMM`). This also requires a design matrix (or model formula) and contrast matrix, as previously. We re-use the design matrix and contrast matrix created above, together with the default method for DA testing (`diffcyt-DA-edgeR`).
 
-The function `topClusters` can be used to display the results for the top (most highly significant) detected DA clusters. This extracts the results from the `rowData` of the `SummarizedExperiment` output object. The displayed results include cluster labels, p-values, and adjusted p-values. The adjusted p-values are stored in the column labeled `p_adj`. See `?topClusters` for more details.
+The main results consist of adjusted p-values for each cluster, which can be used to rank the clusters by their evidence for differential abundance. The raw p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?testDA_edgeR`, `?testDA_voom`, or `?testDA_GLMM`.
 
-We also generate a table summarizing the number of detected DA clusters at a given adjusted p-value threshold.
+As previously, we can also use the function `topClusters()` to display the results for the top (most highly significant) detected DA clusters, and to generate a summary table of the number of detected DA clusters at a given adjusted p-value threshold. See `?topClusters` for more details.
+
 
 ```{r}
 # Test for differential abundance (DA) of clusters
 res_DA <- testDA_edgeR(d_counts, design, contrast)
 
-# Display results for top DA clusters
-topClusters(res_DA)
+# display results for top DA clusters
+head(topClusters(res_DA))
 
-# Number of significant detected DA clusters at 10% FDR
+# calculate number of significant detected DA clusters at 10% false discovery 
+# rate (FDR)
 threshold <- 0.1
-res_DA_all <- topClusters(res_DA, all = TRUE)
-table(res_DA_all$p_adj <= threshold)
+table(topClusters(res_DA, all = TRUE)$p_adj <= threshold)
 ```
 
 
 #### Test for differential states (DS) within cell populations
 
-Calculate tests for differential states (DS) within clusters, using one of the DS testing methods (`diffcyt-DS-limma` or `diffcyt-DS-LMM`). Here, we use the default method, `diffcyt-DS-limma`. We test all cell state markers for differential expression (the set of markers to test can be adjusted with the optional argument `markers_to_test`).
+Calculate tests for differential states (DS) within clusters, using one of the DS testing methods (`diffcyt-DS-limma` or `diffcyt-DS-LMM`). This also requires a design matrix (or model formula) and contrast matrix, as previously. We re-use the design matrix and contrast matrix created above, together with the default method for DS testing (`diffcyt-DS-limma`).
 
-The results consist of p-values and adjusted p-values for each cluster-marker combination (cell state markers only), which can be used to rank the cluster-marker combinations by their evidence for differential states. The results are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?diffcyt-DS-limma` or `?diffcyt-DS-LMM`.
+We test all 'cell state' markers for differential expression. The set of markers to test can also be adjusted with the optional argument `markers_to_test` (for example, if you wish to also calculate tests for the 'cell type' markers).
 
-As above, we use the function `topClusters` to display the results for the top (most highly significant) detected DS cluster-marker combinations. (Note that there is now one test result for each cluster-marker combination, instead of one per cluster as above). The displayed results include cluster labels, marker names, p-values, and adjusted p-values. The adjusted p-values are stored in the column labeled `p_adj`. See `?topClusters` for more details.
+The main results consist of adjusted p-values for each cluster-marker combination (cell state markers only), which can be used to rank the cluster-marker combinations by their evidence for differential states. The raw p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?diffcyt-DS-limma` or `?diffcyt-DS-LMM`.
 
-We also generate a table summarizing the number of detected DS cluster-marker combinations at a given adjusted p-value threshold.
+As previously, we can also use the function `topClusters()` to display the results for the top (most highly significant) detected DS cluster-marker combinations (note that there is one test result for each cluster-marker combination), and to generate a summary table of the number of detected DS cluster-marker combinations at a given adjusted p-value threshold. See `?topClusters` for more details.
 
-```{r, fig.show = 'hide'}
+
+```{r, fig.show='hide'}
 # Test for differential states (DS) within clusters
 res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 
-# Display results for top DS cluster-marker combinations
-topClusters(res_DS)
+# display results for top DS cluster-marker combinations
+head(topClusters(res_DS))
 
-# Number of significant detected DS cluster-marker combinations at 10% FDR
+# calculate number of significant detected DS cluster-marker combinations at 
+# 10% false discovery rate (FDR)
 threshold <- 0.1
-res_DS_all <- topClusters(res_DS, all = TRUE)
-table(res_DS_all$p_adj <= threshold)
+table(topClusters(res_DS, all = TRUE)$p_adj <= threshold)
 ```
 
 
 
 
-## Visualizations
-
-Visualizations to explore the data and illustrate the results can be generated using plotting functions available in the [CATALYST](http://bioconductor.org/packages/CATALYST) package. (The `CATALYST` plotting function accept inputs in both `daFrame` and `SummarizedExperiment` formats.)
-
-This includes barplots of the number of cells per sample, multi-dimensional scaling (MDS) plots to represent overall similarity between samples (which are useful for identifying batch effects), and heatmaps to illustrate the phenotypes (marker expression profiles) and signals of interest (cluster abundances by sample, or expression of cell state markers by sample) for the detected clusters or cluster-marker combinations.
-
-These plotting functions were originally developed by Malgorzata Nowicka for the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) available from Bioconductor (Nowicka et al., 2017), and have been adapted by Helena Crowell for the `CATALYST` package.
-
-Heatmaps are generated using the [ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap) Bioconductor package (Gu et al., 2016).
+# Visualizations using 'CATALYST' package
 
 
-### Marker expression profiles
+## Overview
 
-Additional plot of (arcsinh-transformed) marker expression profiles to explore the data.
+As described in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)), the results from a `diffcyt` analysis are presented to the user in the form of a set of significant detected high-resolution clusters (for DA tests) or cluster-marker combinations (for DS tests). The detected clusters or cluster-marker combinations can then be interpreted using visualizations; for example, to interpret the marker expression profiles in order to match detected clusters to known cell populations, or to group the high-resolution clusters into larger cell populations with a consistent phenotype.
+
+Extensive plotting functions to generate both exploratory visualizations and visualizations of results from differential testing are available in the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Several of these plotting functions were originally developed by Malgorzata Nowicka for the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) available from Bioconductor (Nowicka et al., 2017), and have been adapted by Helena Crowell for inclusion in the `CATALYST` package. Additional plotting functions were developed during the development of the `diffcyt` package. Heatmaps are generated using the [ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap) Bioconductor package (Gu et al., 2016).
+
+Here, we generate heatmaps to illustrate the results from the differential analyses above. Note that the `CATALYST` plotting functions can accept `diffcyt` results objects in either `SummarizedExperiment` format (from options 1 and 3 above) or `CATALYST` `daFrame` format (option 2).
+
+For more examples of visualizations (in particular exploratory visualizations to explore the data prior to formal differential testing, including plots of the number of cells per sample, multi-dimensional scaling plots, and t-SNE plots), see the ['Differential analysis with CATALYST'](http://bioconductor.org/packages/release/bioc/vignettes/CATALYST/inst/doc/differential_analysis.html) vignette from the [CATALYST](http://bioconductor.org/packages/CATALYST) package, available from the Bioconductor website.
+
+
+
+## Heatmap: DA test results
+
+This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (cluster abundances by sample) for the top (most highly significant) detected clusters from the DA tests. See `?plotDiffHeatmap` (from the `CATALYST` package) for more details.
+
+Rows represent clusters, and columns represent protein markers (left panel) or samples (right panel). The left panel displays median (arcsinh-transformed) expression values across all samples for cell type markers, i.e. cluster phenotypes. The right panel displays the signal of interest: cluster abundances by sample (for the DA tests). The right annotation bar indicates clusters detected as significantly differential at an adjusted p-value threshold of 10%.
+
+As mentioned previously, the DA tests are not particularly meaningful for the `Bodenmiller_BCR_XL` dataset, since the main signals of interest in this dataset are differential expression of pS6 and other signaling markers in B cells and several other cell populations. However, we include the plot here for illustrative purposes, to show how to use the functions.
+
+Note: using `plotHeatmap` from the `diffcyt` package for now. This will be updated to use the plotting functions from the `CATALYST` package instead. See `?plotHeatmap` for more details.
+
 
 ```{r}
-suppressPackageStartupMessages(library(SummarizedExperiment))
-suppressPackageStartupMessages(library(ggplot2))
-suppressPackageStartupMessages(library(reshape2))
-suppressPackageStartupMessages(library(ggridges))
+# Heatmap for top detected DA clusters
 
-# data frame for 'ggplot'
-d_plot <- cbind(as.data.frame(assay(d_se)), as.data.frame(rowData(d_se)))
-d_plot <- melt(d_plot, id.vars = c("sample_id", "group_id", "cluster_id"), 
-               variable.name = "marker", value.name = "expression")
+# note: use optional argument 'sample_order' to group samples by condition
+sample_order <- c(seq(2, 16, by = 2), seq(1, 16, by = 2))
 
-# ridgeline plot of marker expression profiles
-ggplot(d_plot, aes(x = expression, y = marker, fill = group_id)) + 
-  geom_density_ridges(alpha = 0.5) + 
-  scale_fill_manual(values = c("orangered", "royalblue")) + 
-  theme_bw()
+plotHeatmap(out_DA, analysis_type = "DA", sample_order = sample_order)
 ```
 
 
-### Heatmaps
 
-Additional heatmaps to illustrate results for the top (most highly significant) detected clusters (DA tests) and cluster-marker combinations (DS tests).
+## Heatmap: DS test results
 
-Each row represents a cluster (DA tests) or cluster-marker combination (DS tests). Columns represent protein markers or samples, depending on the panel. The left panel displays median (arcsinh-transformed) expression values across all samples for cell type markers. The right panel displays the signals of interest: cluster abundances by sample (DA tests) or median expression of cell state markers by sample (DS tests). The right annotation bar indicates clusters or cluster-marker combinations detected as significantly differential at an adjusted p-value threshold of 10%.
+This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (median expression of cell state markers by sample) for the top (most highly significant) detected cluster-marker combinations from the DS tests. See `?plotDiffHeatmap` (from the `CATALYST` package) for more details.
+
+Rows represent cluster-marker combinations, and columns represent protein markers (left panel) or samples (right panel). The left panel displays median (arcsinh-transformed) expression values across all samples for cell type markers, i.e. cluster phenotypes. The right panel displays the signal of interest: median expression of cell state markers by sample (for the DS tests). The right annotation bar indicates cluster-marker combinations detected as significantly differential at an adjusted p-value threshold of 10%.
+
+The heatmap shows that the `diffcyt` pipeline has successfully recovered the main differential signal of interest in this dataset. As discussed above, the `Bodenmiller_BCR_XL` dataset contains known strong differential expression of several signaling markers (cell state markers) in several cell populations. In particular, the strongest signal is for differential expression of pS6 in B cells.
+
+As expected, several of the top (most highly significant) detected cluster-marker combinations represent differential expression of pS6 (labels in right annotation bar) in B cells (identified by high expression of CD20, left panel). Similarly, the other top detected cluster-marker combinations shown in the heatmap correspond to other known strong differential signals in this dataset (see Nowicka et al., 2017, Figure 29; or the description of the results for dataset `BCR-XL` in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
+
+Note: using `plotHeatmap` from the `diffcyt` package for now. This will be updated to use the plotting functions from the `CATALYST` package instead. See `?plotHeatmap` for more details.
+
 
 ```{r}
-# Plot heatmap for DA tests
-plotHeatmap(out_DA, analysis_type = "DA")
+# Heatmap for top detected DS cluster-marker combinations
 
-# Plot heatmap for DS tests
-plotHeatmap(out_DS, analysis_type = "DS")
+# note: use optional argument 'sample_order' to group samples by condition
+sample_order <- c(seq(2, 16, by = 2), seq(1, 16, by = 2))
+
+plotHeatmap(out_DS, analysis_type = "DS", sample_order = sample_order)
 ```
 
 
@@ -383,22 +525,27 @@ plotHeatmap(out_DS, analysis_type = "DS")
 
 # References
 
-Chevrier, S., Crowell, H. L., Zanotelli, V. R. T., Engler, S., Robinson, M. D., and Bodenmiller, B. (2018). *Compensation of Signal Spillover in Suspension and Imaging Mass Cytometry.* Cell Systems, 6:1--9.
+Bodenmiller, B., Zunder, E. R., Finck, R., Chen, T. J., Savig, E. S., Bruggner, R. V., Simonds, E. F., Bendall, S. C., Sachs, K., Krutzik, P. O., and Nolan, G. P. (2012). [*Multiplexed mass cytometry profiling of cellular states perturbed by small-molecule regulators.*](https://www.ncbi.nlm.nih.gov/pubmed/22902532) Nature Biotechnology, 30(9):858--867.
 
-Gu, Z., Eils, R., and Schlesner, M. (2016). *Complex heatmaps reveal patterns and correlations in multidimensional genomic data.* Bioinformatics, 32(18):2847--2849.
+Chevrier, S., Crowell, H. L., Zanotelli, V. R. T., Engler, S., Robinson, M. D., and Bodenmiller, B. (2018). [*Compensation of Signal Spillover in Suspension and Imaging Mass Cytometry.*](https://www.ncbi.nlm.nih.gov/pubmed/29605184) Cell Systems, 6:1--9.
 
-Law, C. W., Chen, Y., Shi, W., and Smyth, G. K. (2014). *voom: precision weights unlock linear model analysis tools for RNA-seq read counts.* Genome Biology 2014, 15:R29.
+Gu, Z., Eils, R., and Schlesner, M. (2016). [*Complex heatmaps reveal patterns and correlations in multidimensional genomic data.*](https://www.ncbi.nlm.nih.gov/pubmed/27207943) Bioinformatics, 32(18):2847--2849.
 
-McCarthy, D. J., Chen, Y., and Smyth, G. K. (2012). *Differential expression analysis of multifactor RNA-Seq experiments with respect to biological variation.* Nucleic Acids Research, 40(10):4288--4297.
+Law, C. W., Chen, Y., Shi, W., and Smyth, G. K. (2014). [*voom: precision weights unlock linear model analysis tools for RNA-seq read counts.*](https://www.ncbi.nlm.nih.gov/pubmed/24485249) Genome Biology 2014, 15:R29.
 
-Nowicka, M., Krieg, C., Weber, L. M., Hartmann, F. J., Guglietta, S., Becher, B., Levesque, M. P., and Robinson, M. D. (2017). *CyTOF workflow: differential discovery in high-throughput high-dimensional cytometry datasets.* F1000Research, version 2.
+McCarthy, D. J., Chen, Y., and Smyth, G. K. (2012). [*Differential expression analysis of multifactor RNA-Seq experiments with respect to biological variation.*](https://www.ncbi.nlm.nih.gov/pubmed/22287627) Nucleic Acids Research, 40(10):4288--4297.
 
-Ritchie, M. E., Phipson, B., Wu, D., Hu, Y., Law, C. W., Shi, W., and Smyth, G. K. (2015). *limma powers differential expression analyses for RNA-sequencing and microarray studies.* Nucleic Acids Research, 43(7):e47.
+Nowicka, M., Krieg, C., Weber, L. M., Hartmann, F. J., Guglietta, S., Becher, B., Levesque, M. P., and Robinson, M. D. (2017). [*CyTOF workflow: differential discovery in high-throughput high-dimensional cytometry datasets.*](https://www.ncbi.nlm.nih.gov/pubmed/28663787) F1000Research, version 2.
 
-Robinson, M. D., McCarthy, D. J., and Smyth, G. K. (2010). *edgeR: a Bioconductor package for differential expression analysis of digital gene expression data.* Bioinformatics, 26(1):139--140.
+Ritchie, M. E., Phipson, B., Wu, D., Hu, Y., Law, C. W., Shi, W., and Smyth, G. K. (2015). [*limma powers differential expression analyses for RNA-sequencing and microarray studies.*](https://www.ncbi.nlm.nih.gov/pubmed/25605792) Nucleic Acids Research, 43(7):e47.
 
-Van Gassen, S., Callebaut, B., Van Helden, M. J., Lambrecht, B. N., Demeester, P., Dhaene, T., and Saeys, Y. (2015). *FlowSOM: Using Self-Organizing Maps for Visualization and Interpretation of Cytometry Data.* Cytometry Part A, 87A:636--645.
+Robinson, M. D., McCarthy, D. J., and Smyth, G. K. (2010). [*edgeR: a Bioconductor package for differential expression analysis of digital gene expression data.*](https://www.ncbi.nlm.nih.gov/pubmed/19910308) Bioinformatics, 26(1):139--140.
 
-Weber, L. M. and Robinson, M. D. (2016). *Comparison of Clustering Methods for High-Dimensional Single-Cell Flow and Mass Cytometry Data.* Cytometry Part A, 89A:1084--1096.
+Van Gassen, S., Callebaut, B., Van Helden, M. J., Lambrecht, B. N., Demeester, P., Dhaene, T., and Saeys, Y. (2015). [*FlowSOM: Using Self-Organizing Maps for Visualization and Interpretation of Cytometry Data.*](https://www.ncbi.nlm.nih.gov/pubmed/25573116) Cytometry Part A, 87A:636--645.
+
+Weber, L. M. and Robinson, M. D. (2016). [*Comparison of Clustering Methods for High-Dimensional Single-Cell Flow and Mass Cytometry Data.*](https://www.ncbi.nlm.nih.gov/pubmed/27992111) Cytometry Part A, 89A:1084--1096.
+
+Weber, L. M., Nowicka, M., Soneson, C., and Robinson, M. D. (2018). [*diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering.*](https://www.biorxiv.org/content/early/2018/06/18/349738) bioRxiv preprint.
+
 
 
