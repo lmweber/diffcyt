@@ -9,6 +9,5 @@ r_binary_packages:
   - tidyr
   - reshape2
   - magrittr
-  - circlize
   - knitr
   - rmarkdown
