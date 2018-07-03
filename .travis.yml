@@ -11,3 +11,15 @@ r_binary_packages:
   - magrittr
   - knitr
   - rmarkdown
+  - mime
+  - curl
+  - openssl
+  - R6
+  - httr
+  - memoise
+  - whisker
+  - digest
+  - rstudioapi
+  - jsonlite
+  - git2r
+  - withr
