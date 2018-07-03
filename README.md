@@ -43,6 +43,8 @@ BiocManager::install("CATALYST")
 ```
 
 
+## Development version
+
 If required, the development version of the `diffcyt` package can be installed through the `devel` version of Bioconductor or from GitHub. The development version may include additional updates that have not yet been included in the release version. Note that we recommend using the release version in most cases, since this has been more thoroughly tested.
 
 To set up the `devel` version of Bioconductor, see the Bioconductor help pages. To install the development version of the `diffcyt` package from GitHub, use the `devtools` package as follows. When installing from GitHub, dependency packages will also need to be installed separately from CRAN and Bioconductor.
