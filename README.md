@@ -19,7 +19,7 @@ For details on the statistical methodology and comparisons with existing approac
 
 ## Tutorial and examples
 
-For a tutorial and examples of usage, see the package vignette.
+For a tutorial and examples of usage, see the Bioconductor [package vignette](http://bioconductor.org/packages/release/bioc/vignettes/diffcyt/inst/doc/diffcyt_workflow.html) (link also available via the main Bioconductor page for the [diffcyt package](http://bioconductor.org/packages/diffcyt)).
 
 
 ## Availability and installation
