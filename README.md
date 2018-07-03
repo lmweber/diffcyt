@@ -7,12 +7,14 @@
 
 `diffcyt`: R package for differential discovery in high-dimensional cytometry via high-resolution clustering
 
-The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on (i) high-resolution clustering and (ii) moderated tests adapted from transcriptomics.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
 
 
 ## Details
 
-For details on the statistical methodology and comparisons with existing approaches, see the accompanying paper (available soon).
+For details on the statistical methodology and comparisons with existing approaches, see our paper introducing the `diffcyt` framework, available as a preprint from bioRxiv:
+
+- Weber L. M. et al. (2018), *diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering*, bioRxiv preprint. [Available here.](https://www.biorxiv.org/content/early/2018/06/18/349738)
 
 
 ## Tutorial and examples
@@ -22,27 +24,35 @@ For a tutorial and examples of usage, see the package vignette.
 
 ## Availability and installation
 
-The `diffcyt` package is available from [Bioconductor](http://bioconductor.org/packages/diffcyt). It can be installed using the Bioconductor installer (`biocLite`):
+The `diffcyt` package is freely available from [Bioconductor](http://bioconductor.org/packages/diffcyt). The stable release version can be installed using the Bioconductor installer as follows. Note that installation requires R version 3.5.0 or later.
 
 ```{r}
-# Download the Bioconductor installer
-source("https://bioconductor.org/biocLite.R")
+# Install Bioconductor installer from CRAN
+install.packages("BiocManager")
 
-# Install 'diffcyt' package
-biocLite("diffcyt")
+# Install 'diffcyt' package from Bioconductor
+BiocManager::install("diffcyt")
 ```
 
 
-The development version of the `diffcyt` package is available from the `devel` version of Bioconductor or from GitHub. See the Bioconductor help pages for how to set up the `devel` version of Bioconductor.
-
-To install the development version from GitHub, the `devtools` package can be used. Note that dependency packages will need to be installed separately from Bioconductor and CRAN.
+To run the examples in the package vignette, the `HDCytoData` and `CATALYST` packages from Bioconductor are also required.
 
 ```{r}
-# Install and load 'devtools' package
-install.packages("devtools")
-library(devtools)
+BiocManager::install("HDCytoData")
+BiocManager::install("CATALYST")
+```
 
-# Install development version of 'diffcyt' from GitHub
+
+If required, the development version of the `diffcyt` package can be installed through the `devel` version of Bioconductor or from GitHub. The development version may include additional updates that have not yet been included in the release version. Note that we recommend using the release version in most cases, since this has been more thoroughly tested.
+
+To set up the `devel` version of Bioconductor, see the Bioconductor help pages. To install the development version of the `diffcyt` package from GitHub, use the `devtools` package as follows. When installing from GitHub, dependency packages will also need to be installed separately from CRAN and Bioconductor.
+
+```{r}
+# Install 'devtools' package from CRAN
+install.packages("devtools")
+
+# Install development version of 'diffcyt' package from GitHub
+library(devtools)
 install_github("lmweber/diffcyt")
 ```
 

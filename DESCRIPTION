@@ -1,7 +1,7 @@
 Package: diffcyt
-Version: 1.1.1
+Version: 1.1.2
 Title: Differential discovery in high-dimensional cytometry via high-resolution clustering
-Description: Statistical methods for differential discovery in high-dimensional cytometry (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry) using high-resolution clustering and moderated tests.
+Description: Statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
 Authors@R: person("Lukas M.", "Weber", email = "lukmweber@gmail.com", role = c("aut", "cre"))
 URL: https://github.com/lmweber/diffcyt
 BugReports: https://github.com/lmweber/diffcyt/issues
@@ -15,6 +15,7 @@ biocViews:
     Clustering, 
     FeatureExtraction, 
     Software
+Depends: R (>= 3.5.0)
 Imports:
     flowCore, 
     FlowSOM, 
@@ -41,6 +42,6 @@ Suggests:
     BiocStyle, 
     knitr, 
     rmarkdown, 
-    ggplot2, 
-    ggridges
+    HDCytoData, 
+    CATALYST
 RoxygenNote: 6.0.1
