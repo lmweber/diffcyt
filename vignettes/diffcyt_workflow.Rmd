@@ -43,6 +43,11 @@ This vignette provides a complete example workflow for running the `diffcyt` pip
 The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object prepared with the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for formal differential testing.
 
 
+```{r, out.width="190px", echo=FALSE}
+knitr::include_graphics("diffcyt.png")
+```
+
+
 
 
 # Overview of 'diffcyt' methodology
