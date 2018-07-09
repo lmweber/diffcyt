@@ -9,6 +9,8 @@
 
 The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data (including flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry), based on (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
 
+<p> <img src="vignettes/diffcyt.png" width="130"/> </p>
+
 
 ## Details
 
