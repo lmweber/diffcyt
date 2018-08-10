@@ -140,9 +140,9 @@ composition effects. Default = FALSE. See \code{\link{testDA_edgeR}},
 \item{norm_factors}{Normalization factors to use, if \code{normalize = TRUE}. Default =
 \code{"TMM"}, in which case normalization factors are calculated automatically using
 the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
-Alternatively, a vector of values can be provided. (Note that other normalization
-methods from \code{edgeR} are not used.) See \code{\link{testDA_edgeR}},
-\code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.}
+Alternatively, a vector of values can be provided (the values should multiply to 1).
+See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or
+\code{\link{testDA_GLMM}}.}
 
 \item{block_id}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects (for method \code{testDA_voom}
