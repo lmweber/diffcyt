@@ -4,8 +4,9 @@
 \alias{prepareData}
 \title{Prepare data}
 \usage{
-prepareData(d_input, experiment_info, marker_info, cols_to_include = NULL,
-  subsampling = FALSE, n_sub = NULL, seed_sub = NULL)
+prepareData(d_input, experiment_info, marker_info,
+  cols_to_include = NULL, subsampling = FALSE, n_sub = NULL,
+  seed_sub = NULL)
 }
 \arguments{
 \item{d_input}{Input data. Must be a \code{\link{flowSet}} or list of

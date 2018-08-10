@@ -115,6 +115,10 @@
 #' @param seed_sub Random seed for subsampling. Set to an integer value to generate
 #'   reproducible results. Default = \code{NULL}. See \code{\link{prepareData}}.
 #' 
+#' @param transform Whether to apply 'arcsinh' transform. This may be set to FALSE if the
+#'   input data has already been transformed. Default = TRUE. See
+#'   \code{\link{transformData}}.
+#' 
 #' @param cofactor Cofactor parameter for 'arcsinh' transform. Default = 5, which is
 #'   appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we
 #'   recommend cofactor = 150 instead. See \code{\link{transformData}}.
@@ -288,7 +292,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     clustering_to_use = NULL, 
                     cols_to_include = NULL, 
                     subsampling = FALSE, n_sub = NULL, seed_sub = NULL, 
-                    cofactor = 5, 
+                    transform = TRUE, cofactor = 5, 
                     cols_clustering = NULL, xdim = 10, ydim = 10, 
                     meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, 
                     min_cells = 3, min_samples = NULL, 
@@ -312,8 +316,10 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     if (verbose) message("preparing data...")
     d_se <- prepareData(d_input, experiment_info, marker_info, cols_to_include, subsampling, n_sub, seed_sub)
     # transformation
-    if (verbose) message("transforming data...")
-    d_se <- transformData(d_se, cofactor)
+    if (transform) {
+      if (verbose) message("transforming data...")
+      d_se <- transformData(d_se, cofactor)
+    }
     # clustering
     if (verbose) message("generating clusters...")
     d_se <- generateClusters(d_se, cols_clustering, xdim, ydim, meta_clustering, meta_k, seed_clustering)
