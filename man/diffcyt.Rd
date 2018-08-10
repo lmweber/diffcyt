@@ -6,16 +6,17 @@
 \title{Run 'diffcyt' pipeline}
 \usage{
 diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
-  design = NULL, formula = NULL, contrast, analysis_type = c("DA", "DS"),
-  method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"),
-  method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"),
-  markers_to_test = NULL, clustering_to_use = NULL,
+  design = NULL, formula = NULL, contrast, analysis_type = c("DA",
+  "DS"), method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom",
+  "diffcyt-DA-GLMM"), method_DS = c("diffcyt-DS-limma",
+  "diffcyt-DS-LMM"), markers_to_test = NULL, clustering_to_use = NULL,
   cols_to_include = NULL, subsampling = FALSE, n_sub = NULL,
-  seed_sub = NULL, cofactor = 5, cols_clustering = NULL, xdim = 10,
-  ydim = 10, meta_clustering = FALSE, meta_k = 40,
-  seed_clustering = NULL, min_cells = 3, min_samples = NULL,
-  normalize = FALSE, norm_factors = "TMM", block_id = NULL, plot = TRUE,
-  path = ".", verbose = TRUE)
+  seed_sub = NULL, transform = TRUE, cofactor = 5,
+  cols_clustering = NULL, xdim = 10, ydim = 10,
+  meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
+  min_cells = 3, min_samples = NULL, normalize = FALSE,
+  norm_factors = "TMM", block_id = NULL, plot = TRUE, path = ".",
+  verbose = TRUE)
 }
 \arguments{
 \item{d_input}{Input data. Must be either: (i) a \code{\link{flowSet}} or list of
@@ -89,6 +90,10 @@ from each sample. Default = FALSE. See \code{\link{prepareData}}.}
 
 \item{seed_sub}{Random seed for subsampling. Set to an integer value to generate
 reproducible results. Default = \code{NULL}. See \code{\link{prepareData}}.}
+
+\item{transform}{Whether to apply 'arcsinh' transform. This may be set to FALSE if the
+input data has already been transformed. Default = TRUE. See
+\code{\link{transformData}}.}
 
 \item{cofactor}{Cofactor parameter for 'arcsinh' transform. Default = 5, which is
 appropriate for mass cytometry (CyTOF) data. For fluorescence flow cytometry, we

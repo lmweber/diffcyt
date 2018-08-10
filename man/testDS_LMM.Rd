@@ -4,8 +4,8 @@
 \alias{testDS_LMM}
 \title{Test for differential states: method 'diffcyt-DS-LMM'}
 \usage{
-testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test = NULL,
-  min_cells = 3, min_samples = NULL)
+testDS_LMM(d_counts, d_medians, formula, contrast,
+  markers_to_test = NULL, min_cells = 3, min_samples = NULL)
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell

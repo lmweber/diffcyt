@@ -4,8 +4,8 @@
 \alias{testDA_edgeR}
 \title{Test for differential abundance: method 'diffcyt-DA-edgeR'}
 \usage{
-testDA_edgeR(d_counts, design, contrast, min_cells = 3, min_samples = NULL,
-  normalize = FALSE, norm_factors = "TMM")
+testDA_edgeR(d_counts, design, contrast, min_cells = 3,
+  min_samples = NULL, normalize = FALSE, norm_factors = "TMM")
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell

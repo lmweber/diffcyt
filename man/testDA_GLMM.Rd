@@ -4,8 +4,8 @@
 \alias{testDA_GLMM}
 \title{Test for differential abundance: method 'diffcyt-DA-GLMM'}
 \usage{
-testDA_GLMM(d_counts, formula, contrast, min_cells = 3, min_samples = NULL,
-  normalize = FALSE, norm_factors = "TMM")
+testDA_GLMM(d_counts, formula, contrast, min_cells = 3,
+  min_samples = NULL, normalize = FALSE, norm_factors = "TMM")
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
