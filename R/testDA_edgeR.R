@@ -32,18 +32,16 @@
 #' Normalization for the total number of cells per sample (library sizes) and total number
 #' of cells per cluster is automatically performed by the \code{edgeR} functions. Optional
 #' normalization factors can also be included to adjust for composition effects in the
-#' total number of counts per sample (library sizes). For example, if one cell population
-#' is more abundant in one condition, while all other populations have equal numbers of
-#' cells across conditions, then this effectively reduces the \emph{relative} abundance of
-#' the unchanged populations in the first condition, creating false positive differential
-#' abundance signals for these populations. Normalization factors can be provided directly
-#' as a vector of values representing relative total abundances per sample (where values
-#' >1 indicate extra cells in a sample; note this is the inverse of normalization factors
-#' as defined in the \code{edgeR} package). Alternatively, normalization factors can be
-#' calculated automatically using the 'trimmed mean of M-values' (TMM) method from the
-#' \code{edgeR} package (Robinson and Oshlack, 2010). The TMM method assumes that most
-#' populations are not differentially abundant; see the \code{edgeR} User's Guide for more
-#' details.
+#' cluster cell counts per sample. For example, in an extreme case, if several additional
+#' clusters are present in only one condition, while all other clusters are approximately
+#' equally abundant between conditions, then simply normalizing by the total number of
+#' cells per sample will create a false positive differential abundance signal for the
+#' non-differential clusters. (For a detailed explanation in the context of RNA sequencing
+#' gene expression, see Robinson and Oshlack, 2010.) Normalization factors can be
+#' calculated automatically using the 'trimmed mean of M-values' (TMM) method (Robinson
+#' and Oshlack, 2010), implemented in the \code{edgeR} package (see also the \code{edgeR}
+#' User's Guide for details). Alternatively, a vector of values can be provided (the
+#' values should multiply to 1).
 #' 
 #' 
 #' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
@@ -70,8 +68,7 @@
 #' @param norm_factors Normalization factors to use, if \code{normalize = TRUE}. Default =
 #'   \code{"TMM"}, in which case normalization factors are calculated automatically using
 #'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
-#'   Alternatively, a vector of values can be provided. (Note that other normalization
-#'   methods from \code{edgeR} are not used.)
+#'   Alternatively, a vector of values can be provided (the values should multiply to 1).
 #' 
 #' 
 #' @return Returns a new \code{\link{SummarizedExperiment}} object, with differential test
@@ -172,11 +169,6 @@ testDA_edgeR <- function(d_counts, design, contrast,
   # normalization factors
   if (normalize & norm_factors == "TMM") {
     norm_factors <- calcNormFactors(counts, method = "TMM")
-  } else if (normalize & norm_factors != "TMM") {
-    # edgeR and limma define normalization factors as inverse and require product = 1
-    norm_factors <- 1 / norm_factors
-    # using geometric mean
-    norm_factors <- norm_factors / (prod(norm_factors) ^ (1 / length(norm_factors)))
   }
   
   # note: when using DGEList object, column sums are automatically used for library sizes
@@ -219,6 +211,11 @@ testDA_edgeR <- function(d_counts, design, contrast,
   res <- d_counts
   
   rowData(res) <- row_data
+  
+  # return normalization factors in 'metadata'
+  if (normalize) {
+    metadata(res)$norm_factors <- norm_factors
+  }
   
   res
 }
