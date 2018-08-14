@@ -176,6 +176,12 @@
 #'   (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.
 #' 
+#' @param trend (Optional) Whether to fit an intensity-dependent trend to prior variances
+#'   when calculating moderated tests with function \code{\link{eBayes}} from \code{limma}
+#'   package (for method \code{testDS_limma}). When \code{trend = TRUE}, this is known as
+#'   the \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default =
+#'   TRUE. See \code{\link{testDS_limma}}.
+#' 
 #' @param plot Whether to save diagnostic plots (for method \code{testDA_voom} or
 #'   \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.
@@ -297,7 +303,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, 
                     min_cells = 3, min_samples = NULL, 
                     normalize = FALSE, norm_factors = "TMM", 
-                    block_id = NULL, 
+                    block_id = NULL, trend = TRUE, 
                     plot = TRUE, path = ".", 
                     verbose = TRUE) {
   
@@ -376,7 +382,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # DS tests
   if (analysis_type == "DS" & verbose) message("calculating DS tests...")
   if (analysis_type == "DS" & method_DS == "diffcyt-DS-limma") {
-    res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, markers_to_test, min_cells, min_samples, plot, path)
+    res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, trend, markers_to_test, min_cells, min_samples, plot, path)
   }
   if (analysis_type == "DS" & method_DS == "diffcyt-DS-LMM") {
     res <- testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test, min_cells, min_samples)
