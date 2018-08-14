@@ -169,7 +169,8 @@
 #' # Test for differential abundance (DA) of clusters
 #' res_DA <- testDA_voom(d_counts, design, contrast, plot = FALSE)
 #' 
-testDA_voom <- function(d_counts, design, contrast, block_id = NULL, 
+testDA_voom <- function(d_counts, design, contrast, 
+                        block_id = NULL, 
                         min_cells = 3, min_samples = NULL, 
                         normalize = FALSE, norm_factors = "TMM", 
                         plot = TRUE, path = ".") {

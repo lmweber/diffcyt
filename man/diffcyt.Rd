@@ -15,8 +15,8 @@ diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
   cols_clustering = NULL, xdim = 10, ydim = 10,
   meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
   min_cells = 3, min_samples = NULL, normalize = FALSE,
-  norm_factors = "TMM", block_id = NULL, plot = TRUE, path = ".",
-  verbose = TRUE)
+  norm_factors = "TMM", block_id = NULL, trend = TRUE, plot = TRUE,
+  path = ".", verbose = TRUE)
 }
 \arguments{
 \item{d_input}{Input data. Must be either: (i) a \code{\link{flowSet}} or list of
@@ -151,6 +151,12 @@ effects using the \code{limma} \code{\link{duplicateCorrelation}} methodology.
 Alternatively, block IDs can be included as fixed effects in the design matrix
 (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
 \code{\link{testDS_limma}}.}
+
+\item{trend}{(Optional) Whether to fit an intensity-dependent trend to prior variances
+when calculating moderated tests with function \code{\link{eBayes}} from \code{limma}
+package (for method \code{testDS_limma}). When \code{trend = TRUE}, this is known as
+the \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default =
+TRUE. See \code{\link{testDS_limma}}.}
 
 \item{plot}{Whether to save diagnostic plots (for method \code{testDA_voom} or
 \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or

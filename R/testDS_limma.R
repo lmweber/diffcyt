@@ -11,9 +11,11 @@
 #' This method uses the \code{\link{limma}} package (Ritchie et al. 2015, \emph{Nucleic
 #' Acids Research}) to fit models and calculate moderated tests at the cluster level.
 #' Moderated tests improve statistical power by sharing information on variability (i.e.
-#' variance across samples for a single cluster) between clusters. We use the option
-#' \code{trend = TRUE} in the \code{\link{eBayes}} fitting function in order to stabilize
-#' the mean-variance relationship. Diagnostic plots are shown if \code{plot = TRUE}.
+#' variance across samples for a single cluster) between clusters. By default, we provide
+#' option \code{trend = TRUE} to the \code{limma} \code{\link{eBayes}} function; this fits
+#' an intensity-dependent trend to prior variances when calculating moderated tests, which
+#' is also known as the \code{limma-trend} method (Law et al., 2014; Phipson et al.,
+#' 2016). Diagnostic plots are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -71,6 +73,11 @@
 #'   \code{\link{duplicateCorrelation}} methodology. Alternatively, block IDs can be
 #'   included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
 #'   See details.
+#' 
+#' @param trend (Optional) Whether to fit an intensity-dependent trend to prior variances
+#'   when calculating moderated tests with function \code{\link{eBayes}} from \code{limma}
+#'   package. When \code{trend = TRUE}, this is known as the \code{limma-trend} method
+#'   (Law et al., 2014; Phipson et al., 2016). Default = TRUE.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of
@@ -178,7 +185,8 @@
 #' # Test for differential states (DS) within clusters
 #' res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 #' 
-testDS_limma <- function(d_counts, d_medians, design, contrast, block_id = NULL, 
+testDS_limma <- function(d_counts, d_medians, design, contrast, 
+                         block_id = NULL, trend = TRUE, 
                          markers_to_test = NULL, 
                          min_cells = 3, min_samples = NULL, 
                          plot = TRUE, path = ".") {
@@ -240,8 +248,8 @@ testDS_limma <- function(d_counts, d_medians, design, contrast, block_id = NULL,
   }
   fit <- contrasts.fit(fit, contrast)
   
-  # calculate moderated tests (note: using 'trend = TRUE' for mean-variance relationship)
-  efit <- eBayes(fit, trend = TRUE)
+  # calculate moderated tests
+  efit <- eBayes(fit, trend = trend)
   
   if (plot) pdf(file.path(path, "SA_plot.pdf"), width = 6, height = 6)
   plotSA(efit)
