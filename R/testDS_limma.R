@@ -13,9 +13,9 @@
 #' Moderated tests improve statistical power by sharing information on variability (i.e.
 #' variance across samples for a single cluster) between clusters. By default, we provide
 #' option \code{trend = TRUE} to the \code{limma} \code{\link{eBayes}} function; this fits
-#' an intensity-dependent trend to prior variances when calculating moderated tests, which
-#' is also known as the \code{limma-trend} method (Law et al., 2014; Phipson et al.,
-#' 2016). Diagnostic plots are shown if \code{plot = TRUE}.
+#' a mean-variance trend when calculating moderated tests, which is also known as the
+#' \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Diagnostic plots
+#' are shown if \code{plot = TRUE}.
 #' 
 #' The experimental design must be specified using a design matrix, which can be created
 #' with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,
@@ -74,10 +74,10 @@
 #'   included as fixed effects in the design matrix (\code{\link{createDesignMatrix}}).
 #'   See details.
 #' 
-#' @param trend (Optional) Whether to fit an intensity-dependent trend to prior variances
-#'   when calculating moderated tests with function \code{\link{eBayes}} from \code{limma}
-#'   package. When \code{trend = TRUE}, this is known as the \code{limma-trend} method
-#'   (Law et al., 2014; Phipson et al., 2016). Default = TRUE.
+#' @param trend (Optional) Whether to fit a mean-variance trend when calculating moderated
+#'   tests with function \code{\link{eBayes}} from \code{limma} package. When \code{trend
+#'   = TRUE}, this is known as the \code{limma-trend} method (Law et al., 2014; Phipson et
+#'   al., 2016). Default = TRUE.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of

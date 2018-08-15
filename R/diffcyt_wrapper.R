@@ -176,11 +176,11 @@
 #'   (\code{\link{createDesignMatrix}}). See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.
 #' 
-#' @param trend (Optional) Whether to fit an intensity-dependent trend to prior variances
-#'   when calculating moderated tests with function \code{\link{eBayes}} from \code{limma}
-#'   package (for method \code{testDS_limma}). When \code{trend = TRUE}, this is known as
-#'   the \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default =
-#'   TRUE. See \code{\link{testDS_limma}}.
+#' @param trend (Optional) Whether to fit a mean-variance trend when calculating moderated
+#'   tests with function \code{\link{eBayes}} from \code{limma} package (for method
+#'   \code{testDS_limma}). When \code{trend = TRUE}, this is known as the
+#'   \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default = TRUE.
+#'   See \code{\link{testDS_limma}}.
 #' 
 #' @param plot Whether to save diagnostic plots (for method \code{testDA_voom} or
 #'   \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
