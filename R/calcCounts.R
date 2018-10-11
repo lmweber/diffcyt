@@ -122,6 +122,8 @@ calcCounts <- function(d_se) {
   
   col_data <- metadata(d_se)$experiment_info
   
+  md <- list(clustering_name = metadata(d_se)$clustering_name)
+  
   # rearrange sample order to match 'experiment_info'
   n_cells <- n_cells[, match(col_data$sample_id, colnames(n_cells)), drop = FALSE]
   stopifnot(all(col_data$sample_id == colnames(n_cells)))
@@ -129,7 +131,8 @@ calcCounts <- function(d_se) {
   d_counts <- SummarizedExperiment(
     assays = list(counts = n_cells), 
     rowData = row_data, 
-    colData = col_data
+    colData = col_data,
+    metadata = md
   )
   
   d_counts

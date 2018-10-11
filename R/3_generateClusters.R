@@ -71,7 +71,8 @@
 #'   cluster labels for each cell stored in an additional column of row meta-data. Row
 #'   meta-data can be accessed with \code{\link{rowData}}. The minimum spanning tree (MST)
 #'   object is also stored in the \code{metadata} slot, and can be accessed with
-#'   \code{metadata(d_se)$MST}.
+#'   \code{metadata(d_se)$MST}. An identifier for the generated clustering will be 
+#'   stored in \code{metadata(d_se)$clustering_name}.
 #' 
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
@@ -162,8 +163,10 @@ generateClusters <- function(d_se, cols_clustering = NULL,
   # convert to factor (with levels in ascending order)
   if (meta_clustering) {
     n_clus <- meta_k
+    clustering_name <- sprintf("meta%s", n_clus)
   } else {
     n_clus <- xdim * ydim
+    clustering_name <- sprintf("som%s", n_clus)
   }
   
   clus <- factor(clus, levels = seq_len(n_clus))  # includes levels for any missing/empty clusters
@@ -173,6 +176,9 @@ generateClusters <- function(d_se, cols_clustering = NULL,
   
   # store MST object in experiment 'metadata' slot
   metadata(d_se)$MST <- fsom$MST
+  
+  # store clustering identifier in `metadata` slot
+  metadata(d_se)$clustering_name <- clustering_name
   
   d_se
 }

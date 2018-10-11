@@ -191,6 +191,9 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
                          min_cells = 3, min_samples = NULL, 
                          plot = TRUE, path = ".") {
   
+  # check that counts & medians were computed from the same clustering
+  stopifnot(metadata(d_counts)$clustering_name == metadata(d_medians)$clustering_name)
+  
   if (!is.null(block_id) & !is.factor(block_id)) {
     block_id <- factor(block_id, levels = unique(block_id))
   }
@@ -294,11 +297,14 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   
   col_data <- colData(d_medians)
   
+  md <- list(clustering_name = metadata(d_counts)$clustering_name)
+  
   # return object
   res <- SummarizedExperiment(
     meds_all, 
     rowData = row_data, 
-    colData = col_data
+    colData = col_data,
+    metadata = md
   )
   
   res

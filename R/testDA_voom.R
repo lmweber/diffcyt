@@ -175,6 +175,9 @@ testDA_voom <- function(d_counts, design, contrast,
                         normalize = FALSE, norm_factors = "TMM", 
                         plot = TRUE, path = ".") {
   
+  # check that counts & medians were computed from the same clustering
+  stopifnot(metadata(d_counts)$clustering_name == metadata(d_medians)$clustering_name)
+  
   if (!is.null(block_id) & !is.factor(block_id)) {
     block_id <- factor(block_id, levels = unique(block_id))
   }

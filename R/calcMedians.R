@@ -178,7 +178,8 @@ calcMedians <- function(d_se) {
   })))
   
   metadata <- list(id_type_markers = id_type_markers, 
-                   id_state_markers = id_state_markers)
+                   id_state_markers = id_state_markers,
+                   clustering_name = metadata(d_se)$clustering_name)
   
   d_medians <- SummarizedExperiment(
     assays = list(medians = medians), 

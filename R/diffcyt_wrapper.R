@@ -338,6 +338,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     if (is.null(clustering_to_use)) {
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
       message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
+      metadata(d_input)$clustering_name <- colnames(metadata(d_input)$cluster_codes)[1]
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(as.character(clustering_to_use) %in% colnames(metadata(d_input)$cluster_codes))
@@ -352,6 +353,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                 length(code_id) == nrow(rowData(d_input)))
       rowData(d_input)$code_id <- code_id
       rowData(d_input)$cluster_id <- cluster_id
+      metadata(d_input)$clustering_name <- clustering_to_use
     }
     
     d_se <- d_input

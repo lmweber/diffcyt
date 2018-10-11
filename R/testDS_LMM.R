@@ -186,6 +186,9 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
                        markers_to_test = NULL, 
                        min_cells = 3, min_samples = NULL) {
   
+  # check that counts & medians were computed from the same clustering
+  stopifnot(metadata(d_counts)$clustering_name == metadata(d_medians)$clustering_name)
+    
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
   }
@@ -287,11 +290,14 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   
   col_data <- colData(d_medians)
   
+  md <- list(clustering_name = metadata(d_counts)$clustering_name)
+  
   # return object
   res <- SummarizedExperiment(
     meds_all, 
     rowData = row_data, 
-    colData = col_data
+    colData = col_data,
+    metadata = md
   )
   
   res
