@@ -166,9 +166,6 @@ testDA_GLMM <- function(d_counts, formula, contrast,
                         min_cells = 3, min_samples = NULL, 
                         normalize = FALSE, norm_factors = "TMM") {
   
-  # check that counts & medians were computed from the same clustering
-  stopifnot(metadata(d_counts)$clustering_name == metadata(d_medians)$clustering_name)
-  
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
   }
