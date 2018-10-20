@@ -98,9 +98,11 @@
 #'   \code{daFrame} object containing multiple sets of cluster labels. (In this case, the
 #'   \code{metadata} of the \code{daFrame} object is assumed to contain a data frame named
 #'   \code{cluster_codes}; \code{clustering_to_use} is the column name of the selected
-#'   column in \code{cluster_codes}.) Default = NULL, in which case cluster labels stored
-#'   in column named \code{cluster_id} in the \code{rowData} of the \code{daFrame} object
-#'   are used.
+#'   column in \code{cluster_codes}. If \code{clustering_to_use} is provided, an
+#'   identifier \code{clustering_name} to identify this column will also be saved in the
+#'   \code{metadata} of the output object.) Default = NULL, in which case cluster labels
+#'   stored in column named \code{cluster_id} in the \code{rowData} of the \code{daFrame}
+#'   object are used.
 #' 
 #' @param cols_to_include Logical vector indicating which columns to include from the
 #'   input data. Default = all columns. See \code{\link{prepareData}}.
@@ -207,7 +209,7 @@
 #' @aliases diffcyt-package
 #' 
 #' @importFrom SummarizedExperiment colData
-#' @importFrom S4Vectors metadata
+#' @importFrom S4Vectors metadata 'metadata<-'
 #' 
 #' @export
 #' 
@@ -338,6 +340,8 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     if (is.null(clustering_to_use)) {
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
       message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
+      # clustering identifier to store in metadata
+      clustering_name <- colnames(metadata(d_input)$cluster_codes)[1]
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(as.character(clustering_to_use) %in% colnames(metadata(d_input)$cluster_codes))
@@ -352,6 +356,8 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                 length(code_id) == nrow(rowData(d_input)))
       rowData(d_input)$code_id <- code_id
       rowData(d_input)$cluster_id <- cluster_id
+      # clustering identifier to store in metadata
+      clustering_name <- clustering_to_use
     }
     
     d_se <- d_input
@@ -399,6 +405,8 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
       d_medians_by_sample_marker = d_medians_by_sample_marker
     ))
   } else if (class(d_input) == "daFrame") {
+    # store clustering identifier in metadata
+    metadata(res) <- as.list(c(metadata(res), clustering_name = clustering_name))
     # not returning input object, since it has been modified
     return(list(
       res = res, 
