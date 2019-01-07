@@ -6,7 +6,8 @@ Authors@R: person("Lukas M.", "Weber", email = "lukmweber@gmail.com", role = c("
 URL: https://github.com/lmweber/diffcyt
 BugReports: https://github.com/lmweber/diffcyt/issues
 License: MIT + file LICENSE
-biocViews: ImmunoOncology, 
+biocViews:
+    ImmunoOncology, 
     FlowCytometry, 
     Proteomics, 
     SingleCell, 
