@@ -177,8 +177,8 @@ topClusters <- function(res, d_counts = NULL, order = TRUE, all = FALSE, top_n =
   }
   
   # if output is from DS tests, keep additional column 'marker'
-  if ("marker" %in% colnames(out)) {
-    out <- out[, c("cluster_id", "marker", "p_val", "p_adj"), drop = FALSE]
+  if ("marker_id" %in% colnames(out)) {
+    out <- out[, c("cluster_id", "marker_id", "p_val", "p_adj"), drop = FALSE]
     if (format_vals) {
       out[, c("p_val")] <- formatC(out[, c("p_val")], format = "e", digits = digits)
       out[, c("p_adj")] <- formatC(out[, c("p_adj")], format = "e", digits = digits)

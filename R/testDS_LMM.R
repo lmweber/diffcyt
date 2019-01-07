@@ -282,7 +282,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster_id = clus, marker = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, marker_id = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   col_data <- colData(d_medians)
