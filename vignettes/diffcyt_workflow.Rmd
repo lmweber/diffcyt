@@ -302,7 +302,7 @@ A number of additional arguments for optional parameter choices are also availab
 
 Below, we run the wrapper function twice: once to test for differential abundance (DA) of clusters, and again to test for differential states (DS) within clusters. Note that in the `Bodenmiller_BCR_XL` dataset, the main differential signal of interest (the signal we are trying to recover) is differential expression of phosphorylated S6 (pS6) within B cells (i.e. DS testing). Therefore, the DA tests are not particularly meaningful in biological terms in this case; but we include them here for demonstration purposes in order to show how to run the methods.
 
-The main results from the differential tests consist of adjusted p-values for each cluster (for DA tests) or each cluster-marker combination (for DS tests), which can be used to rank the clusters or cluster-marker combinations by the strength of their differential evidence. The function `topClusters()` can be used to display the results for the top (most highly significant) detected clusters or cluster-marker combinations. We also use the output from `topClusters()` to generate a summary table of the number of detected clusters or cluster-marker combinations at a given adjusted p-value threshold. See `?diffcyt` and `?topClusters` for more details.
+The main results from the differential tests consist of adjusted p-values for each cluster (for DA tests) or each cluster-marker combination (for DS tests), which can be used to rank the clusters or cluster-marker combinations by the strength of their differential evidence. The function `topTable()` can be used to display a table of results for the top (most highly significant) detected clusters or cluster-marker combinations. We also use the output from `topTable()` to generate a summary table of the number of detected clusters or cluster-marker combinations at a given adjusted p-value threshold. See `?diffcyt` and `?topTable` for more details.
 
 
 ```{r}
@@ -320,13 +320,13 @@ out_DA <- diffcyt(
   seed_clustering = 123
 )
 
-# display results for top DA clusters
-topClusters(out_DA)
+# display table of results for top DA clusters
+topTable(out_DA)
 
 # calculate number of significant detected DA clusters at 10% false discovery 
 # rate (FDR)
 threshold <- 0.1
-res_DA_all <- topClusters(out_DA, all = TRUE, format_vals = FALSE)
+res_DA_all <- topTable(out_DA, all = TRUE, format_vals = FALSE)
 table(res_DA_all$p_adj <= threshold)
 ```
 
@@ -347,13 +347,13 @@ out_DS <- diffcyt(
   plot = FALSE
 )
 
-# display results for top DS cluster-marker combinations
-topClusters(out_DS)
+# display table of results for top DS cluster-marker combinations
+topTable(out_DS)
 
 # calculate number of significant detected DS cluster-marker combinations at 
 # 10% false discovery rate (FDR)
 threshold <- 0.1
-res_DS_all <- topClusters(out_DS, all = TRUE, format_vals = FALSE)
+res_DS_all <- topTable(out_DS, all = TRUE, format_vals = FALSE)
 table(res_DS_all$p_adj <= threshold)
 ```
 
@@ -422,20 +422,20 @@ Calculate tests for differential abundance (DA) of clusters, using one of the DA
 
 The main results consist of adjusted p-values for each cluster, which can be used to rank the clusters by their evidence for differential abundance. The raw p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?testDA_edgeR`, `?testDA_voom`, or `?testDA_GLMM`.
 
-As previously, we can also use the function `topClusters()` to display the results for the top (most highly significant) detected DA clusters, and to generate a summary table of the number of detected DA clusters at a given adjusted p-value threshold. See `?topClusters` for more details.
+As previously, we can also use the function `topTable()` to display a table of results for the top (most highly significant) detected DA clusters, and to generate a summary table of the number of detected DA clusters at a given adjusted p-value threshold. See `?topTable` for more details.
 
 
 ```{r}
 # Test for differential abundance (DA) of clusters
 res_DA <- testDA_edgeR(d_counts, design, contrast)
 
-# display results for top DA clusters
-topClusters(res_DA)
+# display table of results for top DA clusters
+topTable(res_DA)
 
 # calculate number of significant detected DA clusters at 10% false discovery 
 # rate (FDR)
 threshold <- 0.1
-table(topClusters(res_DA, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
+table(topTable(res_DA, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
 ```
 
 
@@ -447,20 +447,20 @@ We test all 'cell state' markers for differential expression. The set of markers
 
 The main results consist of adjusted p-values for each cluster-marker combination (cell state markers only), which can be used to rank the cluster-marker combinations by their evidence for differential states. The raw p-values and adjusted p-values are stored in the `rowData` of the `SummarizedExperiment` output object. For more details, see `?diffcyt-DS-limma` or `?diffcyt-DS-LMM`.
 
-As previously, we can also use the function `topClusters()` to display the results for the top (most highly significant) detected DS cluster-marker combinations (note that there is one test result for each cluster-marker combination), and to generate a summary table of the number of detected DS cluster-marker combinations at a given adjusted p-value threshold. See `?topClusters` for more details.
+As previously, we can also use the function `topTable()` to display a table of results for the top (most highly significant) detected DS cluster-marker combinations (note that there is one test result for each cluster-marker combination), and to generate a summary table of the number of detected DS cluster-marker combinations at a given adjusted p-value threshold. See `?topTable` for more details.
 
 
 ```{r, fig.show='hide'}
 # Test for differential states (DS) within clusters
 res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 
-# display results for top DS cluster-marker combinations
-topClusters(res_DS)
+# display table of results for top DS cluster-marker combinations
+topTable(res_DS)
 
 # calculate number of significant detected DS cluster-marker combinations at 
 # 10% false discovery rate (FDR)
 threshold <- 0.1
-table(topClusters(res_DS, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
+table(topTable(res_DS, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
 ```
 
 

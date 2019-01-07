@@ -256,7 +256,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   if (plot) dev.off()
   
   # results
-  top <- topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
+  top <- limma::topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
   
   if (!all(top$ID %in% cluster_id)) {
     stop("cluster labels do not match")

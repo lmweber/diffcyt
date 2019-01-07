@@ -235,7 +235,7 @@ testDA_voom <- function(d_counts, design, contrast,
   if (plot) dev.off()
   
   # results
-  top <- topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
+  top <- limma::topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")
   
   if (!all(rownames(top) == cluster_id)) {
     stop("cluster labels do not match")

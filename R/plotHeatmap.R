@@ -144,10 +144,10 @@
 #'                   seed_clustering = 123, plot = FALSE, verbose = FALSE)
 #' 
 #' # Display results for top DA clusters
-#' topClusters(out_DA)
+#' topTable(out_DA)
 #' 
 #' # Display results for top DS cluster-marker combinations
-#' topClusters(out_DS)
+#' topTable(out_DS)
 #' 
 #' # Plot heatmap for DA tests
 #' plotHeatmap(out_DA, analysis_type = "DA")
@@ -201,7 +201,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   }
   
   # results for top clusters
-  d_top <- topClusters(res, top_n = top_n, format_vals = FALSE)
+  d_top <- topTable(res, top_n = top_n, format_vals = FALSE)
   
   # top 'n' clusters
   d_heatmap_celltype <- d_heatmap_celltype[match(d_top$cluster_id, rownames(d_heatmap_celltype)), , drop = FALSE]

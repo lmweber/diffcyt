@@ -189,7 +189,7 @@ testDA_edgeR <- function(d_counts, design, contrast,
   lrt <- glmLRT(fit, contrast = contrast)
   
   # results
-  top <- topTags(lrt, n = Inf, adjust.method = "BH", sort.by = "none")
+  top <- edgeR::topTags(lrt, n = Inf, adjust.method = "BH", sort.by = "none")
   
   if (!all(rownames(top) == cluster_id)) {
     stop("cluster labels do not match")
