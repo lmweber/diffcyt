@@ -144,10 +144,10 @@
 #'                   seed_clustering = 123, plot = FALSE, verbose = FALSE)
 #' 
 #' # Display results for top DA clusters
-#' topClusters(out_DA$res)
+#' topClusters(out_DA)
 #' 
 #' # Display results for top DS cluster-marker combinations
-#' topClusters(out_DS$res)
+#' topClusters(out_DS)
 #' 
 #' # Plot heatmap for DA tests
 #' plotHeatmap(out_DA, analysis_type = "DA")
@@ -201,7 +201,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   }
   
   # results for top clusters
-  d_top <- topClusters(res, order = TRUE, all = FALSE, top_n = top_n)
+  d_top <- topClusters(res, top_n = top_n, format_vals = FALSE)
   
   # top 'n' clusters
   d_heatmap_celltype <- d_heatmap_celltype[match(d_top$cluster_id, rownames(d_heatmap_celltype)), , drop = FALSE]
@@ -265,7 +265,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     
     # create data frame of expression values of top 'n' cluster-marker combinations by sample
     top_clusters <- as.list(d_top$cluster_id)
-    top_markers <- as.character(d_top$marker)
+    top_markers <- as.character(d_top$marker_id)
     
     assays_ordered <- assays(d_medians)[top_markers]
     
@@ -315,7 +315,7 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
                         sig = as.numeric(sig))
   } else if (analysis_type == "DS") {
     d_sig <- data.frame(cluster_id = d_top$cluster_id, 
-                        marker = d_top$marker, 
+                        marker = d_top$marker_id, 
                         sig = as.numeric(sig))
   }
   

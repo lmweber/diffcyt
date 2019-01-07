@@ -118,14 +118,14 @@ calcMediansByClusterMarker <- function(d_se) {
   stopifnot(nrow(marker_vals) == nrow(rowdata_df))
   
   d_all <- cbind(rowdata_df, marker_vals)
-  d_all <- melt(d_all, id.vars = seq_len(ncol(rowdata_df)), variable.name = "marker")
+  d_all <- melt(d_all, id.vars = seq_len(ncol(rowdata_df)), variable.name = "marker_id")
   
   d_all %>% 
-    group_by(cluster_id, marker) %>% 
+    group_by(cluster_id, marker_id) %>% 
     summarize(median = median(value)) -> 
     medians
   
-  medians <- acast(medians, cluster_id ~ marker, value.var = "median", fill = NA)
+  medians <- acast(medians, cluster_id ~ marker_id, value.var = "median", fill = NA)
   
   # fill in any missing clusters
   if (nrow(medians) < nlevels(rowData(d_se)$cluster_id)) {

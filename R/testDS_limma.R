@@ -286,7 +286,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster_id = clus, marker = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, marker_id = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   colnames(row_data)[colnames(row_data) == "P.Value"] <- "p_val"
