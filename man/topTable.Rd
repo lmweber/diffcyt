@@ -4,8 +4,8 @@
 \alias{topTable}
 \title{Show table of results for top clusters or cluster-marker combinations}
 \usage{
-topTable(res, d_counts = NULL, order = TRUE, all = FALSE,
-  top_n = 20, show_counts = FALSE, show_props = FALSE,
+topTable(res, d_counts = NULL, order = TRUE, order_by = "p_adj",
+  all = FALSE, top_n = 20, show_counts = FALSE, show_props = FALSE,
   format_vals = TRUE, digits = 2)
 }
 \arguments{
@@ -20,7 +20,12 @@ Alternatively, these can be provided directly.}
 cell counts, from \code{\link{calcCounts}}. (If the output object from the wrapper
 function is provided, this will be be automatically extracted.)}
 
-\item{order}{Whether to order results by adjusted p-value. Default = TRUE.}
+\item{order}{Whether to order results by values in column \code{order_by} (default:
+column \code{p_adj} containing adjusted p-values). Default = TRUE.}
+
+\item{order_by}{Name of column to use to order rows by values, if \code{order = TRUE}.
+Default = \code{"p_adj"} (adjusted p-values); other options include \code{"p_val"},
+\code{"cluster_id"}, and \code{"marker_id"}.}
 
 \item{all}{Whether to display all clusters or cluster-marker combinations (instead of
 top \code{top_n}). Default = FALSE.}
@@ -44,8 +49,9 @@ for subsequent steps (e.g. plotting). Default = TRUE.}
 }
 \value{
 Returns a \code{\link{DataFrame}} table of results for the \code{top_n}
-  clusters or cluster-marker combinations, ordered by adjusted p-values. Optionally,
-  cluster counts or proportions are also included.
+  clusters or cluster-marker combinations, ordered by values in column \code{order_by}
+  (default: adjusted p-values). Optionally, cluster counts or proportions are also
+  included.
 }
 \description{
 Show table of results for top (most highly significant) clusters or cluster-marker

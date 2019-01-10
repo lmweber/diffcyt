@@ -29,7 +29,12 @@
 #'   cell counts, from \code{\link{calcCounts}}. (If the output object from the wrapper
 #'   function is provided, this will be be automatically extracted.)
 #' 
-#' @param order Whether to order results by adjusted p-value. Default = TRUE.
+#' @param order Whether to order results by values in column \code{order_by} (default:
+#'   column \code{p_adj} containing adjusted p-values). Default = TRUE.
+#' 
+#' @param order_by Name of column to use to order rows by values, if \code{order = TRUE}.
+#'   Default = \code{"p_adj"} (adjusted p-values); other options include \code{"p_val"},
+#'   \code{"cluster_id"}, and \code{"marker_id"}.
 #' 
 #' @param all Whether to display all clusters or cluster-marker combinations (instead of
 #'   top \code{top_n}). Default = FALSE.
@@ -53,8 +58,9 @@
 #' 
 #' 
 #' @return Returns a \code{\link{DataFrame}} table of results for the \code{top_n}
-#'   clusters or cluster-marker combinations, ordered by adjusted p-values. Optionally,
-#'   cluster counts or proportions are also included.
+#'   clusters or cluster-marker combinations, ordered by values in column \code{order_by}
+#'   (default: adjusted p-values). Optionally, cluster counts or proportions are also
+#'   included.
 #' 
 #' 
 #' @importFrom SummarizedExperiment rowData
@@ -134,7 +140,8 @@
 #' # Display results for top DS cluster-marker combinations
 #' topTable(out_DS)
 #' 
-topTable <- function(res, d_counts = NULL, order = TRUE, all = FALSE, top_n = 20, 
+topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj", 
+                     all = FALSE, top_n = 20, 
                      show_counts = FALSE, show_props = FALSE, 
                      format_vals = TRUE, digits = 2) {
   
@@ -172,9 +179,12 @@ topTable <- function(res, d_counts = NULL, order = TRUE, all = FALSE, top_n = 20
     out <- cbind(out, out_props)
   }
   
-  # order by adjusted p-values
+  # order rows
+  if (order & !(order_by %in% colnames(out))) {
+    stop("column 'order_by' not found in column names of output object")
+  }
   if (order) {
-    out <- out[order(out[, "p_adj"]), , drop = FALSE]
+    out <- out[order(out[, order_by]), , drop = FALSE]
   }
   
   # if output is from DS tests, keep additional column 'marker'
