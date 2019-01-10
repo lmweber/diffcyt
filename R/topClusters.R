@@ -1,4 +1,4 @@
-#' Alias for function 'topTable' (deprecated)
+#' Alias for 'topTable' (deprecated)
 #' 
 #' Alias for function 'topTable' (deprecated)
 #' 
