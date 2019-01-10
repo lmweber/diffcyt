@@ -2,7 +2,7 @@
 % Please edit documentation in R/topClusters.R
 \name{topClusters}
 \alias{topClusters}
-\title{Alias for function 'topTable' (deprecated)}
+\title{Alias for 'topTable' (deprecated)}
 \usage{
 topClusters(...)
 }
