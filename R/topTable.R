@@ -16,8 +16,8 @@
 #' This function displays a summary table of results. By default, the \code{top_n}
 #' clusters or cluster-marker combinations are shown, ordered by adjusted p-values.
 #' Optionally, cluster counts or proportions can also be included. The \code{format_vals}
-#' argument can be used to automatically format the p-values and adjusted p-values into a
-#' more readable format.
+#' and \code{digits} arguments can be used to display rounded values to improve
+#' readability of the summary table.
 #' 
 #' 
 #' @param res Output object from either the \code{\link{diffcyt}} wrapper function or one
@@ -50,13 +50,12 @@
 #' @param show_props Whether to display cluster cell count proportions by sample
 #'   (calculated from \code{d_counts}). Default = FALSE.
 #' 
-#' @param format_vals Whether to display p-values and adjusted p-values using scientific
-#'   notation. This improves readability when displaying a table of values, but converts
-#'   the numeric values to character strings, so should be disabled if the values are used
-#'   for subsequent steps (e.g. plotting). Default = FALSE.
+#' @param format_vals Whether to display rounded values in numeric columns. This improves
+#'   readability of the summary table, but should not be used when exact numeric values
+#'   are required for subsequent steps (e.g. plotting). Default = FALSE.
 #' 
-#' @param digits Number of decimal places to show, if \code{format_vals = TRUE}. Default =
-#'   2.
+#' @param digits Number of significant digits to show for p-values and adjusted p-values,
+#'   if \code{format_vals = TRUE}. Default = 3.
 #' 
 #' 
 #' @return Returns a \code{\link{DataFrame}} table of results for the \code{top_n}
@@ -145,7 +144,7 @@
 topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj", 
                      all = FALSE, top_n = 20, 
                      show_counts = FALSE, show_props = FALSE, 
-                     format_vals = FALSE, digits = 2) {
+                     format_vals = FALSE, digits = 3) {
   
   # if output is from wrapper function, extract 'res' and 'd_counts' objects
   if (all(c("res", "d_counts") %in% names(res))) {
@@ -175,6 +174,10 @@ topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj",
     }
     out_counts <- do.call("rbind", replicate(n_rep, out_counts, simplify = FALSE))
     out_props <- do.call("rbind", replicate(n_rep, out_props, simplify = FALSE))
+    # format values for proportions ('digits = 1' since values are percentages)
+    if (format_vals) {
+      out_props <- round(out_props, digits = 1)
+    }
     colnames(out_counts) <- paste("counts", colnames(out_counts), sep = "_")
     colnames(out_props) <- paste("props", colnames(out_props), sep = "_")
   }
@@ -198,8 +201,8 @@ topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj",
   
   # format values
   if (format_vals) {
-    out[, "p_val"] <- formatC(out[, "p_val"], format = "e", digits = digits)
-    out[, "p_adj"] <- formatC(out[, "p_adj"], format = "e", digits = digits)
+    out$p_val <- signif(out$p_val, digits = digits)
+    out$p_adj <- signif(out$p_adj, digits = digits)
   }
   
   if (all) {
