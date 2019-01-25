@@ -144,10 +144,10 @@ out_DS <- diffcyt(d_input, experiment_info, marker_info,
                   seed_clustering = 123, plot = FALSE, verbose = FALSE)
 
 # Display results for top DA clusters
-topTable(out_DA)
+topTable(out_DA, format_vals = TRUE)
 
 # Display results for top DS cluster-marker combinations
-topTable(out_DS)
+topTable(out_DS, format_vals = TRUE)
 
 # Plot heatmap for DA tests
 plotHeatmap(out_DA, analysis_type = "DA")
