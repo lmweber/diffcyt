@@ -321,12 +321,12 @@ out_DA <- diffcyt(
 )
 
 # display table of results for top DA clusters
-topTable(out_DA)
+topTable(out_DA, format_vals = TRUE)
 
 # calculate number of significant detected DA clusters at 10% false discovery 
 # rate (FDR)
 threshold <- 0.1
-res_DA_all <- topTable(out_DA, all = TRUE, format_vals = FALSE)
+res_DA_all <- topTable(out_DA, all = TRUE)
 table(res_DA_all$p_adj <= threshold)
 ```
 
@@ -348,12 +348,12 @@ out_DS <- diffcyt(
 )
 
 # display table of results for top DS cluster-marker combinations
-topTable(out_DS)
+topTable(out_DS, format_vals = TRUE)
 
 # calculate number of significant detected DS cluster-marker combinations at 
 # 10% false discovery rate (FDR)
 threshold <- 0.1
-res_DS_all <- topTable(out_DS, all = TRUE, format_vals = FALSE)
+res_DS_all <- topTable(out_DS, all = TRUE)
 table(res_DS_all$p_adj <= threshold)
 ```
 
@@ -430,12 +430,12 @@ As previously, we can also use the function `topTable()` to display a table of r
 res_DA <- testDA_edgeR(d_counts, design, contrast)
 
 # display table of results for top DA clusters
-topTable(res_DA)
+topTable(res_DA, format_vals = TRUE)
 
 # calculate number of significant detected DA clusters at 10% false discovery 
 # rate (FDR)
 threshold <- 0.1
-table(topTable(res_DA, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
+table(topTable(res_DA, all = TRUE)$p_adj <= threshold)
 ```
 
 
@@ -455,12 +455,12 @@ As previously, we can also use the function `topTable()` to display a table of r
 res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 
 # display table of results for top DS cluster-marker combinations
-topTable(res_DS)
+topTable(res_DS, format_vals = TRUE)
 
 # calculate number of significant detected DS cluster-marker combinations at 
 # 10% false discovery rate (FDR)
 threshold <- 0.1
-table(topTable(res_DS, all = TRUE, format_vals = FALSE)$p_adj <= threshold)
+table(topTable(res_DS, all = TRUE)$p_adj <= threshold)
 ```
 
 
