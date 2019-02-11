@@ -5,10 +5,10 @@
 \title{Show table of results for top clusters or cluster-marker combinations}
 \usage{
 topTable(res, d_counts = NULL, d_medians_by_cluster_marker = NULL,
-  order = TRUE, order_by = "p_adj", all = FALSE, top_n = 20,
-  show_counts = FALSE, show_props = FALSE, sort_cols = TRUE,
-  show_meds = FALSE, all_markers = FALSE, format_vals = FALSE,
-  digits = 3)
+  d_medians_by_sample_marker = NULL, order = TRUE,
+  order_by = "p_adj", all = FALSE, top_n = 20, show_counts = FALSE,
+  show_props = FALSE, sort_cols = TRUE, show_meds = FALSE,
+  all_markers = FALSE, format_vals = FALSE, digits = 3)
 }
 \arguments{
 \item{res}{Output object from either the \code{\link{diffcyt}} wrapper function or one
@@ -26,6 +26,12 @@ function is provided, this will be be automatically extracted.)}
 containing median expression values for each cluster-marker combination, from
 \code{\link{calcMediansByClusterMarker}}. (If the output object from the wrapper
 function is provided, this will be be automatically extracted.)}
+
+\item{d_medians_by_sample_marker}{(Optional) \code{\link{SummarizedExperiment}} object
+containing median expression values for each sample-marker combination, from
+\code{\link{calcMediansBySampleMarker}}. (Required for sorting columns when
+\code{sort_cols = TRUE}.) (If the output object from the wrapper function is
+provided, this will be be automatically extracted.)}
 
 \item{order}{Whether to order results by values in column \code{order_by} (default:
 column \code{p_adj} containing adjusted p-values). Default = TRUE.}
@@ -65,12 +71,6 @@ are required for subsequent steps (e.g. plotting). Default = FALSE.}
 \item{digits}{Number of significant digits to show, if \code{format_vals = TRUE}.
 Default = 3. (Note: for percentages shown if \code{show_props = TRUE}, \code{digits =
 1} is used.)}
-
-\item{d_medians_by_sample_marker}{(Optional) \code{\link{SummarizedExperiment}} object
-containing median expression values for each sample-marker combination, from
-\code{\link{calcMediansBySampleMarker}}. (Required for sorting columns when
-\code{sort_cols = TRUE}.) (If the output object from the wrapper function is
-provided, this will be be automatically extracted.)}
 }
 \value{
 Returns a \code{\link{DataFrame}} table of results for the \code{top_n}
