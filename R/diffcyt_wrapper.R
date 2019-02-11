@@ -367,11 +367,8 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   if (verbose) message("calculating features...")
   d_counts <- calcCounts(d_se)
   d_medians <- calcMedians(d_se)
-  # calculate additional features for plotting (not required if using CATALYST 'daFrame')
-  if (class(d_input) != "daFrame") {
-    d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
-    d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
-  }
+  d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
+  d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
   
   # DA tests
   if (analysis_type == "DA" & verbose) message("calculating DA tests...")
@@ -411,7 +408,9 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     return(list(
       res = res, 
       d_counts = d_counts, 
-      d_medians = d_medians
+      d_medians = d_medians, 
+      d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
+      d_medians_by_sample_marker = d_medians_by_sample_marker
     ))
   }
   

@@ -15,9 +15,9 @@
 #' 
 #' This function displays a summary table of results. By default, the \code{top_n}
 #' clusters or cluster-marker combinations are shown, ordered by adjusted p-values.
-#' Optionally, cluster counts or proportions can also be included. The \code{format_vals}
-#' and \code{digits} arguments can be used to display rounded values to improve
-#' readability of the summary table.
+#' Optionally, cluster counts, proportions, and median expression by cluster-marker
+#' combination can also be included. The \code{format_vals} and \code{digits} arguments
+#' can be used to display rounded values to improve readability of the summary table.
 #' 
 #' 
 #' @param res Output object from either the \code{\link{diffcyt}} wrapper function or one
@@ -30,6 +30,17 @@
 #' @param d_counts (Optional) \code{\link{SummarizedExperiment}} object containing cluster
 #'   cell counts, from \code{\link{calcCounts}}. (If the output object from the wrapper
 #'   function is provided, this will be be automatically extracted.)
+#' 
+#' @param d_medians_by_cluster_marker (Optional) \code{\link{SummarizedExperiment}} object
+#'   containing median expression values for each cluster-marker combination, from
+#'   \code{\link{calcMediansByClusterMarker}}. (If the output object from the wrapper
+#'   function is provided, this will be be automatically extracted.)
+#' 
+#' @param d_medians_by_sample_marker (Optional) \code{\link{SummarizedExperiment}} object
+#'   containing median expression values for each sample-marker combination, from
+#'   \code{\link{calcMediansBySampleMarker}}. (Required for sorting columns when
+#'   \code{sort_cols = TRUE}.) (If the output object from the wrapper function is
+#'   provided, this will be be automatically extracted.)
 #' 
 #' @param order Whether to order results by values in column \code{order_by} (default:
 #'   column \code{p_adj} containing adjusted p-values). Default = TRUE.
@@ -50,21 +61,35 @@
 #' @param show_props Whether to display cluster cell count proportions by sample
 #'   (calculated from \code{d_counts}). Default = FALSE.
 #' 
+#' @param sort_cols Whether to sort columns of counts and proportions, by levels of factor
+#'   \code{sample_id} in object \code{d_medians_by_sample_marker} (if this object and
+#'   factor are provided). Default = TRUE.
+#' 
+#' @param show_meds Whether to display median expression values for each cluster-marker
+#'   combination (from \code{d_medians_by_cluster_marker}). Default = FALSE. (By default,
+#'   if TRUE, medians are shown for 'cell state' markers only. To show all markers, set
+#'   the additional argument \code{all_markers = TRUE}.)
+#' 
+#' @param all_markers If \code{show_meds = TRUE}, whether to show medians for all markers
+#'   (instead of 'cell state' markers only). Default = FALSE.
+#' 
 #' @param format_vals Whether to display rounded values in numeric columns. This improves
 #'   readability of the summary table, but should not be used when exact numeric values
 #'   are required for subsequent steps (e.g. plotting). Default = FALSE.
 #' 
-#' @param digits Number of significant digits to show for p-values and adjusted p-values,
-#'   if \code{format_vals = TRUE}. Default = 3.
+#' @param digits Number of significant digits to show, if \code{format_vals = TRUE}.
+#'   Default = 3. (Note: for percentages shown if \code{show_props = TRUE}, \code{digits =
+#'   1} is used.)
 #' 
 #' 
 #' @return Returns a \code{\link{DataFrame}} table of results for the \code{top_n}
 #'   clusters or cluster-marker combinations, ordered by values in column \code{order_by}
-#'   (default: adjusted p-values). Optionally, cluster counts or proportions are also
-#'   included.
+#'   (default: adjusted p-values). Optionally, cluster counts, proportions, and median
+#'   expression by cluster-marker combination are also included.
 #' 
 #' 
 #' @importFrom SummarizedExperiment rowData assay
+#' @importFrom S4Vectors metadata
 #' @importFrom utils head
 #' 
 #' @export
@@ -141,14 +166,18 @@
 #' # Display results for top DS cluster-marker combinations
 #' topTable(out_DS, format_vals = TRUE)
 #' 
-topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj", 
+topTable <- function(res, d_counts = NULL, d_medians_by_cluster_marker = NULL, 
+                     order = TRUE, order_by = "p_adj", 
                      all = FALSE, top_n = 20, 
-                     show_counts = FALSE, show_props = FALSE, 
+                     show_counts = FALSE, show_props = FALSE, sort_cols = TRUE, 
+                     show_meds = FALSE, all_markers = FALSE, 
                      format_vals = FALSE, digits = 3) {
   
-  # if output is from wrapper function, extract 'res' and 'd_counts' objects
-  if (all(c("res", "d_counts") %in% names(res))) {
-    d_counts <- res$d_counts
+  # if output is from wrapper function, extract 'res', 'd_counts', 'd_medians_by_cluster_marker', 'd_medians_by_sample_marker'
+  if (("res" %in% names(res)) & any(c("d_counts", "d_medians_by_cluster_marker", "d_medians_by_sample_marker") %in% names(res))) {
+    if ("d_counts" %in% names(res)) d_counts <- res$d_counts
+    if ("d_medians_by_cluster_marker" %in% names(res)) d_medians_by_cluster_marker <- res$d_medians_by_cluster_marker
+    if ("d_medians_by_sample_marker" %in% names(res)) d_medians_by_sample_marker <- res$d_medians_by_sample_marker
     res <- res$res
   }
   
@@ -178,8 +207,35 @@ topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj",
     if (format_vals) {
       out_props <- round(out_props, digits = 1)
     }
+    # sort columns
+    if (sort_cols) {
+      ix_cols <- levels(rowData(d_medians_by_sample_marker)$sample_id)
+      out_counts <- out_counts[, ix_cols]
+      out_props <- out_props[, ix_cols]
+    }
     colnames(out_counts) <- paste("counts", colnames(out_counts), sep = "_")
     colnames(out_props) <- paste("props", colnames(out_props), sep = "_")
+  }
+  
+  # include median expression by cluster-marker combination
+  if (show_meds) {
+    out_meds <- assay(d_medians_by_cluster_marker)
+    if (!all_markers) {
+      out_meds <- out_meds[, metadata(d_medians_by_cluster_marker)$id_state_markers, drop = FALSE]
+    }
+    n_rep <- nrow(out) / nrow(out_meds)
+    if (!all(out$cluster_id[seq_len(nrow(out_meds))] == rownames(out_meds))) {
+      stop("Cluster IDs in 'res' and 'd_medians_by_cluster_marker' do not match")
+    }
+    if (!(nrow(out) == n_rep * nrow(out_meds))) {
+      stop("Cluster IDs in 'res' and 'd_medians_by_cluster_marker' do not match")
+    }
+    out_meds <- do.call("rbind", replicate(n_rep, out_meds, simplify = FALSE))
+    # format values for proportions
+    if (format_vals) {
+      out_meds <- round(out_meds, digits = digits)
+    }
+    colnames(out_meds) <- paste("meds", colnames(out_meds), sep = "_")
   }
   
   if (show_counts) {
@@ -189,6 +245,10 @@ topTable <- function(res, d_counts = NULL, order = TRUE, order_by = "p_adj",
   if (show_props) {
     stopifnot(nrow(out) == nrow(out_props))
     out <- cbind(out, out_props)
+  }
+  if (show_meds) {
+    stopifnot(nrow(out) == nrow(out_meds))
+    out <- cbind(out, out_meds)
   }
   
   # order rows
