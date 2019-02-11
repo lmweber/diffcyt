@@ -166,7 +166,8 @@
 #' # Display results for top DS cluster-marker combinations
 #' topTable(out_DS, format_vals = TRUE)
 #' 
-topTable <- function(res, d_counts = NULL, d_medians_by_cluster_marker = NULL, 
+topTable <- function(res, d_counts = NULL, 
+                     d_medians_by_cluster_marker = NULL, d_medians_by_sample_marker = NULL, 
                      order = TRUE, order_by = "p_adj", 
                      all = FALSE, top_n = 20, 
                      show_counts = FALSE, show_props = FALSE, sort_cols = TRUE, 
