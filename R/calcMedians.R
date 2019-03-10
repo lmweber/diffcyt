@@ -41,7 +41,7 @@
 #'   \code{metadata(d_medians)$id_state_markers}.
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assay rowData colData
+#' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
 #' @importFrom dplyr group_by tally summarize
 #' @importFrom tidyr complete
 #' @importFrom reshape2 acast
@@ -115,7 +115,7 @@ calcMedians <- function(d_se) {
   
   # calculate cluster medians for each marker
   
-  assaydata_mx <- assay(d_se)
+  assaydata_mx <- assays(d_se)[["exprs"]]
   
   medians <- vector("list", sum(is_marker))
   marker_names_sub <- as.character(colData(d_se)$marker_name[is_marker])

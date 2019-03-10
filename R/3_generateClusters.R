@@ -76,7 +76,7 @@
 #' 
 #' @importFrom FlowSOM ReadInput BuildSOM BuildMST metaClustering_consensus
 #' @importFrom flowCore flowFrame
-#' @importFrom SummarizedExperiment assay rowData colData 'rowData<-'
+#' @importFrom SummarizedExperiment assays rowData colData 'rowData<-'
 #' @importFrom S4Vectors metadata 'metadata<-'
 #' @importFrom grDevices pdf dev.off
 #' 
@@ -133,7 +133,7 @@ generateClusters <- function(d_se, cols_clustering = NULL,
   if (is.null(cols_clustering)) cols_clustering <- colData(d_se)$marker_class == "type"
   
   # note: FlowSOM requires input data as 'flowFrame' or 'flowSet'
-  d_ff <- flowFrame(assay(d_se))
+  d_ff <- flowFrame(assays(d_se)[["exprs"]])
   
   runtime <- system.time({
     # FlowSOM: pre meta-clustering

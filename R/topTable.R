@@ -88,7 +88,7 @@
 #'   expression by cluster-marker combination are also included.
 #' 
 #' 
-#' @importFrom SummarizedExperiment rowData assay
+#' @importFrom SummarizedExperiment rowData assays
 #' @importFrom S4Vectors metadata
 #' @importFrom utils head
 #' 
@@ -193,7 +193,7 @@ topTable <- function(res, d_counts = NULL,
   
   # include cluster cell counts and/or proportions
   if (show_counts | show_props) {
-    out_counts <- assay(d_counts)
+    out_counts <- assays(d_counts)[["counts"]]
     out_props <- t(t(out_counts) / colSums(out_counts)) * 100
     n_rep <- nrow(out) / nrow(out_counts)
     if (!all(out$cluster_id[seq_len(nrow(out_counts))] == rownames(out_counts))) {
@@ -220,7 +220,7 @@ topTable <- function(res, d_counts = NULL,
   
   # include median expression by cluster-marker combination
   if (show_meds) {
-    out_meds <- assay(d_medians_by_cluster_marker)
+    out_meds <- assays(d_medians_by_cluster_marker)[["medians_by_cluster_marker"]]
     if (!all_markers) {
       out_meds <- out_meds[, metadata(d_medians_by_cluster_marker)$id_state_markers, drop = FALSE]
     }
