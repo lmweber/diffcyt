@@ -79,7 +79,7 @@
 #'   can be accessed with the \code{\link{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom edgeR calcNormFactors DGEList estimateDisp glmFit glmLRT topTags
 #' @importFrom methods as is
 #' 
@@ -154,7 +154,7 @@ testDA_edgeR <- function(d_counts, design, contrast,
     min_samples <- ncol(d_counts) / 2
   }
   
-  counts <- assay(d_counts)
+  counts <- assays(d_counts)[["counts"]]
   cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples

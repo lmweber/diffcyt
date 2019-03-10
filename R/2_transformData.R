@@ -41,7 +41,7 @@
 #' @return \code{d_se}: Data with transform applied to protein marker columns.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assay colData 'assay<-'
+#' @importFrom SummarizedExperiment assays colData 'assays<-'
 #' 
 #' @export
 #' 
@@ -88,18 +88,18 @@
 transformData <- function(d_se, cofactor = 5) {
   
   if (is.null(colData(d_se)$marker_class)) {
-    is_marker <- rep(TRUE, ncol(assay(d_se)))
+    is_marker <- rep(TRUE, ncol(assays(d_se)[["exprs"]]))
   } else {
     is_marker <- colData(d_se)$marker_class != "none"
   }
   
   # extract expression data
-  d_ex <- assay(d_se)
+  d_ex <- assays(d_se)[["exprs"]]
   
   # apply transform to marker columns
   d_ex[, is_marker] <- asinh(d_ex[, is_marker] / cofactor)
   
-  assay(d_se) <- d_ex
+  assays(d_se)[["exprs"]] <- d_ex
   
   d_se
 }

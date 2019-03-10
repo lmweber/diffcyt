@@ -107,7 +107,7 @@
 #'   function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom lme4 lmer
 #' @importFrom multcomp glht
 #' @importFrom stats lm p.adjust
@@ -199,7 +199,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   }
   
   # note: counts are only required for filtering
-  counts <- assay(d_counts)
+  counts <- assays(d_counts)[["counts"]]
   cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples

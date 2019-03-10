@@ -110,7 +110,7 @@
 #'   \code{\link{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assay assays rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom limma contrasts.fit duplicateCorrelation lmFit eBayes plotSA topTable
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
@@ -208,7 +208,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   }
   
   # note: counts are only required for filtering
-  counts <- assay(d_counts)
+  counts <- assays(d_counts)[["counts"]]
   cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples

@@ -92,7 +92,7 @@
 #'   \code{\link{rowData}} accessor function.
 #' 
 #' 
-#' @importFrom SummarizedExperiment assay rowData 'rowData<-' colData 'colData<-'
+#' @importFrom SummarizedExperiment assays rowData 'rowData<-' colData 'colData<-'
 #' @importFrom edgeR calcNormFactors
 #' @importFrom lme4 glmer
 #' @importFrom multcomp glht
@@ -170,7 +170,7 @@ testDA_GLMM <- function(d_counts, formula, contrast,
     min_samples <- ncol(d_counts) / 2
   }
   
-  counts <- assay(d_counts)
+  counts <- assays(d_counts)[["counts"]]
   cluster_id <- rowData(d_counts)$cluster_id
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples

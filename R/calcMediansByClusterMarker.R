@@ -38,7 +38,7 @@
 #'   \code{metadata(d_medians)$id_state_markers}.
 #' 
 #' 
-#' @importFrom SummarizedExperiment SummarizedExperiment assay rowData colData
+#' @importFrom SummarizedExperiment SummarizedExperiment assays rowData colData
 #' @importFrom dplyr group_by tally summarize
 #' @importFrom tidyr complete
 #' @importFrom reshape2 melt acast
@@ -112,7 +112,7 @@ calcMediansByClusterMarker <- function(d_se) {
   
   # calculate cluster medians
   
-  marker_vals <- as.data.frame(assay(d_se))[, is_marker, drop = FALSE]
+  marker_vals <- as.data.frame(assays(d_se)[["exprs"]])[, is_marker, drop = FALSE]
   rowdata_df <- as.data.frame(rowData(d_se))
   
   stopifnot(nrow(marker_vals) == nrow(rowdata_df))
