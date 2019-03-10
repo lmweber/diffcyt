@@ -1,6 +1,7 @@
 # diffcyt
 
 [![Build Status](https://travis-ci.org/lmweber/diffcyt.svg?branch=master)](https://travis-ci.org/lmweber/diffcyt)
+[![codecov](https://codecov.io/gh/lmweber/diffcyt/branch/master/graph/badge.svg)](https://codecov.io/gh/lmweber/diffcyt)
 
 
 ## Summary

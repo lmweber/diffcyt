@@ -40,9 +40,10 @@ Imports:
     grid
 VignetteBuilder: knitr
 Suggests:
-    BiocStyle, 
-    knitr, 
-    rmarkdown, 
-    HDCytoData, 
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat,
+    HDCytoData,
     CATALYST
 RoxygenNote: 6.1.1
