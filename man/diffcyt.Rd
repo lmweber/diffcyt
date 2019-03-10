@@ -25,17 +25,18 @@ as input (one \code{flowFrame} or list item per sample) (see
 \code{\link{prepareData}}); or (ii) a \code{CATALYST} \code{daFrame} (containing
 cluster labels in \code{rowData}; see vignette for an example).}
 
-\item{experiment_info}{\code{data.frame} or \code{\link{DataFrame}} of experiment
-information, for example sample IDs and group IDs. Must contain a column named
-\code{sample_id}. See \code{\link{prepareData}}. (Not required when providing a
-\code{CATALYST} \code{daFrame} for \code{d_input}.)}
-
-\item{marker_info}{\code{data.frame} or \code{\link{DataFrame}} of marker information
-for each column of data. This should contain columns named \code{marker_name} and
-\code{marker_class}. The columns contain: (i) marker names (and any other column
-names); and (ii) a factor indicating the marker class for each column (with entries
-\code{"type"}, \code{"state"}, or \code{"none"}). See \code{\link{prepareData}}. (Not
+\item{experiment_info}{\code{data.frame}, \code{\link{DataFrame}}, or
+\code{\link{tbl_df}} of experiment information, for example sample IDs and group IDs.
+Must contain a column named \code{sample_id}. See \code{\link{prepareData}}. (Not
 required when providing a \code{CATALYST} \code{daFrame} for \code{d_input}.)}
+
+\item{marker_info}{\code{data.frame}, \code{\link{DataFrame}}, or \code{\link{tbl_df}}
+of marker information for each column of data. This should contain columns named
+\code{marker_name} and \code{marker_class}. The columns contain: (i) marker names
+(and any other column names); and (ii) a factor indicating the marker class for each
+column (with entries \code{"type"}, \code{"state"}, or \code{"none"}). See
+\code{\link{prepareData}}. (Not required when providing a \code{CATALYST}
+\code{daFrame} for \code{d_input}.)}
 
 \item{design}{Design matrix, created with \code{\link{createDesignMatrix}}. See
 \code{\link{createDesignMatrix}}.}

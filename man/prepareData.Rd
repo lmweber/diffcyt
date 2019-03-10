@@ -13,15 +13,15 @@ prepareData(d_input, experiment_info, marker_info,
 \code{\link{flowFrame}s}, \code{\link{DataFrame}s}, \code{data.frames}, or matrices
 as input (one \code{flowFrame} or list item per sample).}
 
-\item{experiment_info}{\code{data.frame} or \code{\link{DataFrame}} of experiment
-information, for example sample IDs and group IDs. Must contain a column named
-\code{sample_id}.}
+\item{experiment_info}{\code{data.frame}, \code{\link{DataFrame}}, or
+\code{\link{tbl_df}} of experiment information, for example sample IDs and group IDs.
+Must contain a column named \code{sample_id}.}
 
-\item{marker_info}{\code{data.frame} or \code{\link{DataFrame}} of marker information
-for each column of data. This should contain columns named \code{marker_name} and
-\code{marker_class}. The columns contain: (i) marker names (and any other column
-names); and (ii) a factor indicating the marker class for each column (with entries
-\code{"type"}, \code{"state"}, or \code{"none"}).}
+\item{marker_info}{\code{data.frame}, \code{\link{DataFrame}}, or \code{\link{tbl_df}}
+of marker information for each column of data. This should contain columns named
+\code{marker_name} and \code{marker_class}. The columns contain: (i) marker names
+(and any other column names); and (ii) a factor indicating the marker class for each
+column (with entries \code{"type"}, \code{"state"}, or \code{"none"}).}
 
 \item{cols_to_include}{Logical vector indicating which columns to include from the
 input data. Default = all columns.}
