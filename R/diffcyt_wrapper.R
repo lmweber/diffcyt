@@ -315,7 +315,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   method_DS <- match.arg(method_DS)
   
   # preliminary steps (if input object is not a CATALYST 'daFrame')
-  if (class(d_input) != "daFrame") {
+  if (!is(d_input, "daFrame")) {
     if (is.null(experiment_info) | is.null(marker_info)) {
       stop("'experiment_info' and 'marker_info' inputs must be provided when not using CATALYST ", 
            "'daFrame' object as input")
@@ -334,7 +334,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   
   # alternatively, use CATALYST 'daFrame' (which already contains cluster labels) as input
-  else if (class(d_input) == "daFrame") {
+  else if (is(d_input, "daFrame")) {
     if (verbose) message("using CATALYST 'daFrame' input object")
     
     if (is.null(clustering_to_use)) {
@@ -392,7 +392,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   
   # return results and data objects
-  if (class(d_input) != "daFrame") {
+  if (!is(d_input, "daFrame")) {
     return(list(
       res = res, 
       d_se = d_se, 
@@ -401,7 +401,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
       d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
       d_medians_by_sample_marker = d_medians_by_sample_marker
     ))
-  } else if (class(d_input) == "daFrame") {
+  } else if (is(d_input, "daFrame")) {
     # store clustering identifier in metadata
     metadata(res) <- as.list(c(metadata(res), clustering_name = clustering_name))
     # not returning input object, since it has been modified

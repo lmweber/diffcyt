@@ -81,10 +81,8 @@
 #' 
 createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL) {
   
-  stopifnot(class(experiment_info) %in% c("data.frame", "DataFrame"))
-  if (class(experiment_info) == "DataFrame") {
-    experiment_info <- as.data.frame(experiment_info)
-  }
+  stopifnot(any(class(experiment_info) %in% c("data.frame", "DataFrame", "tbl_df", "tbl")))
+  experiment_info <- as.data.frame(experiment_info)
   
   # create formula
   
