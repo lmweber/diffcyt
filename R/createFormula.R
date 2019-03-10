@@ -41,10 +41,11 @@
 #' instead of a model formula; see \code{\link{createDesignMatrix}}.
 #' 
 #' 
-#' @param experiment_info \code{data.frame} or \code{DataFrame} of experiment information
-#'   (which was also previously provided to \code{\link{prepareData}}). This should be a
-#'   data frame containing all factors and covariates of interest; e.g. group IDs, block
-#'   IDs, batch IDs, and continuous covariates.
+#' @param experiment_info \code{data.frame}, \code{DataFrame}, or \code{tbl_df} of
+#'   experiment information (which was also previously provided to
+#'   \code{\link{prepareData}}). This should be a data frame containing all factors and
+#'   covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
+#'   covariates.
 #' 
 #' @param cols_fixed (Logical) Columns of \code{experiment_info} to include as fixed
 #'   effect terms in the model formula.
