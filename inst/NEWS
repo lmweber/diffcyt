@@ -1,1 +1,6 @@
 1.0.0: Initial version available from Bioconductor.
+
+1.2.5: Renamed and extended summary table function 'topTable' (previously 'topClusters').
+
+1.2.11: Allow selecting columns of 'experiment_info' with character vector of column 
+names, when creating design matrix or model formula.
