@@ -248,7 +248,9 @@ design <- createDesignMatrix(experiment_info, cols_design = c("group_id", "patie
 
 A contrast matrix is also required in order to calculate differential tests. The contrast matrix specifies the comparison of interest, i.e. the combination of model parameters assumed to equal zero under the null hypothesis.
 
-Contrast matrices can be created in the required format using the function `createContrast()`. See `?createContrast` for more details.
+Contrast matrices can be created in the required format using the function `createContrast()`. This function requires a single argument: a numeric vector defining the contrast. In many cases, this will simply be a vector of zeros and a single entry equal to one, which will test whether a single parameter is equal to zero. If a design matrix has been used, the entries correspond to the columns of the design matrix; if a model formula has been used, the entries correspond to the levels of the fixed effect terms.
+
+See `?createContrast` for more details.
 
 Here, we are interested in comparing condition `BCR-XL` against `Reference`, i.e. comparing the `BCR-XL` level against the `Reference` level for the `group_id` factor in the `experiment_info` data frame. This corresponds to testing whether the coefficient for column `group_idBCR-XL` in the design matrix `design` is equal to zero. This contrast can be specified as follows. (Note that there is one value per coefficient, including the intercept term; and rows in the final contrast matrix correspond to columns in the design matrix.)
 
