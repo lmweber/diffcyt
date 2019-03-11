@@ -14,6 +14,7 @@ author:
     affiliation: 
       - *id1
       - *id2
+      - &id4 "Current address: Friedrich Miescher Institute for Biomedical Research and SIB Swiss Institute of Bioinformatics, Basel, Switzerland"
   - name: Mark. D. Robinson
     affiliation: 
       - *id1
@@ -40,7 +41,7 @@ High-dimensional cytometry includes multi-color flow cytometry, mass cytometry o
 
 This vignette provides a complete example workflow for running the `diffcyt` pipeline, using either the wrapper function `diffcyt()`, or the individual functions for each step.
 
-The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object prepared with the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for formal differential testing.
+The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object prepared with the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for differential testing.
 
 
 ```{r, out.width="190px", echo=FALSE}
@@ -85,7 +86,7 @@ A complete description of the statistical methodology and comparisons with exist
 
 # Installation
 
-The stable release version of the `diffcyt` package can be installed using the Bioconductor installer. Note that this requires R version 3.5.0 or later.
+The stable release version of the `diffcyt` package can be installed using the Bioconductor installer. Note that this requires R version 3.4.0 or later.
 
 ```{r, eval=FALSE}
 # Install Bioconductor installer from CRAN
@@ -96,7 +97,7 @@ BiocManager::install("diffcyt")
 ```
 
 
-To run the examples in this vignette, you will also need the `HDCytoData` and `CATALYST` packages from Bioconductor.
+To run all examples in this vignette, you will also need the `HDCytoData` and `CATALYST` packages from Bioconductor.
 
 ```{r, eval=FALSE}
 BiocManager::install("HDCytoData")
@@ -237,8 +238,8 @@ In both cases, flexible experimental designs are possible, including blocking (e
 suppressPackageStartupMessages(library(diffcyt))
 
 # Create design matrix
-# note: selecting columns 1 and 2, which contain group IDs and patient IDs
-design <- createDesignMatrix(experiment_info, cols_design = 1:2)
+# note: selecting columns containing group IDs and patient IDs
+design <- createDesignMatrix(experiment_info, cols_design = c("group_id", "patient_id"))
 ```
 
 
@@ -256,7 +257,8 @@ Here, we are interested in comparing condition `BCR-XL` against `Reference`, i.e
 # Create contrast matrix
 contrast <- createContrast(c(0, 1, rep(0, 7)))
 
-# check dimensions
+# check
+colnames(design)
 nrow(contrast) == ncol(design)
 ```
 
@@ -483,13 +485,15 @@ For more examples of visualizations (in particular exploratory visualizations to
 
 ## Heatmap: DA test results
 
-This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (cluster abundances by sample) for the top (most highly significant) detected clusters from the DA tests. See `?plotDiffHeatmap` (from the `CATALYST` package) for more details.
+This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (cluster abundances by sample) for the top (most highly significant) detected clusters from the DA tests.
 
 Rows represent clusters, and columns represent protein markers (left panel) or samples (right panel). The left panel displays median (arcsinh-transformed) expression values across all samples for cell type markers, i.e. cluster phenotypes. The right panel displays the signal of interest: cluster abundances by sample (for the DA tests). The right annotation bar indicates clusters detected as significantly differential at an adjusted p-value threshold of 10%.
 
 As mentioned previously, the DA tests are not particularly meaningful for the `Bodenmiller_BCR_XL` dataset, since the main signals of interest in this dataset are differential expression of pS6 and other signaling markers in B cells and several other cell populations. However, we include the plot here for illustrative purposes, to show how to use the functions.
 
-Note: using `plotHeatmap` from the `diffcyt` package for now. This will be updated to use the plotting functions from the `CATALYST` package instead. See `?plotHeatmap` for more details.
+(Note: For the example below, we use an earlier version of the heatmap plotting function, which is included within the `diffcyt` package, instead of using `CATALYST`. This is done to streamline installation and compilation of the `diffcyt` package and vignette, by reducing dependencies. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+
+See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
 
 ```{r}
@@ -502,10 +506,20 @@ plotHeatmap(out_DA, analysis_type = "DA", sample_order = sample_order)
 ```
 
 
+```{r, eval=FALSE}
+library(CATALYST)
+
+# Heatmap for top detected DA clusters (alternative code using 'CATALYST')
+
+plotDiffHeatmap(out_DA$d_se, out_DA$res)
+```
+
+
+
 
 ## Heatmap: DS test results
 
-This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (median expression of cell state markers by sample) for the top (most highly significant) detected cluster-marker combinations from the DS tests. See `?plotDiffHeatmap` (from the `CATALYST` package) for more details.
+This heatmap illustrates the phenotypes (marker expression profiles) and signals of interest (median expression of cell state markers by sample) for the top (most highly significant) detected cluster-marker combinations from the DS tests.
 
 Rows represent cluster-marker combinations, and columns represent protein markers (left panel) or samples (right panel). The left panel displays median (arcsinh-transformed) expression values across all samples for cell type markers, i.e. cluster phenotypes. The right panel displays the signal of interest: median expression of cell state markers by sample (for the DS tests). The right annotation bar indicates cluster-marker combinations detected as significantly differential at an adjusted p-value threshold of 10%.
 
@@ -513,7 +527,9 @@ The heatmap shows that the `diffcyt` pipeline has successfully recovered the mai
 
 As expected, several of the top (most highly significant) detected cluster-marker combinations represent differential expression of pS6 (labels in right annotation bar) in B cells (identified by high expression of CD20, left panel). Similarly, the other top detected cluster-marker combinations shown in the heatmap correspond to other known strong differential signals in this dataset (see Nowicka et al., 2017, Figure 29; or the description of the results for dataset `BCR-XL` in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
 
-Note: using `plotHeatmap` from the `diffcyt` package for now. This will be updated to use the plotting functions from the `CATALYST` package instead. See `?plotHeatmap` for more details.
+(Note: For the example below, we use an earlier version of the heatmap plotting function, which is included within the `diffcyt` package, instead of using `CATALYST`. This is done to streamline installation and compilation of the `diffcyt` package and vignette, by reducing dependencies. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+
+See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
 
 ```{r}
@@ -523,6 +539,15 @@ Note: using `plotHeatmap` from the `diffcyt` package for now. This will be updat
 sample_order <- c(seq(2, 16, by = 2), seq(1, 16, by = 2))
 
 plotHeatmap(out_DS, analysis_type = "DS", sample_order = sample_order)
+```
+
+
+```{r, eval=FALSE}
+library(CATALYST)
+
+# Heatmap for top detected DA clusters (alternative code using 'CATALYST')
+
+plotDiffHeatmap(out_DS$d_se, out_DS$res)
 ```
 
 
