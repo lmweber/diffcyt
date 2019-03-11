@@ -13,11 +13,14 @@ experiment information (which was also previously provided to
 covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
 covariates.}
 
-\item{cols_fixed}{(Logical) Columns of \code{experiment_info} to include as fixed
-effect terms in the model formula.}
+\item{cols_fixed}{Argument specifying columns of \code{experiment_info} to include as
+fixed effect terms in the model formula. This can be provided as a character vector
+of column names, a numeric vector of column indices, or a logical vector.}
 
-\item{cols_random}{(Logical) Columns of \code{experiment_info} to include as random
-intercept terms in the model formula.}
+\item{cols_random}{Argument specifying columns of \code{experiment_info} to include as
+random intercept terms in the model formula. This can be provided as a character
+vector of column names, a numeric vector of column indices, or a logical vector.
+Default = none.}
 }
 \value{
 \code{formula}: Returns a list with three elements:
@@ -57,10 +60,11 @@ an 'observation-level random effect' (OLRE); see see Nowicka et al., 2017,
 \emph{F1000Research} for more details)
 }
 
-The logical vectors \code{cols_fixed} and \code{cols_random} specify the columns in
+The arguments \code{cols_fixed} and \code{cols_random} specify the columns in
 \code{experiment_info} to include as fixed effect terms and random intercept terms
-respectively. The names for each formula term are taken from the column names of
-\code{experiment_info}.
+respectively. These can be provided as character vectors of column names, numeric
+vectors of column indices, or logical vectors. The names for each formula term are
+taken from the column names of \code{experiment_info}.
 
 Note that for some methods, random effect terms (e.g. for block IDs) must be provided
 directly to the differential testing function instead (\code{\link{testDA_voom}} and
@@ -80,6 +84,6 @@ experiment_info <- data.frame(
   patient_id = factor(rep(paste0("patient", 1:4), 2)), 
   stringsAsFactors = FALSE
 )
-createFormula(experiment_info, cols_fixed = 2, cols_random = c(1, 3))
+createFormula(experiment_info, cols_fixed = "group_id", cols_random = c("sample_id", "patient_id"))
 
 }

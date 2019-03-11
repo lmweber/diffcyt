@@ -21,14 +21,16 @@
 #' \item continuous covariates
 #' }
 #' 
-#' The logical vector \code{cols_design} specifies which columns in \code{experiment_info}
-#' to include in the design matrix. (For example, there may be an additional column of
-#' sample IDs, which should not be included.)
+#' The argument \code{cols_design} specifies which columns in \code{experiment_info} to
+#' include in the design matrix. (For example, there may be an additional column of sample
+#' IDs, which should not be included.) This can be provided as a character vector of
+#' column names, a numeric vector of column indices, or a logical vector. By default, all
+#' columns are included.
 #' 
-#' Columns of indicator variables (e.g. group IDs, block IDs, and batch IDs) must be
-#' formatted as factors (otherwise they will be treated as numeric values). The indicator
-#' columns will be expanded into the design matrix format. The names for each parameter
-#' are taken from the column names of \code{experiment_info}.
+#' Columns of indicator variables (e.g. group IDs, block IDs, and batch IDs) in
+#' \code{experiment_info} must be formatted as factors (otherwise they will be treated as
+#' numeric values). The indicator columns will be expanded into the design matrix format.
+#' The names for each parameter are taken from the column names of \code{experiment_info}.
 #' 
 #' All factors provided here will be included as fixed effect terms in the design matrix.
 #' Alternatively, to use random effects for some factors (e.g. for block IDs), see
@@ -43,8 +45,9 @@
 #'   covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
 #'   covariates.
 #' 
-#' @param cols_design (Logical) Columns of \code{experiment_info} to include in the design
-#'   matrix. Default = all columns.
+#' @param cols_design Argument specifying the columns of \code{experiment_info} to include
+#'   in the design matrix. This can be provided as a character vector of column names, a
+#'   numeric vector of column indices, or a logical vector. Default = all columns.
 #' 
 #' 
 #' @return \code{design}: Returns a design matrix (numeric matrix), with one row per
@@ -66,7 +69,7 @@
 #'   group_id = factor(c("group1", "group1", "group2", "group2")), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(experiment_info, cols_design = 2)
+#' createDesignMatrix(experiment_info, cols_design = "group_id")
 #' 
 #' # Example: more complex design matrix: patient IDs and batch IDs
 #' experiment_info <- data.frame(
@@ -76,7 +79,7 @@
 #'   batch_id = factor(rep(paste0("batch", 1:2), 4)), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(experiment_info, cols_design = 2:4)
+#' createDesignMatrix(experiment_info, cols_design = c("group_id", "patient_id", "batch_id"))
 #' 
 #' # Example: more complex design matrix: continuous covariate
 #' experiment_info <- data.frame(
@@ -85,18 +88,25 @@
 #'   age = c(52, 35, 71, 60), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createDesignMatrix(experiment_info, cols_design = 2:3)
+#' createDesignMatrix(experiment_info, cols_design = c("group_id", "age"))
 #' 
 createDesignMatrix <- function(experiment_info, cols_design = NULL) {
   
   stopifnot(any(class(experiment_info) %in% c("data.frame", "DataFrame", "tbl_df", "tbl")))
   experiment_info <- as.data.frame(experiment_info)
   
-  if (is.null(cols_design)) cols_design <- seq_len(nrow(experiment_info))
+  # terms for design matrix
+  if (is.character(cols_design)) {
+    stopifnot(all(cols_design %in% colnames(experiment_info)))
+    terms <- cols_design
+  } else if (is.numeric(cols_design) | is.logical(cols_design)) {
+    terms <- colnames(experiment_info)[cols_design]
+  } else if (is.null(cols_design)) {
+    # default: all columns
+    terms <- colnames(experiment_info)
+  }
   
   # create design matrix
-  terms <- colnames(experiment_info)[cols_design]
-  
   formula <- as.formula(paste("~", paste(terms, collapse = " + ")))
   
   design <- model.matrix(formula, data = experiment_info)

@@ -154,7 +154,7 @@
 #' d_counts <- calcCounts(d_se)
 #' 
 #' # Create model formula
-#' formula <- createFormula(experiment_info, cols_fixed = 2, cols_random = 1)
+#' formula <- createFormula(experiment_info, cols_fixed = "group_id", cols_random = "sample_id")
 #' 
 #' # Create contrast matrix
 #' contrast <- createContrast(c(0, 1))

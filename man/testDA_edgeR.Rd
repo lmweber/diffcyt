@@ -140,7 +140,7 @@ d_se <- generateClusters(d_se)
 d_counts <- calcCounts(d_se)
 
 # Create design matrix
-design <- createDesignMatrix(experiment_info, cols_design = 2)
+design <- createDesignMatrix(experiment_info, cols_design = "group_id")
 
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))
