@@ -174,7 +174,7 @@ d_counts <- calcCounts(d_se)
 d_medians <- calcMedians(d_se)
 
 # Create model formula
-formula <- createFormula(experiment_info, cols_fixed = 2)
+formula <- createFormula(experiment_info, cols_fixed = "group_id")
 
 # Create contrast matrix
 contrast <- createContrast(c(0, 1))

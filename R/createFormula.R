@@ -28,10 +28,11 @@
 #' \emph{F1000Research} for more details)
 #' }
 #' 
-#' The logical vectors \code{cols_fixed} and \code{cols_random} specify the columns in
+#' The arguments \code{cols_fixed} and \code{cols_random} specify the columns in
 #' \code{experiment_info} to include as fixed effect terms and random intercept terms
-#' respectively. The names for each formula term are taken from the column names of
-#' \code{experiment_info}.
+#' respectively. These can be provided as character vectors of column names, numeric
+#' vectors of column indices, or logical vectors. The names for each formula term are
+#' taken from the column names of \code{experiment_info}.
 #' 
 #' Note that for some methods, random effect terms (e.g. for block IDs) must be provided
 #' directly to the differential testing function instead (\code{\link{testDA_voom}} and
@@ -47,11 +48,14 @@
 #'   covariates of interest; e.g. group IDs, block IDs, batch IDs, and continuous
 #'   covariates.
 #' 
-#' @param cols_fixed (Logical) Columns of \code{experiment_info} to include as fixed
-#'   effect terms in the model formula.
+#' @param cols_fixed Argument specifying columns of \code{experiment_info} to include as
+#'   fixed effect terms in the model formula. This can be provided as a character vector
+#'   of column names, a numeric vector of column indices, or a logical vector.
 #' 
-#' @param cols_random (Logical) Columns of \code{experiment_info} to include as random
-#'   intercept terms in the model formula.
+#' @param cols_random Argument specifying columns of \code{experiment_info} to include as
+#'   random intercept terms in the model formula. This can be provided as a character
+#'   vector of column names, a numeric vector of column indices, or a logical vector.
+#'   Default = none.
 #' 
 #' 
 #' @return \code{formula}: Returns a list with three elements:
@@ -78,7 +82,7 @@
 #'   patient_id = factor(rep(paste0("patient", 1:4), 2)), 
 #'   stringsAsFactors = FALSE
 #' )
-#' createFormula(experiment_info, cols_fixed = 2, cols_random = c(1, 3))
+#' createFormula(experiment_info, cols_fixed = "group_id", cols_random = c("sample_id", "patient_id"))
 #' 
 createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL) {
   
@@ -88,17 +92,28 @@ createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL
   # create formula
   
   # fixed effects
-  terms_fixed <- colnames(experiment_info)[cols_fixed]
+  if (is.character(cols_fixed)) {
+    stopifnot(all(cols_fixed %in% colnames(experiment_info)))
+    terms_fixed <- cols_fixed
+  } else if (is.numeric(cols_fixed) | is.logical(cols_fixed)) {
+    terms_fixed <- colnames(experiment_info)[cols_fixed]
+  }
   RHS_fixed <- paste(terms_fixed, collapse = " + ")
   
   # random effects
-  random_terms <- FALSE
-  RHS_random <- NULL
-  
   if (!is.null(cols_random)) {
-    terms_random <- colnames(experiment_info)[cols_random]
+    if (is.character(cols_random)) {
+      stopifnot(all(cols_random %in% colnames(experiment_info)))
+      terms_random <- cols_random
+    } else if (is.numeric(cols_random) | is.logical(cols_random)) {
+      terms_random <- colnames(experiment_info)[cols_random]
+    }
     RHS_random <- paste(paste0("(1 | ", terms_random, ")"), collapse = " + ")
     random_terms <- TRUE
+  } else if (is.null(cols_random)) {
+    terms_random <- NULL
+    RHS_random <- NULL
+    random_terms <- FALSE
   }
   
   # combine
@@ -107,7 +122,7 @@ createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL
   formula <- as.formula(paste(c("y", RHS_combined), collapse = " ~ "))
   
   # create data frame of corresponding variables (in correct order)
-  cols <- c(colnames(experiment_info)[cols_fixed], colnames(experiment_info)[cols_random])
+  cols <- c(terms_fixed, terms_random)
   data <- experiment_info[, cols, drop = FALSE]
   
   # return as list
