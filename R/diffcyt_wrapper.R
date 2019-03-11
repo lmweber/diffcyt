@@ -372,23 +372,26 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
   
   # DA tests
-  if (analysis_type == "DA" & verbose) message("calculating DA tests...")
-  if (analysis_type == "DA" & method_DA == "diffcyt-DA-edgeR") {
+  if (analysis_type == "DA" && method_DA == "diffcyt-DA-edgeR") {
+    if (verbose) message("calculating DA tests using method 'diffcyt-DA-edgeR'...")
     res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors)
   }
-  if (analysis_type == "DA" & method_DA == "diffcyt-DA-voom") {
+  if (analysis_type == "DA" && method_DA == "diffcyt-DA-voom") {
+    if (verbose) message("calculating DA tests using method 'diffcyt-DA-voom'...")
     res <- testDA_voom(d_counts, design, contrast, block_id, min_cells, min_samples, normalize, norm_factors, plot, path)
   }
-  if (analysis_type == "DA" & method_DA == "diffcyt-DA-GLMM") {
+  if (analysis_type == "DA" && method_DA == "diffcyt-DA-GLMM") {
+    if (verbose) message("calculating DA tests using method 'diffcyt-DA-GLMM'...")
     res <- testDA_GLMM(d_counts, formula, contrast, min_cells, min_samples, normalize, norm_factors)
   }
   
   # DS tests
-  if (analysis_type == "DS" & verbose) message("calculating DS tests...")
-  if (analysis_type == "DS" & method_DS == "diffcyt-DS-limma") {
+  if (analysis_type == "DS" && method_DS == "diffcyt-DS-limma") {
+    if (verbose) message("calculating DS tests using method 'diffcyt-DS-limma'...")
     res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, trend, markers_to_test, min_cells, min_samples, plot, path)
   }
-  if (analysis_type == "DS" & method_DS == "diffcyt-DS-LMM") {
+  if (analysis_type == "DS" && method_DS == "diffcyt-DS-LMM") {
+    if (verbose) message("calculating DS tests using method 'diffcyt-DS-LMM'...")
     res <- testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test, min_cells, min_samples)
   }
   
