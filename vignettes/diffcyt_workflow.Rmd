@@ -260,8 +260,8 @@ Here, we are interested in comparing condition `BCR-XL` against `Reference`, i.e
 contrast <- createContrast(c(0, 1, rep(0, 7)))
 
 # check
-colnames(design)
 nrow(contrast) == ncol(design)
+data.frame(parameters = colnames(design), contrast)
 ```
 
 
@@ -493,7 +493,7 @@ Rows represent clusters, and columns represent protein markers (left panel) or s
 
 As mentioned previously, the DA tests are not particularly meaningful for the `Bodenmiller_BCR_XL` dataset, since the main signals of interest in this dataset are differential expression of pS6 and other signaling markers in B cells and several other cell populations. However, we include the plot here for illustrative purposes, to show how to use the functions.
 
-(Note: For the example below, we use an earlier version of the heatmap plotting function, which is included within the `diffcyt` package, instead of using `CATALYST`. This is done to streamline installation and compilation of the `diffcyt` package and vignette, by reducing dependencies. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+(Note: For the example below, we use an earlier version of the heatmap plotting function from the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies in order to streamline installation and compilation of the `diffcyt` package and vignette. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
 
 See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
@@ -509,9 +509,9 @@ plotHeatmap(out_DA, analysis_type = "DA", sample_order = sample_order)
 
 
 ```{r, eval=FALSE}
-library(CATALYST)
-
 # Heatmap for top detected DA clusters (alternative code using 'CATALYST')
+
+suppressPackageStartupMessages(library(CATALYST))
 
 plotDiffHeatmap(out_DA$d_se, out_DA$res)
 ```
@@ -529,7 +529,7 @@ The heatmap shows that the `diffcyt` pipeline has successfully recovered the mai
 
 As expected, several of the top (most highly significant) detected cluster-marker combinations represent differential expression of pS6 (labels in right annotation bar) in B cells (identified by high expression of CD20, left panel). Similarly, the other top detected cluster-marker combinations shown in the heatmap correspond to other known strong differential signals in this dataset (see Nowicka et al., 2017, Figure 29; or the description of the results for dataset `BCR-XL` in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
 
-(Note: For the example below, we use an earlier version of the heatmap plotting function, which is included within the `diffcyt` package, instead of using `CATALYST`. This is done to streamline installation and compilation of the `diffcyt` package and vignette, by reducing dependencies. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+(Note: For the example below, we use an earlier version of the heatmap plotting function from the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies in order to streamline installation and compilation of the `diffcyt` package and vignette. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
 
 See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
@@ -545,9 +545,9 @@ plotHeatmap(out_DS, analysis_type = "DS", sample_order = sample_order)
 
 
 ```{r, eval=FALSE}
-library(CATALYST)
-
 # Heatmap for top detected DA clusters (alternative code using 'CATALYST')
+
+suppressPackageStartupMessages(library(CATALYST))
 
 plotDiffHeatmap(out_DS$d_se, out_DS$res)
 ```
