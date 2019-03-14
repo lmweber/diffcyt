@@ -4,11 +4,10 @@
 \alias{topTable}
 \title{Show table of results for top clusters or cluster-marker combinations}
 \usage{
-topTable(res, d_counts = NULL, d_medians_by_cluster_marker = NULL,
-  d_medians_by_sample_marker = NULL, order = TRUE,
+topTable(res, d_counts = NULL, d_medians = NULL, order = TRUE,
   order_by = "p_adj", all = FALSE, top_n = 20, show_counts = FALSE,
-  show_props = FALSE, sort_cols = TRUE, show_meds = FALSE,
-  all_markers = FALSE, format_vals = FALSE, digits = 3)
+  show_props = FALSE, show_meds = FALSE, sort_cols = TRUE,
+  format_vals = FALSE, digits = 3)
 }
 \arguments{
 \item{res}{Output object from either the \code{\link{diffcyt}} wrapper function or one
@@ -22,16 +21,13 @@ Alternatively, these can be provided directly.}
 cell counts, from \code{\link{calcCounts}}. (If the output object from the wrapper
 function is provided, this will be be automatically extracted.)}
 
-\item{d_medians_by_cluster_marker}{(Optional) \code{\link{SummarizedExperiment}} object
-containing median expression values for each cluster-marker combination, from
-\code{\link{calcMediansByClusterMarker}}. (If the output object from the wrapper
+\item{d_medians}{(Optional) \code{\link{SummarizedExperiment}} object containing
+cluster medians (median marker expression for each cluster-sample combination), from
+\code{\link{calcMedians}}. Assumed to contain a logical vector
+\code{id_state_markers} in the meta-data (accessed with
+\code{metadata(d_medians)$id_state_markers}), which identifies the set of 'cell
+state' markers in the list of \code{assays}. (If the output object from the wrapper
 function is provided, this will be be automatically extracted.)}
-
-\item{d_medians_by_sample_marker}{(Optional) \code{\link{SummarizedExperiment}} object
-containing median expression values for each sample-marker combination, from
-\code{\link{calcMediansBySampleMarker}}. (Required for sorting columns when
-\code{sort_cols = TRUE}.) (If the output object from the wrapper function is
-provided, this will be be automatically extracted.)}
 
 \item{order}{Whether to order results by values in column \code{order_by} (default:
 column \code{p_adj} containing adjusted p-values). Default = TRUE.}
@@ -52,17 +48,12 @@ top \code{top_n}). Default = FALSE.}
 \item{show_props}{Whether to display cluster cell count proportions by sample
 (calculated from \code{d_counts}). Default = FALSE.}
 
-\item{sort_cols}{Whether to sort columns of counts and proportions, by levels of factor
-\code{sample_id} in object \code{d_medians_by_sample_marker} (if this object and
-factor are provided). Default = TRUE.}
-
 \item{show_meds}{Whether to display median expression values for each cluster-marker
-combination (from \code{d_medians_by_cluster_marker}). Default = FALSE. (By default,
-if TRUE, medians are shown for 'cell state' markers only. To show all markers, set
-the additional argument \code{all_markers = TRUE}.)}
+combination (from \code{d_medians}). Default = FALSE.}
 
-\item{all_markers}{If \code{show_meds = TRUE}, whether to show medians for all markers
-(instead of 'cell state' markers only). Default = FALSE.}
+\item{sort_cols}{Whether to sort columns of counts, proportions, and medians; by levels
+of factor \code{sample_id} in \code{colData} of \code{d_medians} (requires object
+\code{d_medians} to be provided). Default = TRUE.}
 
 \item{format_vals}{Whether to display rounded values in numeric columns. This improves
 readability of the summary table, but should not be used when exact numeric values
