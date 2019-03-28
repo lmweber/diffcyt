@@ -4,7 +4,7 @@
 \alias{testDS_LMM}
 \title{Test for differential states: method 'diffcyt-DS-LMM'}
 \usage{
-testDS_LMM(d_counts, d_medians, formula, contrast,
+testDS_LMM(d_counts, d_medians, formula, contrast, weights = TRUE,
   markers_to_test = NULL, min_cells = 3, min_samples = NULL)
 }
 \arguments{
@@ -26,6 +26,11 @@ variable indicating whether the model formula contains any random effect terms. 
 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
+
+\item{weights}{(Optional) Whether to include cluster cell counts as precision weights
+within each model (across samples, i.e. within the model for each cluster); these
+represent the relative uncertainty in calculating each median value (within each
+model). Default = TRUE.}
 
 \item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
 differential expression (from the set of markers stored in the \code{assays} of
@@ -75,12 +80,12 @@ state markers only), and calculates differential tests separately for each
 cluster-marker combination. The response variable in each model is the median
 arcsinh-transformed marker expression of the cell state marker, which is assumed to
 follow a Gaussian distribution. There is one model per cluster per cell state marker.
-Within each model, sample-level weights are included for the number of cells per
-sample; these weights represent the relative uncertainty in calculating each median
-value. (Additional uncertainty exists due to variation in the total number of cells per
-cluster; however, it is not possible to account for this, since there are separate
-models for each cluster-marker combination.) We also include a filtering step to remove
-clusters with very small numbers of cells, to improve statistical power.
+Within each model, sample-level weights are included (by default) for the number of
+cells per sample; these weights represent the relative uncertainty in calculating each
+median value. (Additional uncertainty exists due to variation in the total number of
+cells per cluster; however, it is not possible to account for this, since there are
+separate models for each cluster-marker combination.) We also include a filtering step
+to remove clusters with very small numbers of cells, to improve statistical power.
 
 For more details on the statistical methodology, see Nowicka et al. (2017),
 \emph{F1000Research} (section 'Differential analysis of marker expression stratified by
@@ -110,10 +115,10 @@ Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 with very low cell counts across conditions, to improve power.
 
-Weights: Cluster cell counts are used as precision weights within each model (across
-samples only, i.e. within the model for each cluster); these represent the relative
-uncertainty in calculating each median value (within each model). See above for
-details.
+Weights: By default, cluster cell counts are used as precision weights within each
+model (across samples only, i.e. within the model for each cluster); these represent
+the relative uncertainty in calculating each median value (within each model). See
+above for details.
 }
 \examples{
 # For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 

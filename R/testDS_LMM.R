@@ -21,12 +21,12 @@
 #' cluster-marker combination. The response variable in each model is the median
 #' arcsinh-transformed marker expression of the cell state marker, which is assumed to
 #' follow a Gaussian distribution. There is one model per cluster per cell state marker.
-#' Within each model, sample-level weights are included for the number of cells per
-#' sample; these weights represent the relative uncertainty in calculating each median
-#' value. (Additional uncertainty exists due to variation in the total number of cells per
-#' cluster; however, it is not possible to account for this, since there are separate
-#' models for each cluster-marker combination.) We also include a filtering step to remove
-#' clusters with very small numbers of cells, to improve statistical power.
+#' Within each model, sample-level weights are included (by default) for the number of
+#' cells per sample; these weights represent the relative uncertainty in calculating each
+#' median value. (Additional uncertainty exists due to variation in the total number of
+#' cells per cluster; however, it is not possible to account for this, since there are
+#' separate models for each cluster-marker combination.) We also include a filtering step
+#' to remove clusters with very small numbers of cells, to improve statistical power.
 #' 
 #' For more details on the statistical methodology, see Nowicka et al. (2017),
 #' \emph{F1000Research} (section 'Differential analysis of marker expression stratified by
@@ -56,10 +56,10 @@
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, to improve power.
 #' 
-#' Weights: Cluster cell counts are used as precision weights within each model (across
-#' samples only, i.e. within the model for each cluster); these represent the relative
-#' uncertainty in calculating each median value (within each model). See above for
-#' details.
+#' Weights: By default, cluster cell counts are used as precision weights within each
+#' model (across samples only, i.e. within the model for each cluster); these represent
+#' the relative uncertainty in calculating each median value (within each model). See
+#' above for details.
 #' 
 #' 
 #' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
@@ -80,6 +80,11 @@
 #' 
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
+#' 
+#' @param weights (Optional) Whether to include cluster cell counts as precision weights
+#'   within each model (across samples, i.e. within the model for each cluster); these
+#'   represent the relative uncertainty in calculating each median value (within each
+#'   model). Default = TRUE.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of
@@ -183,7 +188,7 @@
 #' res_DS <- testDS_LMM(d_counts, d_medians, formula, contrast)
 #' 
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
-                       markers_to_test = NULL, 
+                       weights = TRUE, markers_to_test = NULL, 
                        min_cells = 3, min_samples = NULL) {
   
   if (is.null(min_samples)) {
@@ -209,8 +214,12 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   counts <- counts[ix_keep, , drop = FALSE]
   cluster_id <- cluster_id[ix_keep]
   
-  # total cell counts per sample (after filtering) (for weights in model fitting)
-  n_cells_smp <- colSums(counts)
+  # weights: total cell counts per sample (after filtering)
+  if (weights) {
+    weights <- colSums(counts)
+  } else {
+    weights <- NULL
+  }
   
   # LMM/LM testing pipeline
   
@@ -236,12 +245,12 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
       # data for cluster-marker i
       # note: response values are medians
       y <- meds[i, ]
-      data_i <- cbind(y, n_cells_smp, formula$data)
+      data_i <- cbind(y, weights, formula$data)
       # fit LMM if model formula contains any random effect terms; LM otherwise
       if (formula$random_terms) {
-        fit <- lmer(formula$formula, data = data_i, weights = n_cells_smp)
+        fit <- lmer(formula$formula, data = data_i, weights = weights)
       } else {
-        fit <- lm(formula$formula, data = data_i, weights = n_cells_smp)
+        fit <- lm(formula$formula, data = data_i, weights = weights)
       }
       # test contrast
       test <- glht(fit, contrast)
