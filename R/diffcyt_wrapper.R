@@ -391,7 +391,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # DA tests
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-edgeR") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-edgeR'...")
-    res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors, trend_method)
+    res <- testDA_edgeR(d_counts, design, contrast, trend_method, min_cells, min_samples, normalize, norm_factors)
   }
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-voom") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-voom'...")
