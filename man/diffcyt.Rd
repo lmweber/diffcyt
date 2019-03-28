@@ -15,8 +15,8 @@ diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
   cols_clustering = NULL, xdim = 10, ydim = 10,
   meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
   min_cells = 3, min_samples = NULL, normalize = FALSE,
-  norm_factors = "TMM", block_id = NULL, trend = TRUE, plot = TRUE,
-  path = ".", verbose = TRUE)
+  norm_factors = "TMM", trend_method = "none", block_id = NULL,
+  trend = TRUE, plot = TRUE, path = ".", verbose = TRUE)
 }
 \arguments{
 \item{d_input}{Input data. Must be either: (i) a \code{\link{flowSet}} or list of
@@ -146,6 +146,11 @@ the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
 Alternatively, a vector of values can be provided (the values should multiply to 1).
 See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or
 \code{\link{testDA_GLMM}}.}
+
+\item{trend_method}{Method for estimating dispersion trend; passed to function
+\code{\link{estimateDisp}} from \code{edgeR} package (for method
+\code{testDA_edgeR}). Default = "none". (See \code{\link{estimateDisp}} help file
+from \code{edgeR} package for other options.) See \code{\link{testDA_edgeR}}.}
 
 \item{block_id}{(Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 experimental designs, to be included as random effects (for method \code{testDA_voom}
