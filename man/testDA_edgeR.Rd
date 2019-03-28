@@ -4,9 +4,9 @@
 \alias{testDA_edgeR}
 \title{Test for differential abundance: method 'diffcyt-DA-edgeR'}
 \usage{
-testDA_edgeR(d_counts, design, contrast, min_cells = 3,
-  min_samples = NULL, normalize = FALSE, norm_factors = "TMM",
-  trend_method = "none")
+testDA_edgeR(d_counts, design, contrast, trend_method = "none",
+  min_cells = 3, min_samples = NULL, normalize = FALSE,
+  norm_factors = "TMM")
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
@@ -17,6 +17,10 @@ counts, from \code{\link{calcCounts}}.}
 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
+
+\item{trend_method}{Method for estimating dispersion trend; passed to function
+\code{\link{estimateDisp}} from \code{edgeR} package. Default = "none". (See
+\code{\link{estimateDisp}} help file from \code{edgeR} package for other options.)}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
 testing if they have at least \code{min_cells} cells in at least \code{min_samples}
@@ -34,10 +38,6 @@ composition effects (see details). Default = FALSE.}
 \code{"TMM"}, in which case normalization factors are calculated automatically using
 the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
 Alternatively, a vector of values can be provided (the values should multiply to 1).}
-
-\item{trend_method}{Method for estimating dispersion trend; passed to function
-\code{\link{estimateDisp}} from \code{edgeR} package. Default = "none". (See
-\code{\link{estimateDisp}} help file from \code{edgeR} package for other options.)}
 }
 \value{
 Returns a new \code{\link{SummarizedExperiment}} object, with differential test

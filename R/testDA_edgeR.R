@@ -151,9 +151,9 @@
 #' res_DA <- testDA_edgeR(d_counts, design, contrast)
 #' 
 testDA_edgeR <- function(d_counts, design, contrast, 
+                         trend_method = "none", 
                          min_cells = 3, min_samples = NULL, 
-                         normalize = FALSE, norm_factors = "TMM", 
-                         trend_method = "none") {
+                         normalize = FALSE, norm_factors = "TMM") {
   
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
