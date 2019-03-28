@@ -5,7 +5,8 @@
 \title{Test for differential abundance: method 'diffcyt-DA-edgeR'}
 \usage{
 testDA_edgeR(d_counts, design, contrast, min_cells = 3,
-  min_samples = NULL, normalize = FALSE, norm_factors = "TMM")
+  min_samples = NULL, normalize = FALSE, norm_factors = "TMM",
+  trend_method = "none")
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
@@ -33,6 +34,10 @@ composition effects (see details). Default = FALSE.}
 \code{"TMM"}, in which case normalization factors are calculated automatically using
 the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
 Alternatively, a vector of values can be provided (the values should multiply to 1).}
+
+\item{trend_method}{Method for estimating dispersion trend; passed to function
+\code{\link{estimateDisp}} from \code{edgeR} package. Default = "none". (See
+\code{\link{estimateDisp}} help file from \code{edgeR} package for other options.)}
 }
 \value{
 Returns a new \code{\link{SummarizedExperiment}} object, with differential test
@@ -54,12 +59,12 @@ This method uses the \code{\link{edgeR}} package (Robinson et al. 2010,
 \emph{Bioinformatics}; McCarthy et al. 2012, \emph{Nucleic Acids Research}) to fit
 models and calculate moderated tests at the cluster level. Moderated tests improve
 statistical power by sharing information on variability (i.e. variance across samples
-for a single cluster) between clusters. We use the option \code{trend.method = "none"}
-to calculate dispersions, since the dispersion-mean relationship typically does not
-resemble RNA-sequencing data; see \code{edgeR} User's Guide. The statistical methods
-implemented in the \code{edgeR} package were originally designed for the analysis of
-gene expression data such as RNA-sequencing counts. Here, we apply these methods to
-cluster cell counts.
+for a single cluster) between clusters. By default, we use the option
+\code{trend.method = "none"} to calculate dispersions, since the dispersion-mean
+relationship typically does not resemble RNA-sequencing data; see \code{edgeR} User's
+Guide. The statistical methods implemented in the \code{edgeR} package were originally
+designed for the analysis of gene expression data such as RNA-sequencing counts. Here,
+we apply these methods to cluster cell counts.
 
 The experimental design must be specified using a design matrix, which can be created
 with \code{\link{createDesignMatrix}}. Flexible experimental designs are possible,

@@ -171,6 +171,11 @@
 #'   See \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or
 #'   \code{\link{testDA_GLMM}}.
 #' 
+#' @param trend_method Method for estimating dispersion trend; passed to function
+#'   \code{\link{estimateDisp}} from \code{edgeR} package (for method
+#'   \code{testDA_edgeR}). Default = "none". (See \code{\link{estimateDisp}} help file
+#'   from \code{edgeR} package for other options.) See \code{\link{testDA_edgeR}}.
+#' 
 #' @param block_id (Optional) Vector or factor of block IDs (e.g. patient IDs) for paired
 #'   experimental designs, to be included as random effects (for method \code{testDA_voom}
 #'   or \code{testDS_limma}). If provided, the block IDs will be included as random
@@ -306,6 +311,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, 
                     min_cells = 3, min_samples = NULL, 
                     normalize = FALSE, norm_factors = "TMM", 
+                    trend_method = "none", 
                     block_id = NULL, trend = TRUE, 
                     plot = TRUE, path = ".", 
                     verbose = TRUE) {
@@ -374,7 +380,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # DA tests
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-edgeR") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-edgeR'...")
-    res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors)
+    res <- testDA_edgeR(d_counts, design, contrast, min_cells, min_samples, normalize, norm_factors, trend_method)
   }
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-voom") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-voom'...")
