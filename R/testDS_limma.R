@@ -45,10 +45,11 @@
 #' \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 #' with very low cell counts across conditions, to improve power.
 #' 
-#' Weights: Cluster cell counts are used as precision weights (across all samples and
-#' clusters); allowing the \code{limma} model fitting functions to account for uncertainty
-#' due to the total number of cells per sample (library sizes) and total number of cells
-#' per cluster.
+#' Weights: By default, cluster cell counts are used as precision weights (across all
+#' samples and clusters); allowing the \code{limma} model fitting functions to account for
+#' uncertainty due to the total number of cells per sample (library sizes) and total
+#' number of cells per cluster. This option can also be disabled with \code{weights =
+#' FALSE}, if required.
 #' 
 #' 
 #' @param d_counts \code{\link{SummarizedExperiment}} object containing cluster cell
@@ -78,6 +79,11 @@
 #'   tests with function \code{\link{eBayes}} from \code{limma} package. When \code{trend
 #'   = TRUE}, this is known as the \code{limma-trend} method (Law et al., 2014; Phipson et
 #'   al., 2016). Default = TRUE.
+#' 
+#' @param weights (Optional) Whether to use cluster cell counts as precision weights
+#'   (across all samples and clusters); this allows the \code{limma} model fitting
+#'   functions to account for uncertainty due to the total number of cells per sample
+#'   (library sizes) and total number of cells per cluster. Default = TRUE.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of
@@ -186,7 +192,7 @@
 #' res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
 #' 
 testDS_limma <- function(d_counts, d_medians, design, contrast, 
-                         block_id = NULL, trend = TRUE, 
+                         block_id = NULL, trend = TRUE, weights = TRUE, 
                          markers_to_test = NULL, 
                          min_cells = 3, min_samples = NULL, 
                          plot = TRUE, path = ".") {
@@ -235,8 +241,12 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   }
   
   # weights: cluster cell counts (repeat for each marker)
-  weights <- counts[as.character(rep(cluster_id, length(state_names))), ]
-  stopifnot(nrow(weights) == nrow(meds))
+  if (weights) {
+    weights <- counts[as.character(rep(cluster_id, length(state_names))), ]
+    stopifnot(nrow(weights) == nrow(meds))
+  } else {
+    weights <- NULL
+  }
   
   # fit models
   if (!is.null(block_id)) {

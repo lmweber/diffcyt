@@ -5,8 +5,8 @@
 \title{Test for differential states: method 'diffcyt-DS-limma'}
 \usage{
 testDS_limma(d_counts, d_medians, design, contrast, block_id = NULL,
-  trend = TRUE, markers_to_test = NULL, min_cells = 3,
-  min_samples = NULL, plot = TRUE, path = ".")
+  trend = TRUE, weights = TRUE, markers_to_test = NULL,
+  min_cells = 3, min_samples = NULL, plot = TRUE, path = ".")
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
@@ -36,6 +36,11 @@ See details.}
 tests with function \code{\link{eBayes}} from \code{limma} package. When \code{trend
 = TRUE}, this is known as the \code{limma-trend} method (Law et al., 2014; Phipson et
 al., 2016). Default = TRUE.}
+
+\item{weights}{(Optional) Whether to use cluster cell counts as precision weights
+(across all samples and clusters); this allows the \code{limma} model fitting
+functions to account for uncertainty due to the total number of cells per sample
+(library sizes) and total number of cells per cluster. Default = TRUE.}
 
 \item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
 differential expression (from the set of markers stored in the \code{assays} of
@@ -114,10 +119,11 @@ Filtering: Clusters are kept for differential testing if they have at least
 \code{min_cells} cells in at least \code{min_samples} samples. This removes clusters
 with very low cell counts across conditions, to improve power.
 
-Weights: Cluster cell counts are used as precision weights (across all samples and
-clusters); allowing the \code{limma} model fitting functions to account for uncertainty
-due to the total number of cells per sample (library sizes) and total number of cells
-per cluster.
+Weights: By default, cluster cell counts are used as precision weights (across all
+samples and clusters); allowing the \code{limma} model fitting functions to account for
+uncertainty due to the total number of cells per sample (library sizes) and total
+number of cells per cluster. This option can also be disabled with \code{weights =
+FALSE}, if required.
 }
 \examples{
 # For a complete workflow example demonstrating each step in the 'diffcyt' pipeline, 

@@ -16,7 +16,8 @@ diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
   meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
   min_cells = 3, min_samples = NULL, normalize = FALSE,
   norm_factors = "TMM", trend_method = "none", block_id = NULL,
-  trend = TRUE, plot = TRUE, path = ".", verbose = TRUE)
+  trend = TRUE, weights = TRUE, plot = TRUE, path = ".",
+  verbose = TRUE)
 }
 \arguments{
 \item{d_input}{Input data. Must be either: (i) a \code{\link{flowSet}} or list of
@@ -165,6 +166,17 @@ tests with function \code{\link{eBayes}} from \code{limma} package (for method
 \code{testDS_limma}). When \code{trend = TRUE}, this is known as the
 \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default = TRUE.
 See \code{\link{testDS_limma}}.}
+
+\item{weights}{(Optional) Whether to include precision weights (for method
+\code{testDS_limma} or \code{testDS_LMM}). For method \code{testDS_limma}, cluster
+cell counts will be used as precision weights (across all samples and clusters); this
+allows the \code{limma} model fitting functions to account for uncertainty due to the
+total number of cells per sample (library sizes) and total number of cells per
+cluster. For methods \code{testDS_LMM}, cluster cell counts will be used as precision
+weights within each model (across samples, i.e. within the model for each cluster);
+these represent the relative uncertainty in calculating each median value (within
+each model). Default = TRUE. See \code{\link{testDS_limma}} or
+\code{\link{testDS_LMM}}.}
 
 \item{plot}{Whether to save diagnostic plots (for method \code{testDA_voom} or
 \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or

@@ -190,6 +190,17 @@
 #'   \code{limma-trend} method (Law et al., 2014; Phipson et al., 2016). Default = TRUE.
 #'   See \code{\link{testDS_limma}}.
 #' 
+#' @param weights (Optional) Whether to include precision weights (for method
+#'   \code{testDS_limma} or \code{testDS_LMM}). For method \code{testDS_limma}, cluster
+#'   cell counts will be used as precision weights (across all samples and clusters); this
+#'   allows the \code{limma} model fitting functions to account for uncertainty due to the
+#'   total number of cells per sample (library sizes) and total number of cells per
+#'   cluster. For methods \code{testDS_LMM}, cluster cell counts will be used as precision
+#'   weights within each model (across samples, i.e. within the model for each cluster);
+#'   these represent the relative uncertainty in calculating each median value (within
+#'   each model). Default = TRUE. See \code{\link{testDS_limma}} or
+#'   \code{\link{testDS_LMM}}.
+#' 
 #' @param plot Whether to save diagnostic plots (for method \code{testDA_voom} or
 #'   \code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
 #'   \code{\link{testDS_limma}}.
@@ -312,7 +323,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     min_cells = 3, min_samples = NULL, 
                     normalize = FALSE, norm_factors = "TMM", 
                     trend_method = "none", 
-                    block_id = NULL, trend = TRUE, 
+                    block_id = NULL, trend = TRUE, weights = TRUE, 
                     plot = TRUE, path = ".", 
                     verbose = TRUE) {
   
@@ -394,11 +405,11 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # DS tests
   if (analysis_type == "DS" && method_DS == "diffcyt-DS-limma") {
     if (verbose) message("calculating DS tests using method 'diffcyt-DS-limma'...")
-    res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, trend, markers_to_test, min_cells, min_samples, plot, path)
+    res <- testDS_limma(d_counts, d_medians, design, contrast, block_id, trend, weights, markers_to_test, min_cells, min_samples, plot, path)
   }
   if (analysis_type == "DS" && method_DS == "diffcyt-DS-LMM") {
     if (verbose) message("calculating DS tests using method 'diffcyt-DS-LMM'...")
-    res <- testDS_LMM(d_counts, d_medians, formula, contrast, markers_to_test, min_cells, min_samples)
+    res <- testDS_LMM(d_counts, d_medians, formula, contrast, weights, markers_to_test, min_cells, min_samples)
   }
   
   # return results and data objects
