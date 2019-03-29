@@ -73,7 +73,7 @@
 #' @importFrom SummarizedExperiment assay colData rowData
 #' @importFrom S4Vectors metadata
 #' @importFrom stats quantile
-#' @importFrom grid unit unit.c gpar
+#' @importFrom grid gpar
 #' 
 #' @export
 #' 
@@ -331,7 +331,8 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   ha_row <- rowAnnotation(
     df = row_annot, 
     col = list("significant" = c("no" = "gray90", "yes" = "red")), 
-    annotation_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12))
+    annotation_legend_param = list(title_gp = gpar(fontface = "bold", fontsize = 12), labels_gp = gpar(fontsize = 12)), 
+    show_annotation_name = FALSE
   )
   
   
