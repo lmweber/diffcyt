@@ -35,13 +35,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data, based on (i) high-resolution clustering and (ii) empirical Bayes moderated tests adapted from transcriptomics.
+The `diffcyt` package implements statistical methods for differential discovery analyses in high-dimensional cytometry data, based on a combination of high-resolution clustering and empirical Bayes moderated tests adapted from transcriptomics.
 
-High-dimensional cytometry includes multi-color flow cytometry, mass cytometry or CyTOF, and oligonucleotide-tagged cytometry. These technologies use antibodies to measure expression levels of dozens (around 10 to 100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations, between groups of samples in different conditions (e.g. diseased vs. healthy, or treated vs. untreated).
+High-dimensional cytometry includes multi-color flow cytometry, mass cytometry (CyTOF), and oligonucleotide-tagged cytometry. These technologies use antibodies to measure expression levels of dozens (around 10 to 100) of marker proteins in thousands of cells. In many experiments, the aim is to detect differential abundance (DA) of cell populations, or differential states (DS) within cell populations, between groups of samples in different conditions (e.g. diseased vs. healthy, or treated vs. untreated).
 
 This vignette provides a complete example workflow for running the `diffcyt` pipeline, using either the wrapper function `diffcyt()`, or the individual functions for each step.
 
-The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object prepared with the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Providing a `daFrame` is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` methods can then be used for differential testing.
+The input to the `diffcyt` pipeline can either be raw data loaded from `.fcs` files, or a pre-prepared `daFrame` object from the [CATALYST](http://bioconductor.org/packages/CATALYST) Bioconductor package (Chevrier, Crowell, Zanotelli et al., 2018). The `CATALYST` package contains extensive functions for preprocessing, exploratory analysis, and visualization of mass cytometry (CyTOF) data. If this option is used, preprocessing and clustering are done using `CATALYST`. This is particularly useful when `CATALYST` has already been used for exploratory analyses and visualizations; the `diffcyt` package can then be used for differential testing. For more details on how to use `CATALYST` together with `diffcyt`, see the `CATALYST` [Bioconductor vignette](http://bioconductor.org/packages/release/bioc/vignettes/CATALYST/inst/doc/differential_analysis.html), or our extended [CyTOF workflow](http://bioconductor.org/packages/cytofWorkflow) (Nowicka et al., 2019) available from Bioconductor.
 
 
 ```{r, out.width="190px", echo=FALSE}
@@ -60,7 +60,7 @@ The `diffcyt` methodology consists of two main components: (i) high-resolution c
 
 We use high-resolution clustering to define a large number of small clusters representing cell populations. By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clusters, since we previously showed that this clustering algorithm gives excellent clustering performance together with fast runtimes for high-dimensional cytometry data (Weber and Robinson, 2016). However, in principle, other algorithms that can generate high-resolution clusters could also be used.
 
-For the differential analyses, we use methods from the [edgeR](http://bioconductor.org/packages/edgeR) package (Robinson et al., 2010; McCarthy et al., 2012), [limma](http://bioconductor.org/packages/limma) package (Ritchie et al., 2015), and `voom` method (Law et al., 2014). These methods are widely used in the transcriptomics field, and have been adapted here for analyzing high-dimensional cytometry data. In addition, we provide alternative methods based on generalized linear mixed models (GLMMs), linear mixed models (LMMs), and linear models (LMs), originally implemented by Nowicka et al. (2017) (available in the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) from Bioconductor).
+For the differential analyses, we use methods from the [edgeR](http://bioconductor.org/packages/edgeR) package (Robinson et al., 2010; McCarthy et al., 2012), [limma](http://bioconductor.org/packages/limma) package (Ritchie et al., 2015), and `voom` method (Law et al., 2014). These methods are widely used in the transcriptomics field, and have been adapted here for analyzing high-dimensional cytometry data. In addition, we provide alternative methods based on generalized linear mixed models (GLMMs), linear mixed models (LMMs), and linear models (LMs), originally implemented by Nowicka et al. (2017).
 
 
 ## Differential abundance (DA) and differential states (DS)
@@ -69,7 +69,7 @@ The `diffcyt` methods can be used to test for differential abundance (DA) of cel
 
 To do this, the methodology requires the set of protein markers to be grouped into 'cell type' and 'cell state' markers. Cell type markers are used to define clusters representing cell populations, which are tested for differential abundance; and median cell state marker signals per cluster are used to test for differential states within populations.
 
-The conceptual split into cell type and cell state markers also facilitates biological interpretability, since it allows the results to be linked back to known cell types or populations of interest.
+The conceptual split into cell type and cell state markers facilitates biological interpretability, since it allows the results to be linked back to known cell types or populations of interest.
 
 
 ## Flexible experimental designs and contrasts
@@ -79,7 +79,7 @@ The `diffcyt` model setup enables the user to specify flexible experimental desi
 
 ## More details
 
-A complete description of the statistical methodology and comparisons with existing approaches are provided in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
+A complete description of the statistical methodology and comparisons with existing approaches are provided in our paper introducing the `diffcyt` framework ([Weber et al., 2019](https://www.biorxiv.org/content/10.1101/349738v3)).
 
 
 
@@ -121,7 +121,7 @@ This dataset contains known strong differential expression signals for several s
 
 ## Load data from 'HDCytoData' package
 
-The `Bodenmiller_BCR_XL` dataset can be downloaded and loaded conveniently from the [HDCytoData](http://bioconductor.org/packages/HDCytoData) Bioconductor 'experiment data' package. It can be loaded in either `SummarizedExperiment` or `flowSet` format. Here, we use the `flowSet` format, which is standard in the flow and mass cytometry community. For some alternative analysis pipelines, the `SummarizedExperiment` format may be more convenient. For more details, see the help file for this dataset in the `HDCytoData` package (run `library(HDCytoData)` and `?Bodenmiller_BCR_XL`).
+The `Bodenmiller_BCR_XL` dataset can be downloaded and loaded conveniently from the [HDCytoData](http://bioconductor.org/packages/HDCytoData) Bioconductor 'experiment data' package. It can be loaded in either `SummarizedExperiment` or `flowSet` format. Here, we use the `flowSet` format, which is standard in the flow and mass cytometry community. For some alternative analysis pipelines, the `SummarizedExperiment` format may be more convenient. For more details, see the help file for this dataset in the `HDCytoData` package (`library(HDCytoData)`; `?Bodenmiller_BCR_XL`).
 
 
 ```{r}
@@ -138,10 +138,10 @@ d_flowSet
 pData(d_flowSet)
 # number of cells
 fsApply(d_flowSet, nrow)
-# number of columns
+# dimensions
 dim(exprs(d_flowSet[[1]]))
 # expression values
-exprs(d_flowSet[[1]])[1:6, 1:6]
+exprs(d_flowSet[[1]])[1:6, 1:5]
 ```
 
 
@@ -168,7 +168,7 @@ Next, we set up the 'meta-data' required for the `diffcyt` pipeline. The meta-da
 
 The `experiment_info` data frame contains information about each sample, including sample IDs, group IDs, batch IDs or patient IDs (if relevant), continuous covariates such as age (if relevant), and any other factors or covariates. In many experiments, the main comparison of interest will be between levels of the group IDs factor (which may also be referred to as condition or treatment; e.g. diseased vs. healthy, or treated vs. untreated).
 
-The `marker_info` data frame contains information about the protein markers, including channel names, marker names, and a vector to identify the class of each marker (cell type or cell state).
+The `marker_info` data frame contains information about the protein markers, including channel names, marker names, and the class of each marker (cell type or cell state).
 
 Below, we create these data frames manually. Depending on your experiment, it may be more convenient to save the meta-data in spreadsheets in `.csv` format, which can then be loaded using `read.csv`.
 
@@ -233,13 +233,18 @@ Similarly, model formulas can be created with the function `createFormula()`. Mo
 
 In both cases, flexible experimental designs are possible, including blocking (e.g. batch effects or paired designs) and continuous covariates. See `?createDesignMatrix` or `?createFormula` for more details and examples.
 
+Note that in the example shown here, we include terms for `group_id` and `patient_id` in the design matrix: `group_id` is the factor of interest for the differential tests, and `patient_id` is included because this dataset contains paired samples from each patient. (For an unpaired dataset, only `group_id` would be included.)
+
 
 ```{r}
 suppressPackageStartupMessages(library(diffcyt))
 
 # Create design matrix
-# note: selecting columns containing group IDs and patient IDs
-design <- createDesignMatrix(experiment_info, cols_design = c("group_id", "patient_id"))
+# note: selecting columns containing group IDs and patient IDs (for an 
+# unpaired dataset, only group IDs would be included)
+design <- createDesignMatrix(
+  experiment_info, cols_design = c("group_id", "patient_id")
+)
 ```
 
 
@@ -365,20 +370,22 @@ table(res_DS_all$p_adj <= threshold)
 
 ### Option 2: Wrapper function using CATALYST 'daFrame' object
 
-The second option for running the `diffcyt` pipeline is to provide a previously created [CATALYST](http://bioconductor.org/packages/CATALYST) `daFrame` object as the input to the `diffcyt()` wrapper function. This is useful when `CATALYST` has already been used to perform exploratory data analyses and clustering, and to generate visualizations. The `diffcyt` methods can then be used to calculate differential tests using the existing `daFrame` object (in particular, re-using the existing cluster labels).
+The second option for running the `diffcyt` pipeline is to provide a previously created [CATALYST](http://bioconductor.org/packages/CATALYST) `daFrame` object as the input to the `diffcyt()` wrapper function. As mentioned above, the `CATALYST` package contains extensive functions for preprocessing, exploratory analysis, and visualization of mass cytometry (CyTOF) data. This option is particularly useful when `CATALYST` has already been used for exploratory analyses (including clustering) and visualizations. The `diffcyt` methods can then be used to calculate differential tests using the existing `daFrame` object (in particular, re-using existing cluster labels stored in the `daFrame` object).
 
-As shown above for option 1, the `diffcyt()` wrapper function requires several arguments to specify the inputs and analysis type, and provides additional arguments to specify optional parameter choices. Note that the arguments `experiment_info` and `marker_info` are not required in this case, since this information is already contained within the `daFrame` object. An additional argument `clustering_to_use` is also provided, which allows the user to choose from one of several columns of cluster labels stored within the `daFrame` object; this set of cluster labels will then be used for the differential tests. See `?diffcyt` for more details.
+As above for option 1, the `diffcyt()` wrapper function requires several arguments to specify the inputs and analysis type, and provides additional arguments to specify optional parameter choices. Note that the arguments `experiment_info` and `marker_info` are not required in this case, since this information is already contained within the `CATALYST` `daFrame` object. An additional argument `clustering_to_use` is also provided, which allows the user to choose from one of several columns of cluster labels stored within the `daFrame` object; this set of cluster labels will then be used for the differential tests. See `?diffcyt` for more details.
+
+For further details on how to use `CATALYST` together with `diffcyt`, see the `CATALYST` [Bioconductor vignette](http://bioconductor.org/packages/release/bioc/vignettes/CATALYST/inst/doc/differential_analysis.html), or our extended [CyTOF workflow](http://bioconductor.org/packages/cytofWorkflow) (Nowicka et al., 2019) available from Bioconductor.
 
 
 
 ### Option 3: Individual functions
 
-To provide additional flexibility, it is also possible to run the functions for the individual steps in the `diffcyt` pipeline, instead of using the wrapper function. This may be useful if you wish to customize or modify certain parts of the pipeline; for example, to adjust the data transformation, or to substitute a different clustering algorithm. Running the individual steps can also provide additional insight into the `diffcyt` methodology.
+To provide additional flexibility, it is also possible to run the functions for the individual steps in the `diffcyt` pipeline, instead of using the wrapper function. This may be useful if you wish to customize or modify certain parts of the pipeline; for example, to adjust the data transformation, or to substitute a different clustering algorithm. Running the individual steps can also provide additional insight into the methodology.
 
 
 #### Prepare data into required format
 
-The first step is to prepare the input data into the required format for subsequent functions in the `diffcyt` pipeline. The data object `d_se` contains cells in rows, and markers in columns. See `?prepareData()` for more details.
+The first step is to prepare the input data into the required format for subsequent functions in the `diffcyt` pipeline. The data object `d_se` contains cells in rows, and markers in columns. See `?prepareData` for more details.
 
 ```{r}
 # Prepare data
@@ -388,7 +395,7 @@ d_se <- prepareData(d_flowSet, experiment_info, marker_info)
 
 #### Transform data
 
-Next, transform the data using an `arcsinh` transform with `cofactor = 5`. This is a standard transform used for mass cytometry (CyTOF) data, which brings the data closer to a normal distribution, improving clustering performance and visualizations. See `?transformData()` for more details.
+Next, transform the data using an `arcsinh` transform with `cofactor = 5`. This is a standard transform used for mass cytometry (CyTOF) data, which brings the data closer to a normal distribution, improving clustering performance and visualizations. See `?transformData` for more details.
 
 ```{r}
 # Transform data
@@ -398,7 +405,7 @@ d_se <- transformData(d_se)
 
 #### Generate clusters
 
-By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clustering. In principle, other clustering algorithms that can generate large numbers of clusters could also be substituted. See `?generateClusters()` for more details.
+By default, we use the [FlowSOM](http://bioconductor.org/packages/FlowSOM) clustering algorithm (Van Gassen et al., 2015) to generate the high-resolution clustering. In principle, other clustering algorithms that can generate large numbers of clusters could also be substituted. See `?generateClusters` for more details.
 
 ```{r}
 # Generate clusters
@@ -470,18 +477,58 @@ table(topTable(res_DS, all = TRUE)$p_adj <= threshold)
 
 
 
+# Exporting data
+
+Depending on the type of analysis, it may be useful to export data to `.fcs` files or other formats; e.g. to enable further analysis using other software. This can be done at any stage of the `diffcyt` pipeline using standard functions from the `flowCore` package.
+
+The following code provides an example demonstrating how to export `.fcs` files containing group IDs, patient IDs, sample IDs, and cluster labels for each cell. For example, this may be useful for users who wish to further analyze the same clustering within external software.
+
+For this example, we use the output object `out_DA` from running the wrapper function `diffcyt()` above (Option 1) to test for differential abundance (DA) of clusters.
+
+
+```{r}
+# Output object from 'diffcyt()' wrapper function
+names(out_DA)
+dim(out_DA$d_se)
+rowData(out_DA$d_se)
+str(assay(out_DA$d_se))
+head(assay(out_DA$d_se), 2)
+
+# Extract cell-level table for export as .fcs file
+# note: including group IDs, patient IDs, sample IDs, and cluster labels for 
+# each cell
+# note: table must be a numeric matrix (to save as .fcs file)
+d_fcs <- assay(out_DA$d_se)
+class(d_fcs)
+```
+
+```{r, eval=FALSE}
+# Save as .fcs file
+filename_fcs <- "exported_data.fcs"
+write.FCS(
+  flowFrame(d_fcs), filename = filename_fcs
+)
+
+# Alternatively, save as tab-delimited .txt file
+filename_txt <- "exported_data.txt"
+write.table(
+  d_fcs, file = filename_txt, quote = FALSE, sep = "\t", row.names = FALSE
+)
+```
+
+
+
+
 # Visualizations using 'CATALYST' package
 
 
 ## Overview
 
-As described in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)), the results from a `diffcyt` analysis are presented to the user in the form of a set of significant detected high-resolution clusters (for DA tests) or cluster-marker combinations (for DS tests). The detected clusters or cluster-marker combinations can then be interpreted using visualizations; for example, to interpret the marker expression profiles in order to match detected clusters to known cell populations, or to group the high-resolution clusters into larger cell populations with a consistent phenotype.
+As described in our paper introducing the `diffcyt` framework ([Weber et al., 2019](https://www.biorxiv.org/content/10.1101/349738v3)), the results from a `diffcyt` differential analysis are provided to the user in the form of adjusted p-values, allowing the identification of sets of significant detected clusters (for DA tests) or cluster-marker combinations (for DS tests). The detected clusters or cluster-marker combinations can then be interpreted using visualizations; for example, to interpret the marker expression profiles in order to match detected clusters to known cell populations, or to group the high-resolution clusters into larger cell populations with a consistent phenotype.
 
-Extensive plotting functions to generate both exploratory visualizations and visualizations of results from differential testing are available in the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). Several of these plotting functions were originally developed by Malgorzata Nowicka for the [CyTOF workflow](http://bioconductor.org/help/workflows/cytofWorkflow/) available from Bioconductor (Nowicka et al., 2017), and have been adapted by Helena Crowell for inclusion in the `CATALYST` package. Additional plotting functions were developed during the development of the `diffcyt` package. Heatmaps are generated using the [ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap) Bioconductor package (Gu et al., 2016).
+Extensive plotting functions to generate both exploratory visualizations and visualizations of results from differential testing are available in the [CATALYST](http://bioconductor.org/packages/CATALYST) package (Chevrier, Crowell, Zanotelli et al., 2018). These plotting functions are used in our [CyTOF workflow](http://bioconductor.org/packages/cytofWorkflow) (Nowicka et al., 2019) available from Bioconductor. For more details, including further examples of visualizations, see the [CyTOF workflow](http://bioconductor.org/packages/cytofWorkflow) or the `CATALYST` [Bioconductor vignette](http://bioconductor.org/packages/release/bioc/vignettes/CATALYST/inst/doc/differential_analysis.html). (Heatmaps are generated using the [ComplexHeatmap](https://bioconductor.org/packages/ComplexHeatmap) Bioconductor package; Gu et al., 2016.)
 
-Here, we generate heatmaps to illustrate the results from the differential analyses above. Note that the `CATALYST` plotting functions can accept `diffcyt` results objects in either `SummarizedExperiment` format (from options 1 and 3 above) or `CATALYST` `daFrame` format (option 2).
-
-For more examples of visualizations (in particular exploratory visualizations to explore the data prior to formal differential testing, including plots of the number of cells per sample, multi-dimensional scaling plots, and t-SNE plots), see the ['Differential analysis with CATALYST'](http://bioconductor.org/packages/release/bioc/vignettes/CATALYST/inst/doc/differential_analysis.html) vignette from the [CATALYST](http://bioconductor.org/packages/CATALYST) package, available from the Bioconductor website.
+Here, we generate heatmaps to illustrate the results from the differential analyses performed above. Note that the `CATALYST` plotting functions can accept `diffcyt` results objects in either `SummarizedExperiment` format (from options 1 and 3 above) or `CATALYST` `daFrame` format (option 2).
 
 
 
@@ -493,7 +540,7 @@ Rows represent clusters, and columns represent protein markers (left panel) or s
 
 As mentioned previously, the DA tests are not particularly meaningful for the `Bodenmiller_BCR_XL` dataset, since the main signals of interest in this dataset are differential expression of pS6 and other signaling markers in B cells and several other cell populations. However, we include the plot here for illustrative purposes, to show how to use the functions.
 
-(Note: For the example below, we use an earlier version of the heatmap plotting function from the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies in order to streamline installation and compilation of the `diffcyt` package and vignette. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+(Note: For the example below, we use an earlier version of the heatmap plotting function included in the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies, in order to streamline installation and compilation of the `diffcyt` package and vignette. Alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
 
 See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
@@ -527,9 +574,9 @@ Rows represent cluster-marker combinations, and columns represent protein marker
 
 The heatmap shows that the `diffcyt` pipeline has successfully recovered the main differential signal of interest in this dataset. As discussed above, the `Bodenmiller_BCR_XL` dataset contains known strong differential expression of several signaling markers (cell state markers) in several cell populations. In particular, the strongest signal is for differential expression of pS6 in B cells.
 
-As expected, several of the top (most highly significant) detected cluster-marker combinations represent differential expression of pS6 (labels in right annotation bar) in B cells (identified by high expression of CD20, left panel). Similarly, the other top detected cluster-marker combinations shown in the heatmap correspond to other known strong differential signals in this dataset (see Nowicka et al., 2017, Figure 29; or the description of the results for dataset `BCR-XL` in our paper introducing the `diffcyt` framework ([Weber et al., 2018](https://www.biorxiv.org/content/early/2018/06/18/349738)).
+As expected, several of the top (most highly significant) detected cluster-marker combinations represent differential expression of pS6 (labels in right annotation bar) in B cells (identified by high expression of CD20, left panel). Similarly, the other top detected cluster-marker combinations shown in the heatmap correspond to other known strong differential signals in this dataset (see Nowicka et al., 2017, Figure 29; or the description of the results for dataset `BCR-XL` in our paper introducing the `diffcyt` framework ([Weber et al., 2019](https://www.biorxiv.org/content/10.1101/349738v3)).
 
-(Note: For the example below, we use an earlier version of the heatmap plotting function from the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies in order to streamline installation and compilation of the `diffcyt` package and vignette. However, alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
+(Note: For the example below, we use an earlier version of the heatmap plotting function included in the `diffcyt` package, instead of using `CATALYST`. This is done to reduce dependencies, in order to streamline installation and compilation of the `diffcyt` package and vignette. Alternative code to generate the heatmap using `CATALYST` is also shown; this version includes additional formatting, and will usually be preferred.)
 
 See `?plotDiffHeatmap` (`CATALYST`) or `?plotHeatmap` (`diffcyt`) for more details.
 
@@ -569,6 +616,8 @@ McCarthy, D. J., Chen, Y., and Smyth, G. K. (2012). [*Differential expression an
 
 Nowicka, M., Krieg, C., Weber, L. M., Hartmann, F. J., Guglietta, S., Becher, B., Levesque, M. P., and Robinson, M. D. (2017). [*CyTOF workflow: differential discovery in high-throughput high-dimensional cytometry datasets.*](https://www.ncbi.nlm.nih.gov/pubmed/28663787) F1000Research, version 2.
 
+Nowicka, M., Krieg, C., Crowell, H. L., Weber, L. M., Hartmann, F. J., Guglietta, S., Becher, B., Levesque, M. P., and Robinson, M. D. (2019). [*CyTOF workflow: differential discovery in high-throughput high-dimensional cytometry datasets.*](https://www.ncbi.nlm.nih.gov/pubmed/28663787) F1000Research, version 3.
+
 Ritchie, M. E., Phipson, B., Wu, D., Hu, Y., Law, C. W., Shi, W., and Smyth, G. K. (2015). [*limma powers differential expression analyses for RNA-sequencing and microarray studies.*](https://www.ncbi.nlm.nih.gov/pubmed/25605792) Nucleic Acids Research, 43(7):e47.
 
 Robinson, M. D., McCarthy, D. J., and Smyth, G. K. (2010). [*edgeR: a Bioconductor package for differential expression analysis of digital gene expression data.*](https://www.ncbi.nlm.nih.gov/pubmed/19910308) Bioinformatics, 26(1):139--140.
@@ -577,7 +626,7 @@ Van Gassen, S., Callebaut, B., Van Helden, M. J., Lambrecht, B. N., Demeester, P
 
 Weber, L. M. and Robinson, M. D. (2016). [*Comparison of Clustering Methods for High-Dimensional Single-Cell Flow and Mass Cytometry Data.*](https://www.ncbi.nlm.nih.gov/pubmed/27992111) Cytometry Part A, 89A:1084--1096.
 
-Weber, L. M., Nowicka, M., Soneson, C., and Robinson, M. D. (2018). [*diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering.*](https://www.biorxiv.org/content/early/2018/06/18/349738) bioRxiv preprint.
+Weber, L. M., Nowicka, M., Soneson, C., and Robinson, M. D. (2019). [*diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering.*](https://www.biorxiv.org/content/10.1101/349738v3) bioRxiv.
 
 
 
