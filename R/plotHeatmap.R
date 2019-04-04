@@ -350,11 +350,13 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
   # combine elements of heatmap
   if (analysis_type == "DA") {
     draw("+.AdditiveUnit"("+.AdditiveUnit"(ht_main, ht_abundance), ha_row), 
-         column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12))
+         column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12), 
+         auto_adjust = FALSE)
     
   } else if (analysis_type == "DS") {
     draw("+.AdditiveUnit"("+.AdditiveUnit"(ht_main, ht_markers), ha_row), 
-         column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12))
+         column_title = ht_title, column_title_gp = gpar(fontface = "bold", fontsize = 12), 
+         auto_adjust = FALSE)
   }
   
 }
