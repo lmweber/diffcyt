@@ -357,15 +357,15 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     
     if (is.null(clustering_to_use)) {
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
-      if(verbose) message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
+      if (verbose) message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
       # clustering identifier to store in metadata
       clustering_name <- colnames(metadata(d_input)$cluster_codes)[1]
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(as.character(clustering_to_use) %in% colnames(metadata(d_input)$cluster_codes))
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
-      if(verbose) message("using cluster IDs from clustering stored in column '", clustering_to_use, "' of 'cluster_codes' ", 
-              "data frame in 'metadata' of 'daFrame' object")
+      if (verbose) message("using cluster IDs from clustering stored in column '", clustering_to_use, "' of 'cluster_codes' ", 
+                           "data frame in 'metadata' of 'daFrame' object")
       code_id <- rowData(d_input)$cluster_id
       cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][code_id]
       # store cluster labels in column 'cluster_id' in 'rowData'; and add column 'code_id'
