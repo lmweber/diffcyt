@@ -92,7 +92,7 @@
 #' 
 createDesignMatrix <- function(experiment_info, cols_design = NULL) {
   
-  stopifnot(any(class(experiment_info) %in% c("data.frame", "DataFrame", "tbl_df", "tbl")))
+  stopifnot(any(class(experiment_info) %in% c("data.frame", "tbl_df", "tbl")) || is(experiment_info, "DataFrame"))
   experiment_info <- as.data.frame(experiment_info)
   
   # terms for design matrix

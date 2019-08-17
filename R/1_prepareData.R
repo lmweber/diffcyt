@@ -180,7 +180,7 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   colnames(d_combined) <- marker_info[, "marker_name"]
   
   # create row meta-data
-  stopifnot(any(class(experiment_info) %in% c("data.frame", "DataFrame", "tbl_df", "tbl")), 
+  stopifnot(any(class(experiment_info) %in% c("data.frame", "tbl_df", "tbl")) || is(experiment_info, "DataFrame"),
             "sample_id" %in% colnames(experiment_info))
   experiment_info <- as.data.frame(experiment_info)
   
@@ -191,7 +191,7 @@ prepareData <- function(d_input, experiment_info, marker_info, cols_to_include =
   stopifnot(nrow(row_data) == sum(n_cells))
   
   # create column meta-data
-  stopifnot(any(class(marker_info) %in% c("data.frame", "DataFrame", "tbl_df", "tbl")), 
+  stopifnot(any(class(marker_info) %in% c("data.frame", "tbl_df", "tbl")) || is(marker_info, "DataFrame"),
             nrow(marker_info) == ncol(d_combined))
   marker_info <- as.data.frame(marker_info)
   
