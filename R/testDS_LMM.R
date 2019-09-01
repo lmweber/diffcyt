@@ -119,6 +119,7 @@
 #' @importFrom multcomp glht
 #' @importFrom stats lm p.adjust
 #' @importFrom methods as is
+#' @importFrom S4Vectors droplevels
 #' 
 #' @export
 #' 
@@ -214,7 +215,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster_id <- cluster_id[ix_keep]
+  cluster_id <- droplevels(cluster_id[ix_keep])
   
   # weights: total cell counts per sample (after filtering)
   if (is.logical(weights)) {
@@ -300,7 +301,8 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster_id = clus, marker_id = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, 
+                               marker_id = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   col_data <- colData(d_medians)
