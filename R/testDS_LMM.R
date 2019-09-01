@@ -190,7 +190,7 @@
 #' res_DS <- testDS_LMM(d_counts, d_medians, formula, contrast)
 #' 
 testDS_LMM <- function(d_counts, d_medians, formula, contrast, 
-                       weights = NULL, markers_to_test = NULL, 
+                       weights = TRUE, markers_to_test = NULL, 
                        min_cells = 3, min_samples = NULL) {
   
   if (is.null(min_samples)) {
