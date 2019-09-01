@@ -121,7 +121,7 @@
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
 #' @importFrom graphics plot
-#' 
+#' @importFrom S4Vectors droplevels
 #' @export
 #' 
 #' @examples
@@ -222,7 +222,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster_id <- cluster_id[ix_keep]
+  cluster_id <- droplevels(cluster_id[ix_keep])
   
   # extract medians and create concatenated matrix
   state_names <- names(assays(d_medians))[markers_to_test]
