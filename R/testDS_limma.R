@@ -215,14 +215,14 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   
   # note: counts are only required for filtering
   counts <- assays(d_counts)[["counts"]]
-  cluster_id <- rowData(d_counts)$cluster_id
+  cluster_id <- droplevels(rowData(d_counts)$cluster_id)
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
   ix_keep <- apply(tf, 1, function(r) sum(r) >= min_samples)
   
   counts <- counts[ix_keep, , drop = FALSE]
-  cluster_id <- droplevels(cluster_id[ix_keep])
+  cluster_id <- cluster_id[ix_keep]
   
   # extract medians and create concatenated matrix
   state_names <- names(assays(d_medians))[markers_to_test]
