@@ -225,7 +225,7 @@
 #' 
 #' @aliases diffcyt-package
 #' 
-#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment assays rowData colData
 #' @importFrom S4Vectors metadata 'metadata<-'
 #' 
 #' @export
@@ -332,11 +332,11 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   method_DA <- match.arg(method_DA)
   method_DS <- match.arg(method_DS)
   
-  # preliminary steps (if input object is not a CATALYST 'daFrame')
-  if (!is(d_input, "daFrame")) {
+  # preliminary steps (if input is not a SingleCellExperiment object from CATALYST)
+  if (!is(d_input, "SingleCellExperiment")) {
     if (is.null(experiment_info) | is.null(marker_info)) {
-      stop("'experiment_info' and 'marker_info' inputs must be provided when not using CATALYST ", 
-           "'daFrame' object as input")
+      stop("'experiment_info' and 'marker_info' must be provided (unless using a SingleCellExperiment ", 
+           "object from CATALYST as input)")
     }
     # prepare data
     if (verbose) message("preparing data...")
@@ -351,21 +351,56 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     d_se <- generateClusters(d_se, cols_clustering, xdim, ydim, meta_clustering, meta_k, seed_clustering)
   }
   
-  # alternatively, use CATALYST 'daFrame' (which already contains cluster labels) as input
-  else if (is(d_input, "daFrame")) {
-    if (verbose) message("using CATALYST 'daFrame' input object")
+  # alternatively, use SingleCellExperiment object from CATALYST (which already contains cluster labels) as input
+  else if (is(d_input, "SingleCellExperiment")) {
+    if (verbose) message("using SingleCellExperiment object from CATALYST as input")
+    
+    # unpack SingleCellExperiment (proteins x cells format) and create SummarizedExperiment (cells x proteins format)
+    
+    stopifnot("sample_id" %in% colnames(colData(d_input)))
+    stopifnot("experiment_info" %in% names(metadata(d_input)))
+    stopifnot("cluster_id" %in% colnames(colData(d_input)))
+    stopifnot("cluster_codes" %in% names(metadata(d_input)))
+    
+    # split expression matrix by sample
+    es <- t(assays(d_input)[["exprs"]])
+    es <- split(es, colData(d_input)$sample_id)
+    # re-order according to metadata and reformat
+    es <- es[metadata(d_input)$experiment_info$sample_id]
+    es <- lapply(
+      es, matrix, 
+      ncol = nrow(d_input), byrow = FALSE, 
+      dimnames = list(NULL, colnames(d_input))
+    )
+    # collapse into a single matrix
+    es <- do.call("rbind", es)
+    
+    # create SummarizedExperiment (in transposed format compared to SingleCellExperiment)
+    rd <- rowData(d_input)
+    cd <- colData(d_input)
+    md <- metadata(d_input)
+    
+    d_input <- SummarizedExperiment(
+      assays = list(exprs = es), 
+      rowData = cd, 
+      colData = rd, 
+      metadata = md
+    )
+    
+    # select clustering to use (note: now in SummarizedExperiment format)
     
     if (is.null(clustering_to_use)) {
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
-      if (verbose) message("using cluster IDs stored in column named 'cluster_id' in 'rowData' of 'daFrame' object")
+      if (verbose) message("using cluster IDs stored in column named 'cluster_id' in 'colData' of ", 
+                           "SingleCellExperiment object from CATALYST")
       # clustering identifier to store in metadata
       clustering_name <- colnames(metadata(d_input)$cluster_codes)[1]
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(as.character(clustering_to_use) %in% colnames(metadata(d_input)$cluster_codes))
       stopifnot("cluster_id" %in% colnames(rowData(d_input)))
-      if (verbose) message("using cluster IDs from clustering stored in column '", clustering_to_use, "' of 'cluster_codes' ", 
-                           "data frame in 'metadata' of 'daFrame' object")
+      if (verbose) message("using cluster IDs from clustering stored in column '", clustering_to_use, 
+                           "' of 'cluster_codes' data frame in 'metadata' of SingleCellExperiment object from CATALYST")
       code_id <- rowData(d_input)$cluster_id
       cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][code_id]
       # store cluster labels in column 'cluster_id' in 'rowData'; and add column 'code_id'
@@ -413,7 +448,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   
   # return results and data objects
-  if (!is(d_input, "daFrame")) {
+  if (!is(d_input, "SingleCellExperiment")) {
     return(list(
       res = res, 
       d_se = d_se, 
@@ -422,7 +457,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
       d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
       d_medians_by_sample_marker = d_medians_by_sample_marker
     ))
-  } else if (is(d_input, "daFrame")) {
+  } else if (is(d_input, "SingleCellExperiment")) {
     # store clustering identifier in metadata
     metadata(res) <- as.list(c(metadata(res), clustering_name = clustering_name))
     # not returning input object, since it has been modified
