@@ -355,42 +355,10 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   else if (is(d_input, "SingleCellExperiment")) {
     if (verbose) message("using SingleCellExperiment object from CATALYST as input")
     
-    # unpack SingleCellExperiment (proteins x cells format) and create SummarizedExperiment (cells x proteins format)
-    
-    stopifnot("sample_id" %in% colnames(colData(d_input)))
-    stopifnot("experiment_info" %in% names(metadata(d_input)))
-    stopifnot("cluster_id" %in% colnames(colData(d_input)))
-    stopifnot("cluster_codes" %in% names(metadata(d_input)))
-    
-    # split expression matrix by sample
-    es <- t(assays(d_input)[["exprs"]])
-    es <- split(es, colData(d_input)$sample_id)
-    # re-order according to metadata and reformat
-    es <- es[metadata(d_input)$experiment_info$sample_id]
-    es <- lapply(
-      es, matrix, 
-      ncol = nrow(d_input), byrow = FALSE, 
-      dimnames = list(NULL, colnames(d_input))
-    )
-    # collapse into a single matrix
-    es <- do.call("rbind", es)
-    
-    # create SummarizedExperiment (in transposed format compared to SingleCellExperiment)
-    rd <- rowData(d_input)
-    cd <- colData(d_input)
-    md <- metadata(d_input)
-    
-    d_input <- SummarizedExperiment(
-      assays = list(exprs = es), 
-      rowData = cd, 
-      colData = rd, 
-      metadata = md
-    )
-    
-    # select clustering to use (note: now in SummarizedExperiment format)
+    # select clustering to use
     
     if (is.null(clustering_to_use)) {
-      stopifnot("cluster_id" %in% colnames(rowData(d_input)))
+      stopifnot("cluster_id" %in% colnames(colData(d_input)))
       if (verbose) message("using cluster IDs stored in column named 'cluster_id' in 'colData' of ", 
                            "SingleCellExperiment object from CATALYST")
       # clustering identifier to store in metadata
@@ -398,22 +366,40 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
       
     } else if (!is.null(clustering_to_use)) {
       stopifnot(as.character(clustering_to_use) %in% colnames(metadata(d_input)$cluster_codes))
-      stopifnot("cluster_id" %in% colnames(rowData(d_input)))
+      stopifnot("cluster_id" %in% colnames(colData(d_input)))
       if (verbose) message("using cluster IDs from clustering stored in column '", clustering_to_use, 
                            "' of 'cluster_codes' data frame in 'metadata' of SingleCellExperiment object from CATALYST")
-      code_id <- rowData(d_input)$cluster_id
+      code_id <- colData(d_input)$cluster_id
       cluster_id <- metadata(d_input)$cluster_codes[, clustering_to_use][code_id]
-      # store cluster labels in column 'cluster_id' in 'rowData'; and add column 'code_id'
+      # store cluster labels in column 'cluster_id' in 'colData'; and add column 'code_id'
       # for original FlowSOM clustering codes
-      stopifnot(length(cluster_id) == nrow(rowData(d_input)), 
-                length(code_id) == nrow(rowData(d_input)))
-      rowData(d_input)$code_id <- code_id
-      rowData(d_input)$cluster_id <- cluster_id
+      stopifnot(length(cluster_id) == nrow(colData(d_input)), 
+                length(code_id) == nrow(colData(d_input)))
+      colData(d_input)$code_id <- code_id
+      colData(d_input)$cluster_id <- cluster_id
       # clustering identifier to store in metadata
       clustering_name <- clustering_to_use
     }
     
-    d_se <- d_input
+    # unpack SingleCellExperiment (proteins x cells format) and create SummarizedExperiment (cells x proteins format)
+    
+    stopifnot("sample_id" %in% colnames(colData(d_input)))
+    stopifnot("experiment_info" %in% names(metadata(d_input)))
+    stopifnot("cluster_id" %in% colnames(colData(d_input)))
+    stopifnot("cluster_codes" %in% names(metadata(d_input)))
+    
+    # split cells by sample
+    cs_by_s <- split(seq_len(ncol(d_input)), colData(d_input)$sample_id)
+    # re-order according to experiment_info
+    cs <- unlist(cs_by_s[metadata(d_input)$experiment_info$sample_id])
+    es <- t(assays(d_input)[["exprs"]])[cs, , drop = FALSE]
+    # create SummarizedExperiment (in transposed format compared to SingleCellExperiment)
+    d_se <- SummarizedExperiment(
+      assays = list(exprs = es), 
+      rowData = colData(d_input)[cs, ], 
+      colData = rowData(d_input), 
+      metadata = metadata(d_input)
+    )
   }
   
   # calculate features
