@@ -1,4 +1,4 @@
-Changes in version 1.5.4
+Changes in version 1.5.5
 ------------------------
 
   - Update 'diffcyt()' wrapper function to handle new SingleCellExperiment object 
