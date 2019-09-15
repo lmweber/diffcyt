@@ -181,7 +181,7 @@ calcMedians <- function(d_se) {
                    id_state_markers = id_state_markers)
   
   d_medians <- SummarizedExperiment(
-    assays = list(medians = medians), 
+    assays = medians, 
     rowData = row_data, 
     colData = col_data, 
     metadata = metadata
