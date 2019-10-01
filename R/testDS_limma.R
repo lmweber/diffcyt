@@ -121,7 +121,7 @@
 #' @importFrom methods as is
 #' @importFrom grDevices pdf
 #' @importFrom graphics plot
-#' 
+#' @importFrom S4Vectors droplevels
 #' @export
 #' 
 #' @examples
@@ -215,7 +215,7 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   
   # note: counts are only required for filtering
   counts <- assays(d_counts)[["counts"]]
-  cluster_id <- rowData(d_counts)$cluster_id
+  cluster_id <- droplevels(rowData(d_counts)$cluster_id)
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells

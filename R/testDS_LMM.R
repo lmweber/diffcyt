@@ -81,10 +81,12 @@
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
 #' 
-#' @param weights (Optional) Whether to include cluster cell counts as precision weights
-#'   within each model (across samples, i.e. within the model for each cluster); these
-#'   represent the relative uncertainty in calculating each median value (within each
-#'   model). Default = TRUE.
+#' @param weights (Optional) Whether to include cluster cell counts as precision
+#'   weights within each model (across samples, i.e. within the model for each
+#'   cluster); these represent the relative uncertainty in calculating each
+#'   median value (within each model). Default = TRUE is to use the total counts
+#'   of samples as the weight. A customized weight could be provided as a
+#'   numeric vector.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of
@@ -117,6 +119,7 @@
 #' @importFrom multcomp glht
 #' @importFrom stats lm p.adjust
 #' @importFrom methods as is
+#' @importFrom S4Vectors droplevels
 #' 
 #' @export
 #' 
@@ -205,7 +208,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   
   # note: counts are only required for filtering
   counts <- assays(d_counts)[["counts"]]
-  cluster_id <- rowData(d_counts)$cluster_id
+  cluster_id <- droplevels(rowData(d_counts)$cluster_id)
   
   # filtering: keep clusters with at least 'min_cells' cells in at least 'min_samples' samples
   tf <- counts >= min_cells
@@ -215,11 +218,18 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   cluster_id <- cluster_id[ix_keep]
   
   # weights: total cell counts per sample (after filtering)
-  if (weights) {
-    weights <- colSums(counts)
+  if (is.logical(weights)) {
+      if (weights) {
+          weights <- colSums(counts)
+      } else {
+          weights <- NULL
+      } 
   } else {
-    weights <- NULL
+      if (length(weights) != ncol(d_counts)) {
+          stop("The length of weights is different to the number of columns in d_counts")
+      }
   }
+  
   
   # LMM/LM testing pipeline
   
@@ -245,7 +255,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
       # data for cluster-marker i
       # note: response values are medians
       y <- meds[i, ]
-      data_i <- cbind(y, weights, formula$data)
+      data_i <- cbind(cbind(y, weights), formula$data)
       # fit LMM if model formula contains any random effect terms; LM otherwise
       if (formula$random_terms) {
         fit <- lmer(formula$formula, data = data_i, weights = weights)
@@ -291,7 +301,8 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   stat <- factor(rep(state_names, each = length(levels(cluster_id))), levels = state_names)
   stopifnot(length(clus) == nrow(row_data), length(stat) == nrow(row_data))
   
-  row_data <- cbind(data.frame(cluster_id = clus, marker_id = stat, stringsAsFactors = FALSE), 
+  row_data <- cbind(data.frame(cluster_id = clus, 
+                               marker_id = stat, stringsAsFactors = FALSE), 
                     row_data)
   
   col_data <- colData(d_medians)
