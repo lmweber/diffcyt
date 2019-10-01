@@ -27,10 +27,11 @@ variable indicating whether the model formula contains any random effect terms. 
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
 
-\item{weights}{(Optional) Whether to include cluster cell counts as precision weights
-within each model (across samples, i.e. within the model for each cluster); these
-represent the relative uncertainty in calculating each median value (within each
-model). Default = TRUE.}
+\item{weights}{(Optional) Whether to include precision weights within each model
+(across samples, i.e. within the model for each cluster); these represent the
+relative uncertainty in calculating each median value (within each model). Accepts
+values of TRUE, FALSE, or a numeric vector of custom weights. Default = TRUE, in
+which case cluster cell counts are used.}
 
 \item{markers_to_test}{(Optional) Logical vector specifying which markers to test for
 differential expression (from the set of markers stored in the \code{assays} of

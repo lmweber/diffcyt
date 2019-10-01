@@ -81,12 +81,11 @@
 #' @param contrast Contrast matrix, created with \code{\link{createContrast}}. See
 #'   \code{\link{createContrast}} for details.
 #' 
-#' @param weights (Optional) Whether to include cluster cell counts as precision
-#'   weights within each model (across samples, i.e. within the model for each
-#'   cluster); these represent the relative uncertainty in calculating each
-#'   median value (within each model). Default = TRUE is to use the total counts
-#'   of samples as the weight. A customized weight could be provided as a
-#'   numeric vector.
+#' @param weights (Optional) Whether to include precision weights within each model
+#'   (across samples, i.e. within the model for each cluster); these represent the
+#'   relative uncertainty in calculating each median value (within each model). Accepts
+#'   values of TRUE, FALSE, or a numeric vector of custom weights. Default = TRUE, in
+#'   which case cluster cell counts are used.
 #' 
 #' @param markers_to_test (Optional) Logical vector specifying which markers to test for
 #'   differential expression (from the set of markers stored in the \code{assays} of
@@ -218,17 +217,14 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
   
   # weights: total cell counts per sample (after filtering)
   if (is.logical(weights)) {
-      if (weights) {
-          weights <- colSums(counts)
-      } else {
-          weights <- NULL
-      } 
-  } else {
-      if (length(weights) != ncol(d_counts)) {
-          stop("The length of weights is different to the number of columns in d_counts")
-      }
+    if (weights) {
+      weights <- colSums(counts)
+    } else {
+      weights <- NULL
+    }
+  } else if (is.numeric(weights)) {
+    stopifnot(length(weights) == ncol(d_counts))
   }
-  
   
   # LMM/LM testing pipeline
   
