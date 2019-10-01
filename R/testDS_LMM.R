@@ -245,7 +245,7 @@ testDS_LMM <- function(d_counts, d_medians, formula, contrast,
       # data for cluster-marker i
       # note: response values are medians
       y <- meds[i, ]
-      data_i <- cbind(cbind(y, weights), formula$data)
+      data_i <- cbind(cbind(y, weights), formula$data)  # nested 'cbind' required to handle weights = NULL
       # fit LMM if model formula contains any random effect terms; LM otherwise
       if (formula$random_terms) {
         fit <- lmer(formula$formula, data = data_i, weights = weights)
