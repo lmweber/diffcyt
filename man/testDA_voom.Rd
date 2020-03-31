@@ -4,9 +4,18 @@
 \alias{testDA_voom}
 \title{Test for differential abundance: method 'diffcyt-DA-voom'}
 \usage{
-testDA_voom(d_counts, design, contrast, block_id = NULL, min_cells = 3,
-  min_samples = NULL, normalize = FALSE, norm_factors = "TMM",
-  plot = TRUE, path = ".")
+testDA_voom(
+  d_counts,
+  design,
+  contrast,
+  block_id = NULL,
+  min_cells = 3,
+  min_samples = NULL,
+  normalize = FALSE,
+  norm_factors = "TMM",
+  plot = TRUE,
+  path = "."
+)
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell

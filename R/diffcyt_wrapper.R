@@ -391,7 +391,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     # split cells by sample
     cs_by_s <- split(seq_len(ncol(d_input)), colData(d_input)$sample_id)
     # re-order according to experiment_info
-    cs <- unlist(cs_by_s[metadata(d_input)$experiment_info$sample_id])
+    cs <- unlist(cs_by_s[as.character(metadata(d_input)$experiment_info$sample_id)])
     es <- t(assays(d_input)[["exprs"]])[cs, , drop = FALSE]
     # create SummarizedExperiment (in transposed format compared to SingleCellExperiment)
     d_se <- SummarizedExperiment(

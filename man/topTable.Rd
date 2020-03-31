@@ -4,10 +4,21 @@
 \alias{topTable}
 \title{Show table of results for top clusters or cluster-marker combinations}
 \usage{
-topTable(res, d_counts = NULL, d_medians = NULL, order = TRUE,
-  order_by = "p_adj", all = FALSE, top_n = 20, show_counts = FALSE,
-  show_props = FALSE, show_meds = FALSE, sort_cols = TRUE,
-  format_vals = FALSE, digits = 3)
+topTable(
+  res,
+  d_counts = NULL,
+  d_medians = NULL,
+  order = TRUE,
+  order_by = "p_adj",
+  all = FALSE,
+  top_n = 20,
+  show_counts = FALSE,
+  show_props = FALSE,
+  show_meds = FALSE,
+  sort_cols = TRUE,
+  format_vals = FALSE,
+  digits = 3
+)
 }
 \arguments{
 \item{res}{Output object from either the \code{\link{diffcyt}} wrapper function or one

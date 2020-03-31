@@ -4,9 +4,20 @@
 \alias{testDS_limma}
 \title{Test for differential states: method 'diffcyt-DS-limma'}
 \usage{
-testDS_limma(d_counts, d_medians, design, contrast, block_id = NULL,
-  trend = TRUE, weights = TRUE, markers_to_test = NULL,
-  min_cells = 3, min_samples = NULL, plot = TRUE, path = ".")
+testDS_limma(
+  d_counts,
+  d_medians,
+  design,
+  contrast,
+  block_id = NULL,
+  trend = TRUE,
+  weights = TRUE,
+  markers_to_test = NULL,
+  min_cells = 3,
+  min_samples = NULL,
+  plot = TRUE,
+  path = "."
+)
 }
 \arguments{
 \item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
