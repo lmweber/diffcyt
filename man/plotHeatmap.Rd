@@ -4,10 +4,18 @@
 \alias{plotHeatmap}
 \title{Plot heatmap}
 \usage{
-plotHeatmap(out = NULL, analysis_type = c("DA", "DS"), top_n = 20,
-  threshold = 0.1, res = NULL, d_se = NULL, d_counts = NULL,
-  d_medians = NULL, d_medians_by_cluster_marker = NULL,
-  sample_order = NULL)
+plotHeatmap(
+  out = NULL,
+  analysis_type = c("DA", "DS"),
+  top_n = 20,
+  threshold = 0.1,
+  res = NULL,
+  d_se = NULL,
+  d_counts = NULL,
+  d_medians = NULL,
+  d_medians_by_cluster_marker = NULL,
+  sample_order = NULL
+)
 }
 \arguments{
 \item{out}{Output object from \code{\link{diffcyt}} wrapper function, containing

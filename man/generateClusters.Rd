@@ -4,8 +4,16 @@
 \alias{generateClusters}
 \title{Generate clusters}
 \usage{
-generateClusters(d_se, cols_clustering = NULL, xdim = 10, ydim = 10,
-  meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL, ...)
+generateClusters(
+  d_se,
+  cols_clustering = NULL,
+  xdim = 10,
+  ydim = 10,
+  meta_clustering = FALSE,
+  meta_k = 40,
+  seed_clustering = NULL,
+  ...
+)
 }
 \arguments{
 \item{d_se}{Transformed input data, from \code{\link{prepareData}} and

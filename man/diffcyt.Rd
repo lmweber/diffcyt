@@ -5,19 +5,42 @@
 \alias{diffcyt-package}
 \title{Run 'diffcyt' pipeline}
 \usage{
-diffcyt(d_input, experiment_info = NULL, marker_info = NULL,
-  design = NULL, formula = NULL, contrast, analysis_type = c("DA",
-  "DS"), method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom",
-  "diffcyt-DA-GLMM"), method_DS = c("diffcyt-DS-limma",
-  "diffcyt-DS-LMM"), markers_to_test = NULL, clustering_to_use = NULL,
-  cols_to_include = NULL, subsampling = FALSE, n_sub = NULL,
-  seed_sub = NULL, transform = TRUE, cofactor = 5,
-  cols_clustering = NULL, xdim = 10, ydim = 10,
-  meta_clustering = FALSE, meta_k = 40, seed_clustering = NULL,
-  min_cells = 3, min_samples = NULL, normalize = FALSE,
-  norm_factors = "TMM", trend_method = "none", block_id = NULL,
-  trend = TRUE, weights = TRUE, plot = TRUE, path = ".",
-  verbose = TRUE)
+diffcyt(
+  d_input,
+  experiment_info = NULL,
+  marker_info = NULL,
+  design = NULL,
+  formula = NULL,
+  contrast,
+  analysis_type = c("DA", "DS"),
+  method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"),
+  method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"),
+  markers_to_test = NULL,
+  clustering_to_use = NULL,
+  cols_to_include = NULL,
+  subsampling = FALSE,
+  n_sub = NULL,
+  seed_sub = NULL,
+  transform = TRUE,
+  cofactor = 5,
+  cols_clustering = NULL,
+  xdim = 10,
+  ydim = 10,
+  meta_clustering = FALSE,
+  meta_k = 40,
+  seed_clustering = NULL,
+  min_cells = 3,
+  min_samples = NULL,
+  normalize = FALSE,
+  norm_factors = "TMM",
+  trend_method = "none",
+  block_id = NULL,
+  trend = TRUE,
+  weights = TRUE,
+  plot = TRUE,
+  path = ".",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{d_input}{Input data. Must be either: (i) a \code{\link{flowSet}} or list of
