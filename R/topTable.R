@@ -61,6 +61,11 @@
 #' @param show_meds Whether to display median expression values for each cluster-marker
 #'   combination (from \code{d_medians}). Default = FALSE.
 #' 
+#' @param show_logFC Whether to display log fold change (logFC) values. Default = FALSE.
+#' 
+#' @param show_all_cols Whether to display all columns from output object (e.g. logFC, 
+#'   logCPM, LR, etc.) Default = FALSE.
+#' 
 #' @param sort_cols Whether to sort columns of counts, proportions, and medians; by levels
 #'   of factor \code{sample_id} in \code{colData} of \code{d_medians} (requires object
 #'   \code{d_medians} to be provided). Default = TRUE.
@@ -81,7 +86,7 @@
 #' 
 #' 
 #' @importFrom SummarizedExperiment rowData colData assays
-#' @importFrom S4Vectors metadata
+#' @importFrom S4Vectors metadata DataFrame
 #' @importFrom utils head
 #' 
 #' @export
@@ -162,6 +167,7 @@ topTable <- function(res, d_counts = NULL, d_medians = NULL,
                      order = TRUE, order_by = "p_adj", 
                      all = FALSE, top_n = 20, 
                      show_counts = FALSE, show_props = FALSE, show_meds = FALSE, 
+                     show_logFC = FALSE, show_all_cols = FALSE, 
                      sort_cols = TRUE, format_vals = FALSE, digits = 3) {
   
   # if output is from wrapper function, extract 'res', 'd_counts', and 'd_medians'
@@ -174,10 +180,20 @@ topTable <- function(res, d_counts = NULL, d_medians = NULL,
   out <- rowData(res)
   
   # select output columns to keep (note: additional column 'marker_id' for DS tests)
-  if ("marker_id" %in% colnames(out)) {
-    out <- out[, c("cluster_id", "marker_id", "p_val", "p_adj"), drop = FALSE]
-  } else {
-    out <- out[, c("cluster_id", "p_val", "p_adj"), drop = FALSE]
+  if (!show_all_cols) {
+    if (show_logFC) {
+      if ("marker_id" %in% colnames(out)) {
+        out <- out[, c("cluster_id", "marker_id", "logFC", "p_val", "p_adj"), drop = FALSE]
+      } else {
+        out <- out[, c("cluster_id", "logFC", "p_val", "p_adj"), drop = FALSE]
+      }
+    } else {
+      if ("marker_id" %in% colnames(out)) {
+        out <- out[, c("cluster_id", "marker_id", "p_val", "p_adj"), drop = FALSE]
+      } else {
+        out <- out[, c("cluster_id", "p_val", "p_adj"), drop = FALSE]
+      }
+    }
   }
   
   # include cluster cell counts and/or proportions
@@ -271,6 +287,18 @@ topTable <- function(res, d_counts = NULL, d_medians = NULL,
   if (format_vals) {
     out$p_val <- signif(out$p_val, digits = digits)
     out$p_adj <- signif(out$p_adj, digits = digits)
+    if (show_logFC) {
+      out$logFC <- round(out$logFC, digits = digits)
+    }
+    if (show_all_cols) {
+      if ("marker_id" %in% colnames(out)) {
+        extra_cols <- setdiff(colnames(out), c("cluster_id", "marker_id", "p_val", "p_adj"))
+        out[, extra_cols] <- DataFrame(lapply(out[, extra_cols, drop = FALSE], round, digits = digits))
+      } else {
+        extra_cols <- setdiff(colnames(out), c("cluster_id", "p_val", "p_adj"))
+        out[, extra_cols] <- DataFrame(lapply(out[, extra_cols, drop = FALSE], round, digits = digits))
+      }
+    }
   }
   
   if (all) {
