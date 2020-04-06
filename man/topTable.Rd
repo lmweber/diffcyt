@@ -15,6 +15,8 @@ topTable(
   show_counts = FALSE,
   show_props = FALSE,
   show_meds = FALSE,
+  show_logFC = FALSE,
+  show_all_cols = FALSE,
   sort_cols = TRUE,
   format_vals = FALSE,
   digits = 3
@@ -61,6 +63,11 @@ top \code{top_n}). Default = FALSE.}
 
 \item{show_meds}{Whether to display median expression values for each cluster-marker
 combination (from \code{d_medians}). Default = FALSE.}
+
+\item{show_logFC}{Whether to display log fold change (logFC) values. Default = FALSE.}
+
+\item{show_all_cols}{Whether to display all columns from output object (e.g. logFC, 
+logCPM, LR, etc.) Default = FALSE.}
 
 \item{sort_cols}{Whether to sort columns of counts, proportions, and medians; by levels
 of factor \code{sample_id} in \code{colData} of \code{d_medians} (requires object
