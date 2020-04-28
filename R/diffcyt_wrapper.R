@@ -414,9 +414,11 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   # calculate features
   if (verbose) message("calculating features...")
   d_counts <- calcCounts(d_se)
-  d_medians <- calcMedians(d_se)
-  d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
-  d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
+  if (analysis_type == "DS") {
+    d_medians <- calcMedians(d_se)
+    d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
+    d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
+  }
   
   # DA tests
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-edgeR") {
