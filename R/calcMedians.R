@@ -115,7 +115,7 @@ calcMedians <- function(d_se) {
   
   # calculate cluster medians for each marker
   
-  assaydata_mx <- assays(d_se)[["exprs"]]
+  assaydata_mx <- as.matrix(assays(d_se)[["exprs"]])
   
   medians <- vector("list", sum(is_marker))
   marker_names_sub <- as.character(colData(d_se)$marker_name[is_marker])

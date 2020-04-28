@@ -112,7 +112,7 @@ calcMediansByClusterMarker <- function(d_se) {
   
   # calculate cluster medians
   
-  marker_vals <- as.data.frame(assays(d_se)[["exprs"]])[, is_marker, drop = FALSE]
+  marker_vals <- as.matrix(assays(d_se)[["exprs"]])[, is_marker, drop = FALSE]
   rowdata_df <- as.data.frame(rowData(d_se))
   
   stopifnot(nrow(marker_vals) == nrow(rowdata_df))
