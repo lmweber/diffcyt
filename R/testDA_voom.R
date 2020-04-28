@@ -86,9 +86,10 @@
 #'   Alternatively, a vector of values can be provided (the values should multiply to 1).
 #' 
 #' @param plot Whether to save diagnostic plots for the \code{limma} \code{\link{voom}}
-#'   transformations. Default = TRUE.
+#'   transformations. Default = FALSE.
 #' 
-#' @param path Path for diagnostic plots. Default = current working directory.
+#' @param path Path for diagnostic plots, if \code{plot = TRUE}. Default =
+#'   current working directory.
 #' 
 #' 
 #' @return Returns a new \code{\link{SummarizedExperiment}} object, with differential test
@@ -167,13 +168,13 @@
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential abundance (DA) of clusters
-#' res_DA <- testDA_voom(d_counts, design, contrast, plot = FALSE)
+#' res_DA <- testDA_voom(d_counts, design, contrast)
 #' 
 testDA_voom <- function(d_counts, design, contrast, 
                         block_id = NULL, 
                         min_cells = 3, min_samples = NULL, 
                         normalize = FALSE, norm_factors = "TMM", 
-                        plot = TRUE, path = ".") {
+                        plot = FALSE, path = ".") {
   
   if (!is.null(block_id) & !is.factor(block_id)) {
     block_id <- factor(block_id, levels = unique(block_id))
@@ -209,7 +210,7 @@ testDA_voom <- function(d_counts, design, contrast,
   
   # voom transformation and weights
   if (plot) pdf(file.path(path, "voom_before.pdf"), width = 6, height = 6)
-  v <- voom(y, design, plot = TRUE)
+  v <- voom(y, design, plot = plot)
   if (plot) dev.off()
   
   # estimate correlation between paired samples
@@ -230,9 +231,11 @@ testDA_voom <- function(d_counts, design, contrast,
   # calculate moderated tests
   efit <- eBayes(vfit)
   
-  if (plot) pdf(file.path(path, "voom_after.pdf"), width = 6, height = 6)
-  plotSA(efit)
-  if (plot) dev.off()
+  if (plot) {
+    pdf(file.path(path, "voom_after.pdf"), width = 6, height = 6)
+    plotSA(efit)
+    dev.off()
+  }
   
   # results
   top <- limma::topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")

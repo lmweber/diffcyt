@@ -15,7 +15,7 @@ testDS_limma(
   markers_to_test = NULL,
   min_cells = 3,
   min_samples = NULL,
-  plot = TRUE,
+  plot = FALSE,
   path = "."
 )
 }
@@ -67,9 +67,10 @@ is appropriate for two-group comparisons (of equal size). Clusters are kept for
 differential testing if they have at least \code{min_cells} cells in at least
 \code{min_samples} samples.}
 
-\item{plot}{Whether to save diagnostic plot. Default = TRUE.}
+\item{plot}{Whether to save diagnostic plot. Default = FALSE.}
 
-\item{path}{Path for diagnostic plot. Default = current working directory.}
+\item{path}{Path for diagnostic plot, if \code{plot = TRUE}. Default =
+current working directory.}
 }
 \value{
 Returns a new \code{\link{SummarizedExperiment}} object, where rows =
@@ -201,6 +202,6 @@ design <- createDesignMatrix(experiment_info, cols_design = "group_id")
 contrast <- createContrast(c(0, 1))
 
 # Test for differential states (DS) within clusters
-res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
+res_DS <- testDS_limma(d_counts, d_medians, design, contrast)
 
 }
