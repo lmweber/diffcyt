@@ -384,21 +384,30 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
     # unpack SingleCellExperiment (proteins x cells format) and create SummarizedExperiment (cells x proteins format)
     
     stopifnot("sample_id" %in% colnames(colData(d_input)))
-    stopifnot("experiment_info" %in% names(metadata(d_input)))
     stopifnot("cluster_id" %in% colnames(colData(d_input)))
     stopifnot("cluster_codes" %in% names(metadata(d_input)))
+    
+    if (!("experiment_info" %in% names(metadata(d_input)))) {
+      if (verbose) message("generating 'experiment_info' from input object")
+      m <- match(levels(droplevels(factor(d_input$sample_id))), d_input$sample_id)
+      experiment_info <- data.frame(colData(d_input)[m, ], check.names = FALSE, row.names = NULL)
+      metadata <- as.list(c(metadata(d_input), experiment_info))
+    } else {
+      experiment_info <- metadata(d_input)$experiment_info
+      metadata <- metadata(d_input)
+    }
     
     # split cells by sample
     cs_by_s <- split(seq_len(ncol(d_input)), colData(d_input)$sample_id)
     # re-order according to experiment_info
-    cs <- unlist(cs_by_s[as.character(metadata(d_input)$experiment_info$sample_id)])
+    cs <- unlist(cs_by_s[as.character(experiment_info$sample_id)])
     es <- t(assays(d_input)[["exprs"]])[cs, , drop = FALSE]
     # create SummarizedExperiment (in transposed format compared to SingleCellExperiment)
     d_se <- SummarizedExperiment(
       assays = list(exprs = es), 
       rowData = colData(d_input)[cs, ], 
       colData = rowData(d_input), 
-      metadata = metadata(d_input)
+      metadata = metadata
     )
   }
   
