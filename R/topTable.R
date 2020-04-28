@@ -155,7 +155,7 @@
 #' out_DS <- diffcyt(d_input, experiment_info, marker_info, 
 #'                   design = design, contrast = contrast, 
 #'                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-#'                   seed_clustering = 123, plot = FALSE, verbose = FALSE)
+#'                   seed_clustering = 123, verbose = FALSE)
 #' 
 #' # Display results for top DA clusters
 #' topTable(out_DA, format_vals = TRUE)

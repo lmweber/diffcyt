@@ -99,9 +99,10 @@
 #'   differential testing if they have at least \code{min_cells} cells in at least
 #'   \code{min_samples} samples.
 #' 
-#' @param plot Whether to save diagnostic plot. Default = TRUE.
+#' @param plot Whether to save diagnostic plot. Default = FALSE.
 #' 
-#' @param path Path for diagnostic plot. Default = current working directory.
+#' @param path Path for diagnostic plot, if \code{plot = TRUE}. Default =
+#'   current working directory.
 #' 
 #' 
 #' @return Returns a new \code{\link{SummarizedExperiment}} object, where rows =
@@ -189,13 +190,13 @@
 #' contrast <- createContrast(c(0, 1))
 #' 
 #' # Test for differential states (DS) within clusters
-#' res_DS <- testDS_limma(d_counts, d_medians, design, contrast, plot = FALSE)
+#' res_DS <- testDS_limma(d_counts, d_medians, design, contrast)
 #' 
 testDS_limma <- function(d_counts, d_medians, design, contrast, 
                          block_id = NULL, trend = TRUE, weights = TRUE, 
                          markers_to_test = NULL, 
                          min_cells = 3, min_samples = NULL, 
-                         plot = TRUE, path = ".") {
+                         plot = FALSE, path = ".") {
   
   if (!is.null(block_id) & !is.factor(block_id)) {
     block_id <- factor(block_id, levels = unique(block_id))
@@ -261,9 +262,11 @@ testDS_limma <- function(d_counts, d_medians, design, contrast,
   # calculate moderated tests
   efit <- eBayes(fit, trend = trend)
   
-  if (plot) pdf(file.path(path, "SA_plot.pdf"), width = 6, height = 6)
-  plotSA(efit)
-  if (plot) dev.off()
+  if (plot) {
+    pdf(file.path(path, "SA_plot.pdf"), width = 6, height = 6)
+    plotSA(efit)
+    dev.off()
+  }
   
   # results
   top <- limma::topTable(efit, coef = 1, number = Inf, adjust.method = "BH", sort.by = "none")

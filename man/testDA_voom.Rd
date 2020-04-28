@@ -13,7 +13,7 @@ testDA_voom(
   min_samples = NULL,
   normalize = FALSE,
   norm_factors = "TMM",
-  plot = TRUE,
+  plot = FALSE,
   path = "."
 )
 }
@@ -52,9 +52,10 @@ the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
 Alternatively, a vector of values can be provided (the values should multiply to 1).}
 
 \item{plot}{Whether to save diagnostic plots for the \code{limma} \code{\link{voom}}
-transformations. Default = TRUE.}
+transformations. Default = FALSE.}
 
-\item{path}{Path for diagnostic plots. Default = current working directory.}
+\item{path}{Path for diagnostic plots, if \code{plot = TRUE}. Default =
+current working directory.}
 }
 \value{
 Returns a new \code{\link{SummarizedExperiment}} object, with differential test
@@ -176,6 +177,6 @@ design <- createDesignMatrix(experiment_info, cols_design = "group_id")
 contrast <- createContrast(c(0, 1))
 
 # Test for differential abundance (DA) of clusters
-res_DA <- testDA_voom(d_counts, design, contrast, plot = FALSE)
+res_DA <- testDA_voom(d_counts, design, contrast)
 
 }

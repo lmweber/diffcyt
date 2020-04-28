@@ -37,7 +37,7 @@ diffcyt(
   block_id = NULL,
   trend = TRUE,
   weights = TRUE,
-  plot = TRUE,
+  plot = FALSE,
   path = ".",
   verbose = TRUE
 )
@@ -202,12 +202,12 @@ each model). Default = TRUE. See \code{\link{testDS_limma}} or
 \code{\link{testDS_LMM}}.}
 
 \item{plot}{Whether to save diagnostic plots (for method \code{testDA_voom} or
-\code{testDS_limma}). Default = TRUE. See \code{\link{testDA_voom}} or
+\code{testDS_limma}). Default = FALSE. See \code{\link{testDA_voom}} or
 \code{\link{testDS_limma}}.}
 
-\item{path}{Path for diagnostic plots (for method \code{testDA_voom} or
-\code{testDS_limma}). Default = current working directory. See
-\code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
+\item{path}{Path for diagnostic plots, if \code{plot = TRUE} (for method 
+\code{testDA_voom} or \code{testDS_limma}). Default = current working directory. 
+See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 
 \item{verbose}{Whether to print status messages during each step of the pipeline.
 Default = TRUE.}
@@ -330,7 +330,7 @@ out_DA <- diffcyt(d_input, experiment_info, marker_info,
 out_DS <- diffcyt(d_input, experiment_info, marker_info, 
                   design = design, contrast = contrast, 
                   analysis_type = "DS", method_DS = "diffcyt-DS-limma", 
-                  seed_clustering = 123, plot = FALSE, verbose = FALSE)
+                  seed_clustering = 123, verbose = FALSE)
 
 # Display results for top DA clusters
 topTable(out_DA, format_vals = TRUE)
