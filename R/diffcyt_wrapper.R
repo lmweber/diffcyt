@@ -446,25 +446,40 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   
   # return results and data objects
   if (!is(d_input, "SingleCellExperiment")) {
-    return(list(
-      res = res, 
-      d_se = d_se, 
-      d_counts = d_counts, 
-      d_medians = d_medians, 
-      d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
-      d_medians_by_sample_marker = d_medians_by_sample_marker
-    ))
+    if (analysis_type == "DA") {
+      return(list(
+        res = res, 
+        d_se = d_se, 
+        d_counts = d_counts
+      ))
+    } else if (analysis_type == "DS") {
+      return(list(
+        res = res, 
+        d_se = d_se, 
+        d_counts = d_counts, 
+        d_medians = d_medians, 
+        d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
+        d_medians_by_sample_marker = d_medians_by_sample_marker
+      ))
+    }
   } else if (is(d_input, "SingleCellExperiment")) {
     # store clustering identifier in metadata
     metadata(res) <- as.list(c(metadata(res), clustering_name = clustering_name))
     # not returning input object, since it has been modified
-    return(list(
-      res = res, 
-      d_counts = d_counts, 
-      d_medians = d_medians, 
-      d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
-      d_medians_by_sample_marker = d_medians_by_sample_marker
-    ))
+    if (analysis_type == "DA") {
+      return(list(
+        res = res, 
+        d_counts = d_counts
+      ))
+    } else if (analysis_type == "DS") {
+      return(list(
+        res = res, 
+        d_counts = d_counts, 
+        d_medians = d_medians, 
+        d_medians_by_cluster_marker = d_medians_by_cluster_marker, 
+        d_medians_by_sample_marker = d_medians_by_sample_marker
+      ))
+    }
   }
   
 }
