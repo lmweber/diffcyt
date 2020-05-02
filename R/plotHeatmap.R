@@ -163,8 +163,13 @@ plotHeatmap <- function(out = NULL, analysis_type = c("DA", "DS"), top_n = 20, t
     res <- out$res
     d_se <- out$d_se
     d_counts <- out$d_counts
-    d_medians <- out$d_medians
-    d_medians_by_cluster_marker <- out$d_medians_by_cluster_marker
+    if (analysis_type == "DA") {
+      d_medians <- calcMedians(d_se)
+      d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
+    } else if (analysis_type == "DS") {
+      d_medians <- out$d_medians
+      d_medians_by_cluster_marker <- out$d_medians_by_cluster_marker
+    }
   }
   
   analysis_type <- match.arg(analysis_type, choices = c("DA", "DS"))
