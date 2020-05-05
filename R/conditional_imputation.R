@@ -1,0 +1,117 @@
+#' @importFrom magrittr %>%
+estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
+                              response = NULL, covariates = NULL, id = NULL,
+                              method_est = c("mrl","rs","km")){
+  method_est <- match.arg(method_est)
+  n <- dim(data)[1]
+  if (is.null(id)){
+    data$id <- seq_along(data[[censored_variable]])
+    id <- "id"
+  }
+  # if last value is censored, set it to observed
+  if (data[n,censoring_indicator] == 0){
+    last_censored <- TRUE
+    data[n,censoring_indicator] <- 1
+    # for duplicates in bootstrap
+    data[data[[censored_variable]] == data[[censored_variable]][n],censoring_indicator] <- 1
+    # no censored values, return data
+    if ( sum(data[[censoring_indicator]]) == length(data[[censoring_indicator]])){
+      return(data)
+    }
+  } else{
+    last_censored <- FALSE
+  }
+  # do estimation
+  est <- switch(method_est,
+                "mrl" = mean_residual_life_imputation(data, censored_variable, censoring_indicator, covariates),
+                "rs" = risk_set_imputation(data, censored_variable, censoring_indicator, covariates),
+                "km" = kaplan_meier_imputation(data, censored_variable, censoring_indicator, covariates)
+  )
+  expr <- rlang::enquo(censored_variable)
+  est_name <- paste0(rlang::quo_name(expr),"_est")
+  # estimates of observed values are the same
+  data <- dplyr::mutate(data, !!est_name := .data[[censored_variable]])
+  # estimates of censored values are real estimates
+  data[data[[censoring_indicator]] == 0, est_name] <- est
+  # if last value was censored, set it back to censored
+  if (last_censored){
+    data[n,censoring_indicator] <- 0
+    # for duplicates
+    data[data[[censored_variable]] == data[[censored_variable]][n],censoring_indicator] <- 0
+    tmp_cond <- purrr::as_vector(data[n,id]) == purrr::as_vector(data[,id])
+    if (sum(tmp_cond) > 1){
+      data[n,est_name] <- purrr::as_vector(data[tmp_cond,est_name])[1]
+    }
+  }
+  return(data)
+}
+
+
+
+
+#' Conditional single imputation
+#'
+#' Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
+#'
+#' @param data 'data.frame'
+#' @param censored_variable name of column containing censored data
+#' @param censoring_indicator name of column containing indication if observed
+#'   (1) or censored (0) value in column 'censored_variable'
+#' @param response name of column containing the response (can be 'NULL')
+#' @param covariates name(s) of column(s) containing the covariate that influences
+#'  censoring
+#' @param id name of column containing id of sample
+#' @param method_est one of 'mrl','rs','km'. See \code{\link{conditional_multiple_imputation}}
+#' @param verbose Logical
+#' @importFrom magrittr %>%
+#' @export
+conditional_single_imputation <- function(data, censored_variable,
+                                          censoring_indicator, response = NULL,
+                                          covariates = NULL, id = NULL,
+                                          method_est = c("mrl","rs","km"),
+                                          verbose = FALSE) {
+  if (is.numeric(censored_variable)) censored_variable <- colnames(data)[[censored_variable]]
+  if (is.numeric(censoring_indicator)) censoring_indicator <- colnames(data)[[censoring_indicator]]
+  if (is.numeric(covariates) & !is.null(covariates)) covariates <- colnames(data)[covariates]
+  if (is.null(id)){
+    data$id <- seq_along(data[[censored_variable]])
+    id <- "id"
+  }
+  if (is.numeric(id) & !is.null(id)) id <- colnames(data)[[id]]
+  if (is.numeric(response) & !is.null(response)) response <- colnames(data)[[response]]
+  method_est <- match.arg(method_est)
+  data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
+  expr <- rlang::enquo(censored_variable)
+  est_name <- paste0(rlang::quo_name(expr),"_est")
+  # check if censored values are present, if not return input
+  nr_observed <- sum(data[[censoring_indicator]])
+  length_data <- length(data[[censoring_indicator]])
+  if ((nr_observed == length_data) |
+      ((nr_observed == (length_data-1)) &
+       # if last is censored cannot do calculations since it is transformed to 1
+       (data[length_data,censoring_indicator] == 0)
+      )
+     ) {
+    if (verbose) print("No censored values, return input")
+    return(data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]]) %>%
+             dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank))
+  }
+  # check if at least two observed values present
+  if (sum(data[[censoring_indicator]]) < 2) {
+    if (verbose) print("Not enough observed values, return input")
+    # data <- data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]])
+    return(data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]]) %>%
+             dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank))
+  }
+
+  # estimates with or without cov,
+  data <- estimate_cens_vars(data = data, censored_variable = censored_variable,
+                      censoring_indicator = censoring_indicator, response = response,
+                      covariates = covariates, method_est = method_est, id = id)
+
+  data <- data %>% dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank)
+  return(data)
+}
+
+
+
