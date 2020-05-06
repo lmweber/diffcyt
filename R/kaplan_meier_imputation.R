@@ -1,3 +1,4 @@
+#' @importFrom stats runif 
 kaplan_meier_imputation <- function(data, censored_variable, censoring_indicator, covariates = NULL){
   n <- dim(data)[1]
   censored_indices <- which(data[ ,censoring_indicator] == 0)

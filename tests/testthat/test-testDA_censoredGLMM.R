@@ -5,16 +5,18 @@ data_sim <- simulate_data(
   n_levels_fixeff = 2,
   # n_levels_raneff = 20,
   type = "glmer",
-  b = list(b=c(-5,-2,0.2)),
-  # weibull_params = list(X = list(shape = 0.75, scale = 0.25),
-  #                       C = list(shape = 0.5, scale = 0.5)),
-  censoring_dependent_on_covariate = TRUE,
+  b = list(b=c(-4,-0.5,0.5)),
+  weibull_params = list(X = list(shape = 0.75, scale = 0.25),
+                        C = list(shape = 0.5, scale = 0.5)),
+  censoring_dependent_on_covariate = FALSE,
   error_variance = 0,
-  # variance_fixeff = 0.1,
-  # variance_raneff = 0.1,
+  variance_fixeff = 0.5,
+  variance_raneff = 0.5,
   number_of_clusters = 10,
-  number_of_differential_clusters = 1)
-
+  number_of_differential_clusters = 1,
+  transform_fn = "log_positive"
+  )
+data_sim
 d_counts <- data_sim[["d_counts"]]
 data_sim <- data_sim[["out"]]
 data_sim$z <-
@@ -27,13 +29,19 @@ da_formula <- list(formula = tmp_formula,
 contrast <- diffcyt::createContrast(c(0, 1, 0))
 
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
-                            contrast = contrast, method_est = "cc",
-                            verbose = FALSE, m = 10)
+                            contrast = contrast, method_est = "rs",
+                            verbose = FALSE, m = 10, BPPARAM = BiocParallel::MulticoreParam(workers=14))
+SummarizedExperiment::rowData(outs)
 
 test_that("class testDA_censoredGLMM correct",{
-  expect_equal(class(outs)[1],"SummarizedExperiment")
+  expect_true(is(outs, "SummarizedExperiment"))
   expect_equal(dim(SummarizedExperiment::rowData(outs)),c(10,3))
   expect_equal(dim(SummarizedExperiment::assay(outs)),c(10,20))
+})
+
+test_that("testDA_censoredGLMM keeps entries",{
+  expect_equal(SummarizedExperiment::assay(outs),SummarizedExperiment::assay(d_counts))
+  expect_equal(SummarizedExperiment::rowData(outs)[1],SummarizedExperiment::rowData(d_counts))
 })
 
 test_that(" testDA_censoredGLMM valid pvalues",{

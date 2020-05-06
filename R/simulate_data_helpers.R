@@ -40,6 +40,7 @@ boxcox_transform <- function(x,formula,verbose=FALSE){
     return((x^(lambda)-1)/lambda)  }
 }
 
+#' @importFrom stats rnorm
 do_transformation <- function(x,transform_fn,verbose=FALSE){
   if (identical(transform_fn,"identity")) {
     return(x)
@@ -60,7 +61,7 @@ do_transformation <- function(x,transform_fn,verbose=FALSE){
       x <- x-min(x)*1.00001 # ensure non zero values for ppd
     }
     return(x)
-  } else if (class(transform_fn) == "character"){
+  } else if (is(transform_fn, "character")){
     return(tryCatch(do.call(transform_fn, list(x=x)),
                    error = function(e) {
                      stop("'transform_fn' is no valid transformation",call. = FALSE)

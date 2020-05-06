@@ -37,7 +37,14 @@ Imports:
     graphics, 
     ComplexHeatmap, 
     circlize, 
-    grid
+    grid,
+    MASS,
+    mice,
+    purrr,
+    rlang,
+    stringr,
+    survival,
+    tibble
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,
@@ -45,5 +52,6 @@ Suggests:
     rmarkdown,
     testthat,
     HDCytoData,
-    CATALYST
+    CATALYST,
+    BiocParallel
 RoxygenNote: 7.1.0

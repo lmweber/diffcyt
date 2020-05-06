@@ -20,7 +20,7 @@
 #'  covariate), 'betasVar' (mean variance of regression coef of censored covariate),
 #'  'fits' (regression fits)
 #' @export
-#'
+#' @importFrom utils capture.output
 #' @examples
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
 #'  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)

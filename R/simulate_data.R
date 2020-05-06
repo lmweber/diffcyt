@@ -58,6 +58,7 @@
 #'  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 #'  simulate_data(100, glmer_formula, type = "glmer")
 #' @export
+#' @importFrom stats runif rnorm rweibull
 simulate_data <- function(n,
                           formula,
                           type = c("lm","glm","glmer"),
@@ -136,10 +137,9 @@ simulate_data <- function(n,
   I1 <- (X1 < C) * 1 # indicator vector, 1 if event happened
   if (verbose) cat("Censored values: ", length(I1)-sum(I1), " / ", length(I1),"\n")
   # transform X1 and O1
-  if(verbose) cat("\nTrVal:\t")
-  X1 <- do_transformation(X1,transform_fn,verbose)
-  if(verbose) cat("X:\t")
-  O1 <- do_transformation(O1,transform_fn,verbose)
+  X1_O1 <- do_transformation(c(X1,O1),transform_fn,verbose)
+  X1 <- X1_O1[seq_along(X1)]
+  O1 <- X1_O1[seq_along(X1)+length(X1)]
 
   size_tot <- round(runif(n,1e4, 1e5)) # samples sizes (nr. cells) per patient
   out <- dplyr::tibble(ID = seq_len(n),

@@ -9,7 +9,7 @@ mean_residual_life_imputation <- function(data, censored_variable, censoring_ind
   if (is.null(covariates)){
     km.fit <- survival::survfit(survival::Surv(data[[censored_variable]], data[[censoring_indicator]]) ~ 1)
     data$S <- summary(km.fit, times = data[[censored_variable]])$surv
-    tmp_censored <- purrr::as_vector(data[data[[censoring_indicator]] == 0, censored_variable])
+    tmp_censored <- purrr::as_vector(data[c(data[[censoring_indicator]] == 0), censored_variable])
     data_matrix_cens_var <- as.matrix(cbind(data[-n, censored_variable],data[-1, censored_variable]))
     data_matrix_surv <- as.matrix(cbind(data[-n, "S"],data[-1, "S"]))
     numerator <- purrr::map_dbl(tmp_censored, function(tmp_cens_val) {
@@ -23,7 +23,7 @@ mean_residual_life_imputation <- function(data, censored_variable, censoring_ind
                diff(data_matrix_cens_var[tmpinds, ])))
       }
     })
-    tmp_E0 <- data[data[[censoring_indicator]] == 0, c("S",censored_variable)]
+    tmp_E0 <- data[c(data[[censoring_indicator]] == 0), c("S",censored_variable)]
     tmp_E0$x <- numerator
     tmp_E0 <- as.matrix(tmp_E0)
     est <- tmp_E0[ ,3] / (2 * tmp_E0[ ,1]) + tmp_E0[ ,2]
@@ -44,7 +44,7 @@ mean_residual_life_imputation <- function(data, censored_variable, censoring_ind
     data <- data %>% dplyr::mutate(S = exp(-hazard)) %>% dplyr::select(-hazard)
 
     # data subset only censored entries
-    id_cens <- as.matrix(data[data[ , censoring_indicator] == 0, c("id",covariates,censored_variable)])
+    id_cens <- as.matrix(data[c(data[ , censoring_indicator] == 0), c("id",covariates,censored_variable)])
 
     # for matrix calculations
     data_matrix <- as.matrix(data[, c("S",censored_variable)])
@@ -69,7 +69,7 @@ mean_residual_life_imputation <- function(data, censored_variable, censoring_ind
       }
     })
 
-    tmp_E0 <- cbind(data[data[[censoring_indicator]] == 0, c("S",censored_variable,id)],numerator)
+    tmp_E0 <- cbind(data[c(data[[censoring_indicator]] == 0), c("S",censored_variable,id)],numerator)
     tmp_E0 <- as.matrix(tmp_E0)
     tmpind <- unlist(lapply(seq_along(tmp_E0[ ,3]) , function(x) {which(tmp_E0[x,3] == data[ ,id])}))
     tmp_cov_mat <- as.matrix(data[tmpind, covariates])

@@ -118,10 +118,10 @@ conditional_multiple_imputation <-
   all_csi_out <- lapply(seq_len(repetitions), function(i){
       # if CSI, no random sampling
       if (repetitions == 1 | method_est %in% c("rs","km")) {
-        randsam <- 1:n
+        randsam <- seq_len(n)
       } else {
         # random sample same length
-        randsam <- sample(1:n, size = n, replace = TRUE)
+        randsam <- sample(seq_len(n), size = n, replace = TRUE)
       }
       return(
         conditional_single_imputation(
@@ -172,6 +172,7 @@ conditional_multiple_imputation <-
 #' @inheritParams conditional_multiple_imputation
 #' @importFrom magrittr %>%
 #' @importFrom lme4 glmer
+#' @importFrom  stats na.omit
 conditional_multiple_imputation_testing <-
   function(data,
            imputed_datasets,
@@ -206,7 +207,7 @@ conditional_multiple_imputation_testing <-
       if (id_was_null) {
         csi_out$id <- data$id
       }
-      max_est_name <- max(csi_out[[est_name]])
+      max_est_name <- max(na.omit(csi_out[[est_name]]))
       cond_2 <- ifelse(is.na(max_est_name),
                        FALSE,
                        abs(max_est_name) < 1000 * abs(max(csi_out[[censored_variable]])))
@@ -217,7 +218,7 @@ conditional_multiple_imputation_testing <-
           args <- args_for_fitting(csi_out, formula, regression_type, family)
           do.call(regression_type, args)
         }, error = function(e) {
-          csi_out_red <- csi_out %>% dplyr::filter(is.finite(.data[[est_name]]))
+          csi_out_red <- dplyr::filter(csi_out, is.finite(csi_out[[est_name]]))
           if (verbose)
             message(paste("NaN, NA of Inf present, removing",
                 dim(csi_out)[1] - dim(csi_out_red)[1], "/", dim(csi_out)[1],
@@ -232,7 +233,7 @@ conditional_multiple_imputation_testing <-
     ls_EstX <- dplyr::tibble(!!id := data[[id]])
     # fits <- list()
 
-    for (i in 1:repetitions) {
+    for (i in seq_len(repetitions)) {
       if (id_was_null) {
         imputed_datasets[[i]]$id <- data$id
       }
@@ -241,7 +242,7 @@ conditional_multiple_imputation_testing <-
       csi_out %>%
         dplyr::distinct() %>%
         dplyr::select(!!est_name, !!id) %>%
-        dplyr::group_by(.data[[id]]) %>%
+        dplyr::group_by(!!dplyr::sym(id)) %>%
         dplyr::summarise_at(est_name, list(mean = mean)) %>%
         dplyr::right_join(ls_EstX) %>%
         dplyr::rename(!!paste0(est_name, "_", i) := mean)
@@ -251,21 +252,19 @@ conditional_multiple_imputation_testing <-
     betas <- get_betas_from_multiple_fits(fits,regression_type)
     betasVar <- get_variance_of_betas_from_multiple_fits(fits)
     ls_EstX <- ls_EstX %>%
-      dplyr::arrange(.data[[id]]) %>%
+      dplyr::arrange(!!dplyr::sym(id)) %>%
       dplyr::select(!!id, dplyr::starts_with(est_name))
 
     # mean imputed value
     EstXMean <-
       apply(ls_EstX %>% dplyr::select(-!!id), 1, function(x)
         mean(na.omit(x)))
-    data <- data %>%
-      dplyr::arrange(.data[[id]])
+    data <- dplyr::arrange(data, !!dplyr::sym(id))
     data <-
       tryCatch(
         data %>% dplyr::mutate(!!est_name := EstXMean),
         error = function(e) data)
     data <- data[ , !colnames(data)=="rank"]
-
     data_cmi <- list(
       data = data,
       betasMean = colMeans(betas),

@@ -30,7 +30,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
   expr <- rlang::enquo(censored_variable)
   est_name <- paste0(rlang::quo_name(expr),"_est")
   # estimates of observed values are the same
-  data <- dplyr::mutate(data, !!est_name := .data[[censored_variable]])
+  data <- dplyr::mutate(data, !!est_name := dplyr::.data[[censored_variable]])
   # estimates of censored values are real estimates
   data[data[[censoring_indicator]] == 0, est_name] <- est
   # if last value was censored, set it back to censored
@@ -92,16 +92,15 @@ conditional_single_imputation <- function(data, censored_variable,
        (data[length_data,censoring_indicator] == 0)
       )
      ) {
-    if (verbose) print("No censored values, return input")
-    return(data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]]) %>%
-             dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank))
+    if (verbose) message("No censored values, return input")
+    return(data  %>% dplyr::mutate(!!est_name := dplyr::.data[[censored_variable]]) %>%
+             dplyr::arrange(dplyr::.data[[id]]) %>% dplyr::select(-rank))
   }
   # check if at least two observed values present
   if (sum(data[[censoring_indicator]]) < 2) {
-    if (verbose) print("Not enough observed values, return input")
-    # data <- data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]])
-    return(data  %>% dplyr::mutate(!!est_name := .data[[censored_variable]]) %>%
-             dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank))
+    if (verbose) message("Not enough observed values, return input")
+    return(data  %>% dplyr::mutate(!!est_name := dplyr::.data[[censored_variable]]) %>%
+             dplyr::arrange(dplyr::.data[[id]]) %>% dplyr::select(-rank))
   }
 
   # estimates with or without cov,
@@ -109,7 +108,7 @@ conditional_single_imputation <- function(data, censored_variable,
                       censoring_indicator = censoring_indicator, response = response,
                       covariates = covariates, method_est = method_est, id = id)
 
-  data <- data %>% dplyr::arrange(.data[[id]]) %>% dplyr::select(-rank)
+  data <- dplyr::arrange(data, !!dplyr::sym(id)) %>% dplyr::select(-rank)
   return(data)
 }
 

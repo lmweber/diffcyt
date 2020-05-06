@@ -3,7 +3,7 @@ estimate <- paste0(censored_variable,"_est")
 censoring_indicator <- "I"
 covariates <-  c("Z")
 response <-  "Y"
-methods <- c("cc","pmm","rs","km","mrl","ppd")
+methods <- c("cc","pmm","rs","km","mrl")
 
 set.seed(123)
 conditions <- list(formulas = list(lm_z = formula(Y ~ X + Z),
