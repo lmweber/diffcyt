@@ -57,6 +57,11 @@
 #'   vector of column names, a numeric vector of column indices, or a logical vector.
 #'   Default = none.
 #' 
+#' @param event_indicator Argument specifying columns of \code{experiment_info} to include as
+#'   observation indicator for the censored covariate in the model formula. The 
+#'   censored covariate is assumed to be the first element of argument \code{cols_fixed}.
+#'   This can be provided as a character vector of column names, a numeric vector of column indices, or a logical vector.
+#'   Default = none.
 #' 
 #' @return \code{formula}: Returns a list with three elements:
 #' \itemize{
@@ -84,7 +89,7 @@
 #' )
 #' createFormula(experiment_info, cols_fixed = "group_id", cols_random = c("sample_id", "patient_id"))
 #' 
-createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL) {
+createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL, event_indicator = NULL) {
   
   stopifnot(any(class(experiment_info) %in% c("data.frame", "tbl_df", "tbl")) || is(experiment_info, "DataFrame"))
   experiment_info <- as.data.frame(experiment_info)
@@ -116,13 +121,33 @@ createFormula <- function(experiment_info, cols_fixed = NULL, cols_random = NULL
     random_terms <- FALSE
   }
   
+  # censored covariate
+  if (is.character(event_indicator)) {
+    stopifnot(all(event_indicator %in% colnames(experiment_info)))
+    term_event_indicator <- event_indicator
+  } else if (is.numeric(event_indicator) | is.logical(event_indicator)) {
+    term_event_indicator <- colnames(experiment_info)[event_indicator]
+  }
+  
   # combine
-  RHS_combined <- paste(c(RHS_fixed, RHS_random), collapse = " + ")
+  if (is.null(event_indicator)){
+    RHS_combined <- paste(c(RHS_fixed, RHS_random), collapse = " + ")
+  } else {
+    # if first covariate is censored
+    cens_cov_name <- paste0("Surv(", terms_fixed[1], ",", event_indicator, ")")
+    if (length(terms_fixed) == 1){
+      RHS_fixed <- NULL
+    } else {
+      RHS_fixed <- paste(terms_fixed[-1], collapse = " + ")
+    }
+    RHS_combined <- paste(c(cens_cov_name, RHS_fixed, RHS_random), collapse = " + ")
+  }
   
   formula <- as.formula(paste(c("y", RHS_combined), collapse = " ~ "))
   
+  
   # create data frame of corresponding variables (in correct order)
-  cols <- c(terms_fixed, terms_random)
+  cols <- c(terms_fixed, terms_random, event_indicator)
   data <- experiment_info[, cols, drop = FALSE]
   
   # return as list

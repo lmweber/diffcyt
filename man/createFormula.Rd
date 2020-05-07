@@ -4,7 +4,12 @@
 \alias{createFormula}
 \title{Create model formula and corresponding data frame of variables}
 \usage{
-createFormula(experiment_info, cols_fixed = NULL, cols_random = NULL)
+createFormula(
+  experiment_info,
+  cols_fixed = NULL,
+  cols_random = NULL,
+  event_indicator = NULL
+)
 }
 \arguments{
 \item{experiment_info}{\code{data.frame}, \code{DataFrame}, or \code{tbl_df} of
@@ -20,6 +25,12 @@ of column names, a numeric vector of column indices, or a logical vector.}
 \item{cols_random}{Argument specifying columns of \code{experiment_info} to include as
 random intercept terms in the model formula. This can be provided as a character
 vector of column names, a numeric vector of column indices, or a logical vector.
+Default = none.}
+
+\item{event_indicator}{Argument specifying columns of \code{experiment_info} to include as
+observation indicator for the censored covariate in the model formula. The 
+censored covariate is assumed to be the first element of argument \code{cols_fixed}.
+This can be provided as a character vector of column names, a numeric vector of column indices, or a logical vector.
 Default = none.}
 }
 \value{
