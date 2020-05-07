@@ -2,64 +2,97 @@
 % Please edit documentation in R/testDA_censoredGLMM.R
 \name{testDA_censoredGLMM}
 \alias{testDA_censoredGLMM}
-\title{Test for differential abundance: method 'censcyt-DA-GLMM'}
+\title{Test for differential abundance: method 'diffcyt-DA-censored-GLMM'}
 \usage{
 testDA_censoredGLMM(
   d_counts,
   formula,
   contrast,
-  m = 100,
-  method_est = c("mrl", "rs", "km", "cc", "pmm"),
+  m = 10,
+  method_est = c("km", "rs", "mrl", "cc", "pmm"),
   min_cells = 3,
   min_samples = 3,
+  normalize = FALSE,
+  norm_factors = "TMM",
   BPPARAM = BiocParallel::SerialParam(),
   verbose = FALSE
 )
 }
 \arguments{
-\item{d_counts}{\code{\link[SummarizedExperiment]{SummarizedExperiment}}
-object containing cluster cell counts, from \code{\link[diffcyt]{calcCounts}}.}
+\item{d_counts}{\code{\link{SummarizedExperiment}} object containing cluster cell
+counts, from \code{\link{calcCounts}}.}
 
 \item{formula}{See \code{\link[diffcyt]{createFormula}}
 for details but make sure to specify the 'formula$formula' as follows: The
 censored predictor is encoded as Surv(censored_variable, censoring_indicator)'.
 e.g. y~Surv(x,I)}
 
-\item{contrast}{Contrast matrix, created with
-\code{\link[diffcyt]{createContrast}}.}
+\item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
+\code{\link{createContrast}} for details.}
 
-\item{m}{number of repetition for multiple imputation. default is m=100.}
+\item{m}{number of repetition for multiple imputation. default is m=10.}
 
 \item{method_est}{which method should be used in the imputation step. One of
 'cc', 'pmm', 'mrl', 'rs', 'km'. See details.}
 
-\item{min_cells}{positive Integer. The minimum number of cells a population
-needs to have to be included. Default = 3.}
+\item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
+testing if they have at least \code{min_cells} cells in at least \code{min_samples}
+samples.}
 
-\item{min_samples}{postive Integer. The minimum number of samples to still
-fit a model. Default = 3.}
+\item{min_samples}{Filtering parameter. Default = \code{number of samples / 2}, which
+is appropriate for two-group comparisons (of equal size). Clusters are kept for
+differential testing if they have at least \code{min_cells} cells in at least
+\code{min_samples} samples.}
+
+\item{normalize}{Whether to include optional normalization factors to adjust for
+composition effects (see details). Default = FALSE.}
+
+\item{norm_factors}{Normalization factors to use, if \code{normalize = TRUE}. Default =
+\code{"TMM"}, in which case normalization factors are calculated automatically using
+the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
+Alternatively, a vector of values can be provided (the values should multiply to 1).}
 
 \item{BPPARAM}{specify parallelization option as one of 
 \code{\link[BiocParallel]{BiocParallelParam}}.
 e.g. \code{\link[BiocParallel]{MulticoreParam}}(workers=2) for parallelization 
 with two cores. Default = \code{\link[BiocParallel]{SerialParam}} 
-(no parallelization).}
+(no parallelization). Parallelization works only if 'BiocParallel' is available.}
 
 \item{verbose}{Logical.}
 }
+\value{
+Returns a new \code{\link{SummarizedExperiment}} object, with differential test
+  results stored in the \code{rowData} slot. Results include raw p-values
+  (\code{p_val}) and adjusted p-values (\code{p_adj}), which can be used to rank
+  clusters by evidence for differential abundance. The results can be accessed with the
+  \code{\link{rowData}} accessor function.
+}
 \description{
-Test for differential abundance: method 'censcyt-DA-GLMM'
+Calculate tests for differential abundance of cell populations using method
+'diffcyt-DA-censored-GLMM'
 }
 \details{
+Calculates tests for differential abundance of clusters, using generalized linear mixed
+models (GLMMs) where a covariate is subject to right censoring.
+
 Possible methods in 'methods_est' are:
 \describe{
-  \item{'cc'}{complete case, removing incomlete samples}
-  \item{'pmm'}{predictive mean matching, treating censored values as missing}
-  \item{'mrl'}{Mean Residual Life (Conditional single imputation from \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})}
-  \item{'rs'}{Risk Set imputation}
-  \item{'km'}{Kaplan Meier imputation}
+  \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
+  \item{'pmm'}{predictive mean matching treats censored values as missing and
+               uses predictive mean matching method from \code{\link[mice]{mice}}.}
+  \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
+               \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
+               is a multiple imputation procedure that bootstraps the data and
+               imputes the censored values by replacing them with their 
+               respective mean residual life.}
+  \item{'rs'}{Risk Set imputation replaces the censored values with a random
+              draw from the risk set of the respective censored value.}
+  \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
+              but the random draw is according to the survival function of
+              the respective risk set.}
 }
-
+}
+\examples{
 tmp_formula <- formula(y~Surv(X,I)+z+(1|r))
 data_sim <- simulate_data(
  n = 20,
@@ -80,4 +113,5 @@ contrast <- diffcyt::createContrast(c(0, 1, 0))
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
                            contrast = contrast, method_est = "km",
                            verbose = FALSE, m = 10)
+
 }

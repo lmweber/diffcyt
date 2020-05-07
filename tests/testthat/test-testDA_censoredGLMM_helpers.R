@@ -44,6 +44,11 @@ test_that("extract_variables_from_formula throws error if incorrect",{
   expect_error(is_valid_censored_formula(y~x,throw_error = TRUE))
   expect_error(is_valid_censored_formula(y~x+z,throw_error = TRUE))
   expect_error(is_valid_censored_formula(y~1,throw_error = TRUE))
+  expect_error(is_valid_censored_formula(y~Surv(,i),throw_error = TRUE))
+  expect_error(is_valid_censored_formula(y~Surv(x,),throw_error = TRUE))
+  expect_error(is_valid_censored_formula(y~Surv(,),throw_error = TRUE))
+  expect_error(is_valid_censored_formula(y~Surv( , ),throw_error = TRUE))
+  expect_error(is_valid_censored_formula(y~Surv(x,i)+ Surv(a,j),throw_error = TRUE))
 })
 
 test_that("extract_variables_from_formula is FALSE if incorrect",{
@@ -52,4 +57,9 @@ test_that("extract_variables_from_formula is FALSE if incorrect",{
   expect_false(is_valid_censored_formula(y~x,throw_error = FALSE))
   expect_false(is_valid_censored_formula(y~x+z,throw_error = FALSE))
   expect_false(is_valid_censored_formula(y~1,throw_error = FALSE))
+  expect_false(is_valid_censored_formula(y~Surv(,i),throw_error = FALSE))
+  expect_false(is_valid_censored_formula(y~Surv(x,),throw_error = FALSE))
+  expect_false(is_valid_censored_formula(y~Surv(,),throw_error = FALSE))
+  expect_false(is_valid_censored_formula(y~Surv( , ),throw_error = FALSE))
+  expect_false(is_valid_censored_formula(y~Surv(x,i)+ Surv(a,j),throw_error = FALSE))
 })

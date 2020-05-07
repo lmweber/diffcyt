@@ -14,8 +14,10 @@ linear_sum <- function(covariates_list,betas, random_covariates_list = NULL){
   return(lin_sum)
 }
 
+# if multi cluster are simulated each batch of one differential cluster plus
+# multiple non-differential clusters add up to one which needs to change,
+# so that all batches (all clusters) together add to one 
 calculate_wanted_cluster_proportion <- function(real_sizes){
-  n <- length(real_sizes)
   cur_prop <- sum(real_sizes)
   stopifnot(cur_prop <= 1)
   wanted_prop <- real_sizes/cur_prop

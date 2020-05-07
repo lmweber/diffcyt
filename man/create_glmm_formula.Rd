@@ -16,3 +16,7 @@ formula containing no 'Surv()' terms.
 \description{
 create formula from formula containing 'Surv()'
 }
+\examples{
+  cens_formula <- formula(Y ~ Surv(X,I) + Z)
+  create_glmm_formula(cens_formula)
+}

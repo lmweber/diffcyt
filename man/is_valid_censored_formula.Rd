@@ -19,3 +19,14 @@ logical
 \description{
 check if 'Surv()' formula is valid
 }
+\examples{
+# correct formula:
+cens_formula <- formula(Y ~ Surv(X,I) + Z)
+is_valid_censored_formula(cens_formula)
+
+# wrong formulas:
+wrong_cens_formula_1 <- formula( ~ Surv(X,I) + Z) # no response
+is_valid_censored_formula(wrong_cens_formula_1)
+wrong_cens_formula_2 <- formula(Y ~ X + Z) # no censored variable
+is_valid_censored_formula(wrong_cens_formula_2)
+}

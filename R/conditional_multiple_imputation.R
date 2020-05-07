@@ -33,6 +33,7 @@
 #'
 #' @importFrom magrittr %>%
 #' @importFrom lme4 glmer
+#' @importFrom rlang :=
 #' @export
 #' @examples
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
@@ -173,6 +174,7 @@ conditional_multiple_imputation <-
 #' @importFrom magrittr %>%
 #' @importFrom lme4 glmer
 #' @importFrom  stats na.omit
+#' @importFrom rlang :=
 conditional_multiple_imputation_testing <-
   function(data,
            imputed_datasets,

@@ -17,3 +17,7 @@ list with elements 'censored_variable', 'censoring_indicator',
 \description{
 extract individuall components of 'Surv()' formula
 }
+\examples{
+  cens_formula <- formula(Y ~ Surv(X,I) + Z)
+  extract_variables_from_formula(cens_formula)
+}

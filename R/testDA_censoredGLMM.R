@@ -1,42 +1,45 @@
-#' Test for differential abundance: method 'censcyt-DA-GLMM'
-#'
-#' @param d_counts \code{\link[SummarizedExperiment]{SummarizedExperiment}}
-#'  object containing cluster cell counts, from \code{\link[diffcyt]{calcCounts}}.
+#' Test for differential abundance: method 'diffcyt-DA-censored-GLMM'
+#' 
+#' Calculate tests for differential abundance of cell populations using method
+#' 'diffcyt-DA-censored-GLMM'
+#' 
+#' Calculates tests for differential abundance of clusters, using generalized linear mixed
+#' models (GLMMs) where a covariate is subject to right censoring.
+#' 
+#' 
+#' 
 #' @param formula See \code{\link[diffcyt]{createFormula}}
 #'  for details but make sure to specify the 'formula$formula' as follows: The
 #'  censored predictor is encoded as Surv(censored_variable, censoring_indicator)'.
 #'  e.g. y~Surv(x,I)
-#' @param contrast Contrast matrix, created with
-#'  \code{\link[diffcyt]{createContrast}}.
 #' @param m number of repetition for multiple imputation. default is m=10.
 #' @param method_est which method should be used in the imputation step. One of
 #'  'cc', 'pmm', 'mrl', 'rs', 'km'. See details.
-#' @param min_cells positive Integer. The minimum number of cells a population
-#'  needs to have to be included. Default = 3.
-#' @param min_samples postive Integer. The minimum number of samples to still
-#'  fit a model. Default = 3.
-#' @param normalize Whether to include optional normalization factors to adjust for
-#'   composition effects (see details). Default = FALSE.
-#' 
-#' @param norm_factors Normalization factors to use, if \code{normalize = TRUE}. Default =
-#'   \code{"TMM"}, in which case normalization factors are calculated automatically using
-#'   the 'trimmed mean of M-values' (TMM) method from the \code{edgeR} package.
-#'   Alternatively, a vector of values can be provided (the values should multiply to 1).
-#' 
 #' @param BPPARAM specify parallelization option as one of 
 #'  \code{\link[BiocParallel]{BiocParallelParam}}.
 #'  e.g. \code{\link[BiocParallel]{MulticoreParam}}(workers=2) for parallelization 
 #'  with two cores. Default = \code{\link[BiocParallel]{SerialParam}} 
 #'  (no parallelization). Parallelization works only if 'BiocParallel' is available.
 #' @param verbose Logical.
+#' @inheritParams testDA_GLMM 
+#' 
+#' @inherit testDA_GLMM return
 #' 
 #' @details Possible methods in 'methods_est' are:
 #' \describe{
-#'   \item{'cc'}{complete case, removing incomlete samples}
-#'   \item{'pmm'}{predictive mean matching, treating censored values as missing}
-#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation from \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})}
-#'   \item{'rs'}{Risk Set imputation}
-#'   \item{'km'}{Kaplan Meier imputation}
+#'   \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
+#'   \item{'pmm'}{predictive mean matching treats censored values as missing and
+#'                uses predictive mean matching method from \code{\link[mice]{mice}}.}
+#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
+#'                \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
+#'                is a multiple imputation procedure that bootstraps the data and
+#'                imputes the censored values by replacing them with their 
+#'                respective mean residual life.}
+#'   \item{'rs'}{Risk Set imputation replaces the censored values with a random
+#'               draw from the risk set of the respective censored value.}
+#'   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
+#'               but the random draw is according to the survival function of
+#'               the respective risk set.}
 #' }
 #'
 #' @export

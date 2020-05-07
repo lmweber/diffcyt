@@ -1,15 +1,18 @@
+# Some checks to make sure the data is in the right format, type conversions
+#
 #' @importFrom magrittr %>%
-#' @importFrom dplyr .data
+#' @importFrom rlang :=
 data_processing_for_imputation <- function(data, censored_variable,
                                            censoring_indicator,
                                            response = NULL, covariates = NULL,
                                            id = NULL){
-  # transform censoring indicator to integer and check that it is 0 or 1
   data <- dplyr::as_tibble(data)
+  # transform censored variable to double
   if (is.integer(data[[censored_variable]])){
     data <- dplyr::mutate(data, 
                           !!censored_variable := as.double(data[[!!censored_variable]]))
   }
+  # transform censoring indicator to integer and check that it is 0 or 1
   if (is.factor(purrr::as_vector(data[[censoring_indicator]]))){
     data <- dplyr::mutate(data,
                           !!censoring_indicator := as.integer(data[[!!censoring_indicator]])-1)
@@ -21,6 +24,7 @@ data_processing_for_imputation <- function(data, censored_variable,
   if (!all(data[[censoring_indicator]] %in% c(0,1))){
     rlang::abort("Not all values of 'censoring_indicator' are 0 or 1")
   }
+  # transform covariate from factor to double
   if (!is.null(covariates)){
     data <- covariates_from_factor_to_numeric(data, covariates)
   }
@@ -32,6 +36,7 @@ data_processing_for_imputation <- function(data, censored_variable,
   return(data)
 }
 
+# transform factor covariates to numeric
 covariates_from_factor_to_numeric <- function(data, covariates){
   for (cov in covariates){
     if (is.factor(data[[cov]])){
@@ -46,6 +51,8 @@ covariates_from_factor_to_numeric <- function(data, covariates){
   return(data)
 }
 
+# Extract regression coefficients beta from a regression fit, lm-like object
+# 
 #' @importFrom stats coef
 get_betas_from_fit <- function(fit, regression_type){
   betas <- tryCatch({
@@ -59,21 +66,34 @@ get_betas_from_fit <- function(fit, regression_type){
   return(betas)
 }
 
+
+# Extract regression coefficients beta from a list of regression fits
 get_betas_from_multiple_fits <- function(fits_list, regression_type){
   betas_ls <- purrr::map(fits_list, ~ get_betas_from_fit(.x, regression_type))
   return(do.call(rbind,betas_ls))
 }
+
+
+# Extract variance of regression coefficients beta from a regression fit, 
+# lm-like object
+# 
 #' @importFrom stats vcov
 get_variance_of_betas_from_fit <- function(fit){
   var_betas <- diag(as.matrix(vcov(fit)))
   names(var_betas) <- paste0("Var(b",seq_along(var_betas)-1, ")")
   return(var_betas)
 }
+
+
+# Extract variances of regression coefficients beta from a list of regression fits
 get_variance_of_betas_from_multiple_fits <- function(fits_list){
   var_betas_ls <- purrr::map(fits_list, ~ get_variance_of_betas_from_fit(.x))
   return(do.call(rbind,var_betas_ls))
 }
 
+
+# create arguments list for regression fitting
+# 
 # for weights to be used, must be a column in 'data' with name weights
 args_for_fitting <- function(data, formula, regression_type, family = "binomial"){
   stopifnot(regression_type %in% c("lm","glm","glmer"))
@@ -88,10 +108,13 @@ args_for_fitting <- function(data, formula, regression_type, family = "binomial"
 }
 
 
+# Logical. Check if the highest censored value is censored
 last_is_censored <- function(data, censoring_indicator){
   return(data[dim(data)[1],censoring_indicator] == 0)
 }
 
+
+# set the highest censored value as observed
 set_last_as_observed <- function(data, censored_variable, censoring_indicator){
   if (last_is_censored(data, censoring_indicator)){
     data[dim(data)[1],censoring_indicator] <- 1
@@ -101,6 +124,8 @@ set_last_as_observed <- function(data, censored_variable, censoring_indicator){
   return(data)
 }
 
+
+# set the highest censored value as censored
 set_last_as_censored <- function(data, censored_variable, censoring_indicator){
   if (!last_is_censored(data, censoring_indicator)){
     data[dim(data)[1],censoring_indicator] <- 0

@@ -11,12 +11,13 @@ conditional_single_imputation(
   response = NULL,
   covariates = NULL,
   id = NULL,
-  method_est = c("mrl", "rs", "km"),
+  method_est = c("km", "rs", "mrl"),
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{'data.frame'}
+\item{data}{'data.frame'. Columns are the variables and
+rows the samples.}
 
 \item{censored_variable}{name of column containing censored data}
 
@@ -28,12 +29,24 @@ conditional_single_imputation(
 \item{covariates}{name(s) of column(s) containing the covariate that influences
 censoring}
 
-\item{id}{name of column containing id of sample}
+\item{id}{Default = 'NULL'. name of column containing id of sample.}
 
-\item{method_est}{one of 'mrl','rs','km'. See \code{\link{conditional_multiple_imputation}}}
+\item{method_est}{one of 'km','rs','mrl'. See \code{\link{conditional_multiple_imputation}}}
 
 \item{verbose}{Logical}
 }
 \description{
 Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
+}
+\examples{
+lm_formula <- formula(Y ~ Surv(X,I) + Z)
+data <- simulate_data(50, lm_formula, type = "lm")
+conditional_single_imputation(
+  data = data,
+  censored_variable = "X",
+  censoring_indicator = "I",
+  response = "Y", 
+  covariates = "Z",
+  method_est = "km")
+
 }
