@@ -142,8 +142,8 @@ glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 test_that("list of betas matches with formula for 1 covariate",{
    expect_error(simulate_data_params_beta(list(b_l2),1,glmer_formula))
    expect_error(simulate_data_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_true(is.list(simulate_data_params_beta(list(b_l3),1,glmer_formula)))
-   expect_true(is.list(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula)))
+   expect_true(is(simulate_data_params_beta(list(b_l3),1,glmer_formula), "SummarizedExperiment"))
+   expect_true(is(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula), "SummarizedExperiment"))
    expect_error(simulate_data_params_beta(list(b_l4),1,glmer_formula))
    expect_error(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula))
 })
@@ -154,9 +154,31 @@ test_that("list of betas matches with formula for 2 covariates",{
    expect_error(simulate_data_params_beta(list(b_l2,b_l2),2,glmer_formula))
    expect_error(simulate_data_params_beta(list(b_l3),1,glmer_formula))
    expect_error(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula))
-   expect_true(is.list(simulate_data_params_beta(list(b_l4),1,glmer_formula)))
-   expect_true(is.list(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula)))
+   expect_true(is(simulate_data_params_beta(list(b_l4),1,glmer_formula), "SummarizedExperiment"))
+   expect_true(is(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula), "SummarizedExperiment"))
 })
+
+
+
+## multi cluster
+
+glmer_formula <- formula(Y ~ Surv(X,I) + Z + ZZ + (1|R))
+multsimdat <- simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula)
+test_that("multicluster simulated data has correct dimensionality",{
+   expect_true(is(multsimdat,"SummarizedExperiment"))
+   expect_true(all(dim(SummarizedExperiment::rowData(multsimdat)) == c(40,2)))
+   expect_true(all(dim(SummarizedExperiment::colData(multsimdat)) == c(10,12)))
+   expect_true(all(dim(SummarizedExperiment::assay(multsimdat)) == c(40,10)))
+})
+
+
+test_that("multicluster simulated data has correct total sizes of samples",{
+   expect_true(all(colSums(SummarizedExperiment::assay(multsimdat)) == SummarizedExperiment::colData(multsimdat)$n_cells))
+})
+
+
+
+
 
 ################################################################################
 ### calculate_wanted_cluster_proportion
@@ -183,3 +205,4 @@ test_that("list of betas matches with formula for 2 covariates",{
     expect_equal(do_transformation(1:10,sqrt),sqrt(1:10))
 
  })
+

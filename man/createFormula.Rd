@@ -28,7 +28,7 @@ vector of column names, a numeric vector of column indices, or a logical vector.
 Default = none.}
 
 \item{event_indicator}{Argument specifying columns of \code{experiment_info} to include as
-observation indicator for the censored covariate in the model formula. The 
+event indicator for the censored covariate in the model formula. The 
 censored covariate is assumed to be the first element of argument \code{cols_fixed}.
 This can be provided as a character vector of column names, a numeric vector of column indices, or a logical vector.
 Default = none.}

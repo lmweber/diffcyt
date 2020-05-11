@@ -1,34 +1,70 @@
 #' Conditional multiple imputation
 #'
-#' Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
+#' First two steps for multiple imputation for censored covariates. Returns
+#' regression fits in a list that can be combined using \code{\link[mice]{pool}}().
+#' 
+#' 
 #'
 #' @param data 'data.frame'
+#' 
 #' @param formula the formula for fitting the regression model with a special
 #'  syntax for the censored covariate : e.g. 'y~Surv(x,I)' means 'y~x' with 'x' being
-#'  censored and 'I' the censoring indicator (0=censored,1=observed).
+#'  censored and 'I' the event indicator (0=censored,1=observed).
+#'  
 #' @param regression_type function. The regression type to be used, lm for linear
 #' regression, glm for general linear regression, glmer for generalized
 #' linear mixed-effects models. Default: lm
+#' 
 #' @param repetitions number of repetitions for multiple imputation. Default: 10
+#' 
 #' @param method_est which method should be used in the imputation step. One of
-#'  'cc', 'pmm', 'mrl', 'rs', 'km'. See details.
+#'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.
+#'  
 #' @param weights Weights to be used in fitting the regression model. Default = NULL
-#' @param contrasts Contrast vector to be used in testing the regression model. Default = NULL
-#' @param family The family to be used in the regression model. Default = "binomial". Omited if linear model is used.
-#'  for the censored values.
+#' 
+#' @param contrasts Contrast vector to be used in testing the regression model. 
+#' Default = NULL
+#' 
+#' @param family The family to be used in the regression model. Default = "binomial". 
+#' Omitted if linear model is used.
+#' 
 #' @param id name of column containing id of sample
+#' 
 #' @param verbose Logical.
+#' 
 #' @param n_obs_min minimum number of observed events needed. default = 2.
 #'  if lower than this value will throw an error.
-#' @param  ... additional arguments passed to testing
-#'
-#' @details Possible methods in 'methods_est' are:
+#'  
+#' @details Possible methods in 'method_est' are:
 #' \describe{
-#'   \item{'cc'}{complete case}
-#'   \item{'pmm'}{predictive mean matching, treating censored values as missing}
-#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation from \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})}
-#'   \item{'rs'}{Risk Set imputation}
-#'   \item{'km'}{Kaplan Meier imputation}
+#'   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
+#'               but the random draw is according to the survival function of
+#'               the respective risk set.}
+#'   \item{'rs'}{Risk Set imputation replaces the censored values with a random
+#'               draw from the risk set of the respective censored value.}
+#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
+#'                \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
+#'                is a multiple imputation procedure that bootstraps the data and
+#'                imputes the censored values by replacing them with their 
+#'                respective mean residual life.}
+#'   \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
+#'   \item{'pmm'}{predictive mean matching treats censored values as missing and
+#'                uses predictive mean matching method from \code{\link[mice]{mice}}.}
+#' }
+#'  
+#'  
+#'  
+#' @return A list with five elements:
+#' \describe{
+#'   \item{'data'}{The input data frame}
+#'   \item{'betasMean'}{the mean regression coefficients}
+#'   \item{'betasVar'}{the variances of the mean regression coefficients}
+#'   \item{'metadata'}{a list of three elements: \describe{
+#'     \item{'repetitions'}{number of repetitions in multiple imputation}
+#'     \item{'betas'}{all regression coefficients}
+#'     \item{'vars'}{the variances of the regression coefficients}
+#'   }}
+#'   \item{'fits'}{list with all regression fits}
 #' }
 #'
 #' @importFrom magrittr %>%
@@ -39,27 +75,31 @@
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
 #'  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
 #'  cmi_out <- conditional_multiple_imputation(data,lm_formula)
+#'  comb_out <- mice::pool(cmi_out$fits)
+#'  pvals <- summary(comb_out)$p.value
 conditional_multiple_imputation <-
   function(data,
            formula,
            regression_type = c("lm", "glm", "glmer"),
            repetitions = 10,
-           method_est = c("mrl", "rs", "km", "cc","pmm"),
+           method_est = c("km", "rs", "mrl", "cc", "pmm"),
            weights = NULL,
            contrasts = NULL,
            family = "binomial",
            id = NULL,
            verbose = FALSE,
-           n_obs_min = 2,
-           ...) {
+           n_obs_min = 2
+           ) {
   data <- dplyr::as_tibble(data)
   n <- dim(data)[1]
   variables_formula <- extract_variables_from_formula(formula)
-  formula <- create_glmm_formula(formula)
+  formula_uncens <- create_glmm_formula(formula)
   censored_variable <- variables_formula[["censored_variable"]]
   censoring_indicator <- variables_formula[["censoring_indicator"]]
   response <- variables_formula[["response"]]
   covariates <- variables_formula[["covariates"]]
+
+  
   expr <- rlang::enquo(censored_variable)
   est_name <- paste0(rlang::quo_name(expr),"_est")
   if (is.null(id)) {
@@ -71,16 +111,22 @@ conditional_multiple_imputation <-
   }
   method_est <- match.arg(method_est)
   regression_type <- match.arg(regression_type)
-  if (!is.null(weights)) {
-    data$weights <- weights
+  
+  if (is.character(weights)) {
+    stopifnot(all(weights %in% colnames(data)))
+  } else if (is.numeric(weights) | is.logical(weights)) {
+    weights <- colnames(data)[weights]
   }
-  data <-
-    data_processing_for_imputation(data,
-                             censored_variable,
-                             censoring_indicator,
-                             response,
-                             covariates ,
-                             id)
+
+
+  # check that data is in correct format, some type conversions, but keep covariates = NULL to not convert to factors
+  data <- data_processing_for_imputation(data, 
+                                         censored_variable, 
+                                         censoring_indicator, 
+                                         response, 
+                                         covariates = NULL , 
+                                         id)
+  
   if (sum(data[[censoring_indicator]]) <= n_obs_min){
     stop(paste0("Not enough observed events, consider decreasing 'n_obs_min (currently = ",n_obs_min," )"),call. = FALSE)
   }
@@ -91,9 +137,9 @@ conditional_multiple_imputation <-
         data = data,
         censored_variable = censored_variable,
         censoring_indicator = censoring_indicator,
-        formula = formula,
+        formula = formula_uncens,
         regression_type = regression_type,
-        weights = "weights",
+        weights = weights,
         family = family
       )
     )
@@ -105,16 +151,17 @@ conditional_multiple_imputation <-
         censored_variable = censored_variable,
         censoring_indicator = censoring_indicator,
         variables_for_imputation = c(response,covariates,variables_formula[["random_covariates"]]),
-        formula = formula,
+        formula = formula_uncens,
         regression_type = regression_type,
         repetitions = repetitions,
-        weights = "weights",
+        weights = weights,
         family = family
       )
     )
   }
-  formula <- sub(censored_variable,est_name,Reduce(paste, deparse(formula)))
 
+  data_spread <- create_two_level_factor_data(data, covariates)
+  covariates_spread <- create_two_level_factor_covariates(data, formula)
   # iterate
   all_csi_out <- lapply(seq_len(repetitions), function(i){
       # if CSI, no random sampling
@@ -126,18 +173,19 @@ conditional_multiple_imputation <-
       }
       return(
         conditional_single_imputation(
-          data = data[randsam, ],
+          data = data_spread[randsam, ],
           censored_variable = censored_variable,
           censoring_indicator = censoring_indicator,
           response = response,
-          covariates = covariates,
+          covariates = covariates_spread,
           id = id,
           method_est = method_est,
           verbose = verbose
         )
       )
     })
-
+  formula_uncens_est_name <- sub(censored_variable,est_name,Reduce(paste, deparse(formula_uncens)))
+  
   data_cmi <-
     conditional_multiple_imputation_testing(
       data = data,
@@ -147,30 +195,30 @@ conditional_multiple_imputation <-
       response = response,
       covariates = covariates,
       id = id,
-      formula = formula,
+      formula = formula_uncens_est_name,
       regression_type = regression_type,
       repetitions = repetitions,
       method_est = method_est,
       verbose = verbose,
       weights = weights,
       contrasts = contrasts,
-      family = family,
-      ...
+      family = family
+      
     )
   return(data_cmi)
 }
 
-#' perform fitting of imputed datasets
-#' @param data 'data.frame'
-#' @param imputed_datasets all the imputed datasets for which testing is to be
-#'  performed.
-#' @param censored_variable name of column containing censored data
-#' @param censoring_indicator name of column containing indication if observed
-#'   (1) or censored (0) value in column 'censored_variable'
-#' @param response name of column containing the response (can be 'NULL')
-#' @param covariates name(s) of column(s) containing the covariate that influences
-#'  censoring
-#' @inheritParams conditional_multiple_imputation
+# perform fitting of imputed datasets
+# @param data 'data.frame'
+# @param imputed_datasets all the imputed datasets for which testing is to be
+#  performed.
+# @param censored_variable name of column containing censored data
+# @param censoring_indicator name of column containing indication if observed
+#   (1) or censored (0) value in column 'censored_variable'
+# @param response name of column containing the response (can be 'NULL')
+# @param covariates name(s) of column(s) containing the covariate that influences
+#  censoring
+# @inheritParams conditional_multiple_imputation
 #' @importFrom magrittr %>%
 #' @importFrom lme4 glmer
 #' @importFrom  stats na.omit
@@ -190,25 +238,21 @@ conditional_multiple_imputation_testing <-
            verbose = FALSE,
            weights = NULL,
            contrasts = NULL,
-           family = "binomial",
-           ...) {
-
-    censored_variable <- censored_variable
-    expr <- rlang::enquo(censored_variable)
-    est_name <- paste0(rlang::quo_name(expr),"_est")
-    if (is.null(id)) {
-      id_was_null <- TRUE
-      data$id <- seq_along(data[[censored_variable]])
-      id <- "id"
-    } else{
-      id_was_null <- FALSE
-    }
+           family = "binomial"
+           ) {
+    # name of imputed variable
+    est_name <- paste0(censored_variable,"_est")
     regression_type <- match.arg(regression_type)
-
+    
+    if (is.character(weights)) {
+      stopifnot(all(weights %in% colnames(data)))
+    } else if (is.numeric(weights) | is.logical(weights)) {
+      weights <- colnames(data)[weights]
+    }
+    
+    # do fitting of all imputed data sets
     fits <- lapply(imputed_datasets, function(csi_out) {
-      if (id_was_null) {
-        csi_out$id <- data$id
-      }
+      # some checks of imputed values, only do fitting if imputation gave reasonable results
       max_est_name <- max(na.omit(csi_out[[est_name]]))
       cond_2 <- ifelse(is.na(max_est_name),
                        FALSE,
@@ -216,57 +260,30 @@ conditional_multiple_imputation_testing <-
       if (!any(is.na(csi_out[[censored_variable]])) &
           cond_2 &
           (sum(csi_out[[censoring_indicator]]) > 2)) {
+        # fitting
         return(tryCatch({
-          args <- args_for_fitting(csi_out, formula, regression_type, family)
+          args <- args_for_fitting(csi_out, formula, regression_type, family, weights)
           do.call(regression_type, args)
+          
+        # remove not finite imputed values and try fitting again if error
         }, error = function(e) {
           csi_out_red <- dplyr::filter(csi_out, is.finite(csi_out[[est_name]]))
           if (verbose)
             message(paste("NaN, NA of Inf present, removing",
                 dim(csi_out)[1] - dim(csi_out_red)[1], "/", dim(csi_out)[1],
                 "values for fitting"))
-          args <- args_for_fitting(csi_out_red, formula, regression_type, family)
+          args <- args_for_fitting(csi_out_red, formula, regression_type, family, weights)
           do.call(regression_type, args)
         }))
       }
     })
-
-    # prepare output matrix
-    ls_EstX <- dplyr::tibble(!!id := data[[id]])
-    # fits <- list()
-
-    for (i in seq_len(repetitions)) {
-      if (id_was_null) {
-        imputed_datasets[[i]]$id <- data$id
-      }
-      csi_out <- imputed_datasets[[i]]
-    ls_EstX <- suppressMessages(
-      csi_out %>%
-        dplyr::distinct() %>%
-        dplyr::select(!!est_name, !!id) %>%
-        dplyr::group_by(!!dplyr::sym(id)) %>%
-        dplyr::summarise_at(est_name, list(mean = mean)) %>%
-        dplyr::right_join(ls_EstX) %>%
-        dplyr::rename(!!paste0(est_name, "_", i) := mean)
-    )
-    }
+    # remove empty fits
     fits <- fits[unlist(purrr::map(fits, ~ !is.null(.x)))]
+    # get regression coefficients
     betas <- get_betas_from_multiple_fits(fits,regression_type)
+    # get variances of regression coefficients
     betasVar <- get_variance_of_betas_from_multiple_fits(fits)
-    ls_EstX <- ls_EstX %>%
-      dplyr::arrange(!!dplyr::sym(id)) %>%
-      dplyr::select(!!id, dplyr::starts_with(est_name))
 
-    # mean imputed value
-    EstXMean <-
-      apply(ls_EstX %>% dplyr::select(-!!id), 1, function(x)
-        mean(na.omit(x)))
-    data <- dplyr::arrange(data, !!dplyr::sym(id))
-    data <-
-      tryCatch(
-        data %>% dplyr::mutate(!!est_name := EstXMean),
-        error = function(e) data)
-    data <- data[ , !colnames(data)=="rank"]
     data_cmi <- list(
       data = data,
       betasMean = colMeans(betas),
@@ -274,8 +291,7 @@ conditional_multiple_imputation_testing <-
       metadata = list(
         repetitions = repetitions,
         betas = betas,
-        vars = betasVar#,
-        # ls_EstX = ls_EstX
+        vars = betasVar
       ),
       fits = fits
     )

@@ -3,13 +3,16 @@
 #' Simulation of data with a censored covariate
 #'
 #' @param n number of samples
+#' 
 #' @param formula the formula to specify the structure in the data. The censored
 #'  variable should be written as following: 'Surv(X,I)', where 'X' is the observed
-#'  value, and 'I' is the censoring indicator (1 if observed, 0 if censored).
+#'  value, and 'I' is the event indicator (1 if observed, 0 if censored).
 #'  A full example is: 'Y ~ Surv(X,I) + Covariate + (1|Random_effect)'.
+#'  
 #' @param type which regression type is used, one of 'lm', 'glm', 'glmer'. For
 #'  the generalized linear models the response is binomial with a logistic link
-#'  function
+#'  function. default = 'lm'.
+#'  
 #' @param b the regression coefficients, either
 #' \describe{
 #'  \item{NUll}{will us 0 for the intercept and 1
@@ -17,46 +20,62 @@
 #'  \item{a vector with regression coefficients}{the length has to be (1 
 #'  (intercept) + number of covariates (including the censored covariate))}
 #'  \item{a list}{each element is a vector of regression coefficients of 
-#'  length == (1 + number of covariates (including censored covariate)). The 
+#'  length = (1 + number of covariates (including censored covariate)). The 
 #'  number of elements should be the same as 'number_of_differential_clusters'.}
 #'   }
+#'   
 #' @param n_levels_fixeff The number of levels to use for each covariate, e.g.
-#'  for two covariates: c(10,100). If null uses 'n' meaning all samples differ
-#'  from each other (if random effect meaning observation level).
-#' @param n_levels_raneff The number of levels to use for each random effect
+#'  for two covariates: c(10,100). If NULL sets all to 2 (two groups).
+#'  
+#' @param n_levels_raneff The number of levels to use for each random effect. 
+#' If NULL sets to 'n' (observation level random effects).
+#' 
 #' @param weibull_params The parameters for the distribution of the censored
 #' variable and the censoring time. Should be a list of lists, where the elements
 #' of the outer lists are 'X' the true value and 'C' the censoring time. The
 #' inner lists should have two keywords, 'shape' and 'scale', for the parameters
-#' of the Weibull distribution.
+#' of the Weibull distribution (See \code{\link[stats]{rweibull}}).
+#' 
 #' @param number_of_clusters Positive Integer. The number of clusters per true differential
 #'  cluster for testing \code{\link{testDA_censoredGLMM}}. The total number of clusters is
 #'  'number_of_clusters' * 'number_of_differential_clusters'. If NULL (default)
 #'  only one cluster is used (running \code{\link{conditional_multiple_imputation}})
+#'  
 #' @param number_of_differential_clusters Positive Integer. Total number of clusters
 #'  with a true signal.
+#'  
 #' @param censoring_dependent_on_covariate Logical. If
 #'  censoring should depend on a covariate. The respective covariate needs to
 #'  have only two levels ('n_level_fixeff'=2). Will use first covariate
 #'  in formula.
+#'  
 #' @param weibull_params_covariate_dependent_censoring list with two elements,
 #'  shape and scale, representing the parameters of a weibull distribution for
 #'  the second level of a covariate if 'censoring_dependent_on_covariate'=TRUE.
+#'  
 #' @param error_variance positive double. Variance of additional gaussian
 #'  noise to add in the linear sum of the predictors. For linear regression
-#'  this is the only error added.
+#'  this is the only error added. Otherwise it should be set to zero. default = 0.
+#'  
 #' @param variance_fixeff positive double vector of the length of 
 #'  'n_levels_fixeff'. The variance of the gaussian distributed fixed effect 
-#'  covariates.
+#'  covariates. default = 0.5.
+#'  
 #' @param variance_raneff positive double vector of the length of 
 #'  'n_levels_raneff'. The variance of the gaussian distributed
-#'  random effect covariates.
+#'  random effect covariates. default = 0.5.
+#'  
 #' @param transform_fn function to transform censored covariate or one of
 #'  'identity' (no transformation), 'boxcox' (box-cox transformation),
 #'  'boxcox_positive' (box-cox transformation and translation to all positive
 #'   values), 'log_positive' (log transformation and translation to all positive
-#'   values). default = 'identity'
+#'   values). The transformation is applied before the response is modeled.  
+#'   default = 'identity'.
+#'   
 #' @param verbose verbose
+#' 
+#' @details 
+#' The total number of clusters is 'number_of_clusters' * 'number_of_differential_clusters'. 
 #' 
 #' 
 #' @export
@@ -64,8 +83,11 @@
 #' @importFrom stats runif rnorm rweibull
 #' @importFrom rlang :=
 #' 
-#' @return simulated dataset or list of simulated dataset and SummarizedExperiment
-#'  counts of response if 'number_of_clusters' != NULL
+#' @return simulated dataset or if 'number_of_clusters' != NULL a 
+#' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with cell 
+#' counts per cluster in \code{\link[SummarizedExperiment]{assay}} slot, experiment
+#' information (covariates, etc.) in \code{\link[SummarizedExperiment]{rowData}} slot.
+#' 
 #' @examples
 #' # single differential cluster
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
@@ -95,12 +117,12 @@ simulate_data <- function(n,
                           b = NULL,
                           n_levels_fixeff = NULL,
                           n_levels_raneff = NULL,
-                          weibull_params = list(X = list(shape = 0.75, scale = 2),
-                                                C = list(shape = 0.5, scale = 10)),
+                          weibull_params = list(X = list(shape = 0.5, scale = 0.25),
+                                                C = list(shape = 1, scale = 0.25)),
                           number_of_clusters = NULL,
                           number_of_differential_clusters = NULL,
                           censoring_dependent_on_covariate = FALSE,
-                          weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 10),
+                          weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
                           error_variance = 0,
                           variance_fixeff = 0.5,
                           variance_raneff = 0.5,
@@ -148,7 +170,7 @@ simulate_data <- function(n,
     stopifnot(n_levels_fixeff[1] == 2 | is.null(n_levels_fixeff))
   }
   if (!is.null(variables$covariates) & is.null(n_levels_fixeff)){
-    n_levels_fixeff <- rep(n, length(variables$covariates))
+    n_levels_fixeff <- rep(2, length(variables$covariates))
   }
   if (!is.null(variables$covariates) & length(n_levels_fixeff)==1){
     n_levels_fixeff <- rep(n_levels_fixeff, length(variables$covariates))
@@ -216,11 +238,11 @@ simulate_data <- function(n,
   size_tot <- round(runif(n,1e4, 1e5)) 
   
   # put data together
-  out <- dplyr::tibble(ID = seq_len(n),
+  col_data <- dplyr::tibble(ID = seq_len(n),
                        TrVal = X1,
                        !!variables$censored_variable := O1,
                        !!variables$censoring_indicator := I1,
-                       size_tot = size_tot)
+                       n_cells = size_tot)
 
   # covariates list, rep(1,..) is for later matrix multiplication of intercept
   covariates_list <- list(rep(1,length(X1)),X1)
@@ -236,7 +258,7 @@ simulate_data <- function(n,
     
     # add to output data
     for (i in seq_along(variables$covariates)) {
-      out <- out %>% dplyr::mutate(!!variables$covariates[i] := values_fixed_effects[[i]])
+      col_data <- col_data %>% dplyr::mutate(!!variables$covariates[i] := values_fixed_effects[[i]])
     }
   }
   
@@ -251,7 +273,7 @@ simulate_data <- function(n,
     
     # add to output data
     for (i in seq_along(variables$random_covariates)) {
-      out <- out %>% dplyr::mutate(!!variables$random_covariates[i] := values_random_intercepts[[i]])
+      col_data <- col_data %>% dplyr::mutate(!!variables$random_covariates[i] := values_random_intercepts[[i]])
     }
   } else{
     list_random_covariates <- NULL
@@ -312,23 +334,23 @@ simulate_data <- function(n,
         Y_rand <- matrix(runif(n * (number_of_clusters-1), min(Y),max(Y)), ncol = n)
         Y_comp <- rbind(Y,Y_rand)
       }
-      return(list(out = y_tib, d_counts = Y_comp))
+      return(list(col_data = y_tib, d_counts = Y_comp))
       
     # for single cluster data
     } else{
-      return(list(out = y_tib))
+      return(list(col_data = y_tib))
     }
   })
   
   
   # for single cluster data
   if (is.null(number_of_clusters)){
-    return(dplyr::bind_cols(out,out_counts_ls[[1]]$out))
+    return(dplyr::bind_cols(col_data,out_counts_ls[[1]]$col_data))
     
   # for multi cluster data
   } else {
     # complete data without undifferential Y's
-    out <- dplyr::bind_cols(out,purrr::map(out_counts_ls, ~ .x$out))
+    col_data <- dplyr::bind_cols(col_data,purrr::map(out_counts_ls, ~ .x$col_data))
     # maximal sizes of differential Y's
     real_sizes <- unlist(purrr::map(out_counts_ls, function(counts){
       max(counts[[2]][1, ])
@@ -350,12 +372,16 @@ simulate_data <- function(n,
       gsub(pattern = "F",replacement = "T",
            x = rownames(Y_comp)[((0:(number_of_differential_clusters-1)))*number_of_clusters+1])
     colnames(Y_comp) <- seq_len(n)
+    
+    counts_rounded <- round(t(col_data$n_cells*t(Y_comp)))
+    col_data$n_cells <- colSums(counts_rounded)
+    row_data <- data.frame(cluster_id = rownames(Y_comp),
+                     n_cells = rowSums(counts_rounded))
     # create SummarizedExperiment object
     d_counts <- SummarizedExperiment::SummarizedExperiment(
-      assays = list(counts = round(t(out$size_tot*t(Y_comp)))),
-      rowData = data.frame(cluster_id = rownames(Y_comp)))
-    # adapt total size
-    out$size_tot <- colSums(SummarizedExperiment::assay(d_counts))
-    return(list(out = out, d_counts = d_counts))
+      assays = list(counts = counts_rounded),
+      rowData = row_data,
+      colData = col_data)
+    return( d_counts)
   }
 }

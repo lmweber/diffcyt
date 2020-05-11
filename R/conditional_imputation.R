@@ -14,6 +14,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
     id <- "id"
   }
   
+
   # if last value is censored, set it to observed
   if (last_is_censored(data, censoring_indicator)) {
     last_censored <- TRUE
@@ -26,11 +27,14 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
     last_censored <- FALSE
   }
   
+  # check that data is in correct format, some type conversions
+  data_prep <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
+  
   # do estimation
   est <- switch(method_est,
-                "mrl" = mean_residual_life_imputation(data, censored_variable, censoring_indicator, covariates,id),
-                "rs" = risk_set_imputation(data, censored_variable, censoring_indicator, covariates),
-                "km" = kaplan_meier_imputation(data, censored_variable, censoring_indicator, covariates)
+                "mrl" = mean_residual_life_imputation(data_prep, censored_variable, censoring_indicator, covariates,id),
+                "rs" = risk_set_imputation(data_prep, censored_variable, censoring_indicator, covariates),
+                "km" = kaplan_meier_imputation(data_prep, censored_variable, censoring_indicator, covariates)
   )
   # expr <- rlang::enquo(censored_variable)
   # est_name <- paste0(rlang::quo_name(expr),"_est")
@@ -53,37 +57,33 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
 }
 
 
-
-
-#' Conditional single imputation
-#'
-#' Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
-#'
-#' @param data 'data.frame'. Columns are the variables and
-#'  rows the samples.
-#' @param censored_variable name of column containing censored data
-#' @param censoring_indicator name of column containing indication if observed
-#'   (1) or censored (0) value in column 'censored_variable'
-#' @param response name of column containing the response (can be 'NULL')
-#' @param covariates name(s) of column(s) containing the covariate that influences
-#'  censoring
-#' @param id Default = 'NULL'. name of column containing id of sample. 
-#' @param method_est one of 'km','rs','mrl'. See \code{\link{conditional_multiple_imputation}}
-#' @param verbose Logical
-#' 
+# Conditional single imputation
+#
+# Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
+#
+# @param data 'data.frame'. Columns are the variables and
+#  rows the samples.
+# @param censored_variable name of column containing censored data
+# @param censoring_indicator name of column containing indication if observed
+#   (1) or censored (0) value in column 'censored_variable'
+# @param response name of column containing the response (can be 'NULL')
+# @param covariates name(s) of column(s) containing the covariate that influences
+#  censoring
+# @param id Default = 'NULL'. name of column containing id of sample. 
+# @param method_est one of 'km','rs','mrl'. See \code{\link{conditional_multiple_imputation}}
+# @param verbose Logical
+# 
+# @examples 
+# lm_formula <- formula(Y ~ Surv(X,I) + Z)
+# data <- simulate_data(50, lm_formula, type = "lm")
+# conditional_single_imputation(
+#   data = data,
+#   censored_variable = "X",
+#   censoring_indicator = "I",
+#   response = "Y", 
+#   covariates = "Z",
+#   method_est = "km")
 #' @importFrom magrittr %>%
-#' 
-#' @examples 
-#' lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#' data <- simulate_data(50, lm_formula, type = "lm")
-#' conditional_single_imputation(
-#'   data = data,
-#'   censored_variable = "X",
-#'   censoring_indicator = "I",
-#'   response = "Y", 
-#'   covariates = "Z",
-#'   method_est = "km")
-#' 
 conditional_single_imputation <- function(data, censored_variable,
                                           censoring_indicator, response = NULL,
                                           covariates = NULL, id = NULL,
@@ -99,8 +99,8 @@ conditional_single_imputation <- function(data, censored_variable,
   if (is.numeric(id) & !is.null(id)) id <- colnames(data)[[id]]
   if (is.numeric(response) & !is.null(response)) response <- colnames(data)[[response]]
   method_est <- match.arg(method_est)
-  # check that data is in correct format, some type conversions
-  data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
+  # # check that data is in correct format, some type conversions, but keep covariates = NULL to not convert to factors
+  data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates = NULL , id)
   
   est_name <- paste0(censored_variable,"_est")
   # check if censored values are present, if not return input
@@ -114,14 +114,14 @@ conditional_single_imputation <- function(data, censored_variable,
      ) {
     if (verbose) warning("No censored values, return input")
     data <- dplyr::mutate(data, !!est_name := data[[censored_variable]]) %>%
-        dplyr::arrange(!!dplyr::sym(id)) %>% dplyr::select(-rank)
+        dplyr::arrange(!!dplyr::sym(id)) 
     return(data)
   }
   # check if at least two observed values present
   if (sum(data[[censoring_indicator]]) < 2) {
     if (verbose) warning("Not enough observed values, return input")
     data <- dplyr::mutate(data, !!est_name := data[[censored_variable]]) %>%
-      dplyr::arrange(!!dplyr::sym(id)) %>% dplyr::select(-rank)
+      dplyr::arrange(!!dplyr::sym(id))
     return(data)
   }
 
@@ -130,7 +130,7 @@ conditional_single_imputation <- function(data, censored_variable,
                       censoring_indicator = censoring_indicator, response = response,
                       covariates = covariates, method_est = method_est, id = id)
 
-  data <- dplyr::arrange(data, !!dplyr::sym(id)) %>% dplyr::select(-rank)
+  data <- dplyr::arrange(data, !!dplyr::sym(id)) 
   return(data)
 }
 

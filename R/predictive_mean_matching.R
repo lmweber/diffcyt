@@ -1,32 +1,32 @@
-#' Predictive mean matching analysis
-#'
-#' Perform predictive mean matching by treating censored values as missing
-#'
-#' @param data 'data.frame'.
-#' @param censored_variable name of column containing censored data.
-#' @param censoring_indicator name of column containing indication if observed
-#'   (1) or censored (0) value in column 'censored_variable'.
-#' @param variables_for_imputation name of variable to use for imputation.
-#' @param formula the formula for fitting the regression model (e.g. formula(y~x)).
-#' @param regression_type The regression type to be used, one of 'lm' (linear
-#' regression), 'glm' (generalized linear regression), 'glmer' (generalized
-#' linear mixed-effects models). Default: 'lm'.
-#' @param repetitions number of repetitions for multiple imputation. Default: 10
-#' @param weights name of column containing weights to be used in fitting the
-#'  regression model. Default = 'weights'. Ignored if no weights used.
-#' @param family The family to be used in the regression model.
-#'  Default = "binomial". Omitted if linear model ('lm') is used.
-#'
-#' @return list of elements 'data', 'betasMean' (mean regression coef of censored
-#'  covariate), 'betasVar' (mean variance of regression coef of censored covariate),
-#'  'fits' (regression fits)
-#' @export
+# Predictive mean matching analysis
+#
+# Perform predictive mean matching by treating censored values as missing
+#
+# @param data 'data.frame'.
+# @param censored_variable name of column containing censored data.
+# @param censoring_indicator name of column containing indication if observed
+#   (1) or censored (0) value in column 'censored_variable'.
+# @param variables_for_imputation name of variable to use for imputation.
+# @param formula the formula for fitting the regression model (e.g. formula(y~x)).
+# @param regression_type The regression type to be used, one of 'lm' (linear
+# regression), 'glm' (generalized linear regression), 'glmer' (generalized
+# linear mixed-effects models). Default: 'lm'.
+# @param repetitions number of repetitions for multiple imputation. Default: 10
+# @param weights name of column containing weights to be used in fitting the
+#  regression model. Default = 'weights'. Ignored if no weights used.
+# @param family The family to be used in the regression model.
+#  Default = "binomial". Omitted if linear model ('lm') is used.
+#
+# @return list of elements 'data', 'betasMean' (mean regression coef of censored
+#  covariate), 'betasVar' (mean variance of regression coef of censored covariate),
+#  'fits' (regression fits)
+# @export
+# @examples
+#  lm_formula <- formula(Y ~ Surv(X,I) + Z)
+#  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
+#  pmm_out <- predictive_mean_matching(data,"X","I",c("Y","Z"),Y~X+Z)
+#  summary(mice::pool(pmm_out$fits))
 #' @importFrom utils capture.output
-#' @examples
-#'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
-#'  pmm_out <- predictive_mean_matching(data,"X","I",c("Y","Z"),Y~X+Z)
-#'  summary(mice::pool(pmm_out$fits))
 predictive_mean_matching <- function(data,
                                      censored_variable,
                                      censoring_indicator,

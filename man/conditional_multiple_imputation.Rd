@@ -9,14 +9,13 @@ conditional_multiple_imputation(
   formula,
   regression_type = c("lm", "glm", "glmer"),
   repetitions = 10,
-  method_est = c("mrl", "rs", "km", "cc", "pmm"),
+  method_est = c("km", "rs", "mrl", "cc", "pmm"),
   weights = NULL,
   contrasts = NULL,
   family = "binomial",
   id = NULL,
   verbose = FALSE,
-  n_obs_min = 2,
-  ...
+  n_obs_min = 2
 )
 }
 \arguments{
@@ -24,7 +23,7 @@ conditional_multiple_imputation(
 
 \item{formula}{the formula for fitting the regression model with a special
 syntax for the censored covariate : e.g. 'y~Surv(x,I)' means 'y~x' with 'x' being
-censored and 'I' the censoring indicator (0=censored,1=observed).}
+censored and 'I' the event indicator (0=censored,1=observed).}
 
 \item{regression_type}{function. The regression type to be used, lm for linear
 regression, glm for general linear regression, glmer for generalized
@@ -33,14 +32,15 @@ linear mixed-effects models. Default: lm}
 \item{repetitions}{number of repetitions for multiple imputation. Default: 10}
 
 \item{method_est}{which method should be used in the imputation step. One of
-'cc', 'pmm', 'mrl', 'rs', 'km'. See details.}
+'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.}
 
 \item{weights}{Weights to be used in fitting the regression model. Default = NULL}
 
-\item{contrasts}{Contrast vector to be used in testing the regression model. Default = NULL}
+\item{contrasts}{Contrast vector to be used in testing the regression model. 
+Default = NULL}
 
-\item{family}{The family to be used in the regression model. Default = "binomial". Omited if linear model is used.
-for the censored values.}
+\item{family}{The family to be used in the regression model. Default = "binomial". 
+Omitted if linear model is used.}
 
 \item{id}{name of column containing id of sample}
 
@@ -48,24 +48,47 @@ for the censored values.}
 
 \item{n_obs_min}{minimum number of observed events needed. default = 2.
 if lower than this value will throw an error.}
-
-\item{...}{additional arguments passed to testing}
+}
+\value{
+A list with five elements:
+\describe{
+  \item{'data'}{The input data frame}
+  \item{'betasMean'}{the mean regression coefficients}
+  \item{'betasVar'}{the variances of the mean regression coefficients}
+  \item{'metadata'}{a list of three elements: \describe{
+    \item{'repetitions'}{number of repetitions in multiple imputation}
+    \item{'betas'}{all regression coefficients}
+    \item{'vars'}{the variances of the regression coefficients}
+  }}
+  \item{'fits'}{list with all regression fits}
+}
 }
 \description{
-Imputes censored values according to \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017}
+First two steps for multiple imputation for censored covariates. Returns
+regression fits in a list that can be combined using \code{\link[mice]{pool}}().
 }
 \details{
-Possible methods in 'methods_est' are:
+Possible methods in 'method_est' are:
 \describe{
-  \item{'cc'}{complete case}
-  \item{'pmm'}{predictive mean matching, treating censored values as missing}
-  \item{'mrl'}{Mean Residual Life (Conditional single imputation from \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})}
-  \item{'rs'}{Risk Set imputation}
-  \item{'km'}{Kaplan Meier imputation}
+  \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
+              but the random draw is according to the survival function of
+              the respective risk set.}
+  \item{'rs'}{Risk Set imputation replaces the censored values with a random
+              draw from the risk set of the respective censored value.}
+  \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
+               \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
+               is a multiple imputation procedure that bootstraps the data and
+               imputes the censored values by replacing them with their 
+               respective mean residual life.}
+  \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
+  \item{'pmm'}{predictive mean matching treats censored values as missing and
+               uses predictive mean matching method from \code{\link[mice]{mice}}.}
 }
 }
 \examples{
  lm_formula <- formula(Y ~ Surv(X,I) + Z)
  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
  cmi_out <- conditional_multiple_imputation(data,lm_formula)
+ comb_out <- mice::pool(cmi_out$fits)
+ pvals <- summary(comb_out)$p.value
 }

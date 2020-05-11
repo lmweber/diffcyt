@@ -1,5 +1,5 @@
-#' mean residual life imputation, aka conditional imputation
-#' 
+# mean residual life imputation, aka conditional imputation
+# 
 #' @importFrom magrittr %>%
 #' @importFrom rlang :=
 mean_residual_life_imputation <- function(data, 
@@ -12,7 +12,7 @@ mean_residual_life_imputation <- function(data,
     data$id <- seq_along(data[[censored_variable]])
     id <- "id"
   }
-
+  
   # conditional single imputation from Atem et al. 2017 without covariates
   if (is.null(covariates)){
     # fit kapplan meier survival curve
@@ -67,23 +67,23 @@ mean_residual_life_imputation <- function(data,
     data <- suppressMessages(
       dplyr::inner_join(data, 
                         dplyr::as_tibble(survival::basehaz(cox_fit)) %>% 
-                          dplyr::rename(!!censored_variable := time)))
+                          dplyr::rename(!!censored_variable := "time")))
     data <- data %>% dplyr::mutate(S = exp(-hazard)) %>% dplyr::select(-hazard)
 
     # data subset only censored entries
-    id_cens <- as.matrix(data[c(data[ , censoring_indicator] == 0), c("id",covariates,censored_variable)])
+    id_cens <- as.matrix(data[c(data[ , censoring_indicator] == 0), c(id, covariates,censored_variable)])
 
     # for matrix calculations
     data_matrix <- as.matrix(data[, c("S",censored_variable)])
     # for matrix calculation of data_matrix[x,]-data_matrix[x-1,]
     data_matrix_cens_var <- as.matrix(cbind(data[-n, censored_variable],data[-1, censored_variable]))
     # loop through each censored entry, calculation of numerator of equation
-    numerator <- purrr::map_dbl(id_cens[ ,"id"], function(C){
+    numerator <- purrr::map_dbl(id_cens[ ,id], function(C){
       # exponent calculation
-      data_matrix_exponent <- data_matrix[, 1] ^ exp(sum(cox_coef_z * id_cens[which(id_cens[ ,"id"] == C) , covariates]))
+      data_matrix_exponent <- data_matrix[, 1] ^ exp(sum(cox_coef_z * id_cens[which(id_cens[ , id] == C) , covariates]))
       data_matrix_exponent <- cbind(data_matrix_exponent[-n],data_matrix_exponent[-1])
       # all values with higher censored variable values than the current one
-      which_cens <- which(data_matrix_cens_var[, 1] > as.double(id_cens[which(id_cens[ ,"id"] == C), censored_variable]))
+      which_cens <- which(data_matrix_cens_var[, 1] > as.double(id_cens[which(id_cens[ , id] == C)[1], censored_variable]))
       # normal case
       if (!(length(which_cens) == 1)){
         sum((rowSums(data_matrix_exponent[which_cens, ]) *
@@ -97,7 +97,7 @@ mean_residual_life_imputation <- function(data,
     # combine to matrix
     tmp_E0 <- cbind(data[c(data[[censoring_indicator]] == 0), c("S",censored_variable,id)],numerator)
     tmp_E0 <- as.matrix(tmp_E0)
-    tmpind <- unlist(lapply(seq_along(tmp_E0[ ,3]) , function(x) {which(tmp_E0[x,3] == data[ ,id])}))
+    tmpind <- unlist(lapply(seq_along(tmp_E0[ ,3]) , function(x) {which(tmp_E0[x,3] == data[ , id])[1]}))
     tmp_cov_mat <- as.matrix(data[tmpind, covariates])
     
     # end calculation, get estimates for all censored values

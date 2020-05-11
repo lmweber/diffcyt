@@ -65,7 +65,8 @@ conditional_multiple_imputation_result_without_z_compl <- suppressWarnings(purrr
       data = test_data_sets[[dataset]],
       id = "ID",
       formula = conditions$formulas_surv[[dataset]],
-      regression_type = conditions$regression_type[[dataset]], weights = test_data_sets[[dataset]]$size_tot,
+      regression_type = conditions$regression_type[[dataset]],
+      weights = "n_cells",
       method_est = method_est
     )}))
 conditional_multiple_imputation_result_without_z <- purrr::map(
@@ -81,7 +82,8 @@ conditional_multiple_imputation_result_with_z_compl <- suppressWarnings(purrr::p
       data = test_data_sets[[dataset]],
       id = "ID",
       formula = conditions$formulas_surv[[dataset]],
-      regression_type = conditions$regression_type[[dataset]], weights = test_data_sets[[dataset]]$size_tot,
+      regression_type = conditions$regression_type[[dataset]], 
+      weights = "n_cells",
       method_est = method_est
     )}))
 conditional_multiple_imputation_result_with_z <- purrr::map(
@@ -94,12 +96,12 @@ test_for_equal_input_output(conditional_multiple_imputation_result_with_z,"condi
 test_that("conditional_multiple_imputation keeps dimensionality, without z",{
   purrr::map2(conditional_multiple_imputation_result_without_z,
               rep(test_data_sets[4:6],length(methods)),
-              ~ expect_equal(length(.x[ ,!colnames(.x)=="weights"]), length(.y)+1))
+              ~ expect_equal(dim(.x), dim(.y) ))
 })
 test_that("conditional_multiple_imputation keeps dimensionality, with z",{
   purrr::map2(conditional_multiple_imputation_result_with_z,
               rep(test_data_sets[1:3],length(methods)),
-              ~ expect_equal(length(.x[ ,!colnames(.x)=="weights"]), length(.y)+1))
+              ~ expect_equal(dim(.x), dim(.y) ))
 })
 
 test_for_valid_estimates(conditional_multiple_imputation_result_without_z,"conditional_multiple_imputation",rep(test_data_sets[4:6],length(methods)))

@@ -12,7 +12,7 @@ test_that("risk_set_imputation correct output format",{
   expect_equal(typeof(suppressWarnings(risk_set_imputation(syn_data,"X","censored","Z"))),"double")
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data,"X","censored","Z"))),sum(syn_data$censored==0))
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data2,"X","censored","Z"))),sum(syn_data2$censored==0))
-  expect_error(suppressWarnings(risk_set_imputation(syn_data3,"X","censored","Z")))
+  # expect_error(suppressWarnings(risk_set_imputation(syn_data3,"X","censored","Z")))
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data4,"X","censored","Z"))),sum(syn_data4$censored==0))
 })
 

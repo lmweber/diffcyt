@@ -30,9 +30,7 @@ data_processing_for_imputation <- function(data, censored_variable,
   }
   # sort according to censored_variable
   data <- data %>%
-    dplyr::arrange(!!dplyr::sym(censored_variable)) %>%
-    # rank, for duplicates
-    dplyr::mutate(rank = dplyr::dense_rank(!!dplyr::sym(censored_variable)))
+    dplyr::arrange(!!dplyr::sym(censored_variable)) 
   return(data)
 }
 
@@ -95,13 +93,13 @@ get_variance_of_betas_from_multiple_fits <- function(fits_list){
 # create arguments list for regression fitting
 # 
 # for weights to be used, must be a column in 'data' with name weights
-args_for_fitting <- function(data, formula, regression_type, family = "binomial"){
+args_for_fitting <- function(data, formula, regression_type, family = "binomial", weights = NULL){
   stopifnot(regression_type %in% c("lm","glm","glmer"))
   args = list(formula = formula, data = data)
   if (!identical(regression_type,"lm")) {
     args[["family"]] <- family
-    if (!is.null(data$weights)) {
-      args[["weights"]] <- data$weights
+    if (!is.null(weights)) {
+      args[[weights]] <- data$weights
     }
   }
   return(args)
@@ -136,4 +134,39 @@ set_last_as_censored <- function(data, censored_variable, censoring_indicator){
 }
 
 
+create_two_level_factor_data <- function(data, covariates){
+  stopifnot(all(covariates %in% colnames(data)))
+  # loop through covariates
+  for (cov in covariates) {
+    if (is.factor(data[[cov]])){
+      # loop through factor levels, total number is number of levels -1
+      for (i in seq_along(levels(data[[cov]])[-1])){
+        # new name
+        cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
+        # add to data frame
+        data[[cov_name]] <- factor(as.integer(data[[cov]] == levels(data[[cov]])[i+1]))
+      }
+    }
+  }
+  return(data)
+}
 
+
+create_two_level_factor_covariates <- function(data, formula){
+  variables <- extract_variables_from_formula(formula)
+  covariates <- variables$covariates
+  stopifnot(all(covariates %in% colnames(data)))
+  new_covariates <- c()
+  # loop through covariates
+  for (cov in covariates) {
+    if (is.factor(data[[cov]])){
+      # loop through factor levels, total number is number of levels -1
+      for (i in seq_along(levels(data[[cov]])[-1])){
+        # new name
+        cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
+        new_covariates <- c(new_covariates, cov_name)
+      }
+    }
+  }
+  return(new_covariates)
+}

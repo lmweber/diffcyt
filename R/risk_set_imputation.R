@@ -8,7 +8,7 @@ coxph_coef_calc <- function(formula, data){
 # centering and normalization
 RS_cent_calc <- function(data, cox_coef_mat){
   RS <- as.matrix(data) %*%  cox_coef_mat
-  return((RS-mean(RS))/sd(RS))
+  return((RS-mean(RS))/stats::sd(RS))
 }
 
 # data needs to be sorted according to censored_variable
@@ -41,8 +41,9 @@ risk_set_cov_adjusted <- function(data, censored_variable, censoring_indicator,
   # cox proportional hazards coefficients
   cox_coef_c <- coxph_coef_calc(tmpformula, data[censored_indices, ])
   cox_coef_e <- coxph_coef_calc(tmpformula, data[event_indices, ])
+  
   # if any coefficient is exactly zero return normal risk set (cannot calculate)
-  if (any(cox_coef_c == 0) | any(cox_coef_e == 0)){ 
+  if (anyNA(cox_coef_c) | anyNA(cox_coef_e) | any(cox_coef_c == 0) | any(cox_coef_e == 0)){ 
     return(purrr::map(censored_indices, ~ (.x+1):n))
   }
   

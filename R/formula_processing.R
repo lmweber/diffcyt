@@ -1,21 +1,21 @@
-#' check if 'Surv()' formula is valid
-#'
-#' @param formula formula containing indication 'Surv()'.
-#'  See \code{\link{testDA_censoredGLMM}}
-#' @param throw_error should an error be thrown if 'formula' is incorrect.
-#'  default = 'TRUE'.
-#' @return logical
-#' @export
-#' @examples 
-#' # correct formula:
-#' cens_formula <- formula(Y ~ Surv(X,I) + Z)
-#' is_valid_censored_formula(cens_formula)
-#' 
-#' # wrong formulas:
-#' wrong_cens_formula_1 <- formula( ~ Surv(X,I) + Z) # no response
-#' is_valid_censored_formula(wrong_cens_formula_1)
-#' wrong_cens_formula_2 <- formula(Y ~ X + Z) # no censored variable
-#' is_valid_censored_formula(wrong_cens_formula_2)
+# check if 'Surv()' formula is valid
+#
+# @param formula formula containing indication 'Surv()'.
+#  See \code{\link{testDA_censoredGLMM}}
+# @param throw_error should an error be thrown if 'formula' is incorrect.
+#  default = 'TRUE'.
+# @return logical
+# @export
+# @examples 
+# # correct formula:
+# cens_formula <- formula(Y ~ Surv(X,I) + Z)
+# is_valid_censored_formula(cens_formula)
+# 
+# # wrong formulas:
+# wrong_cens_formula_1 <- formula( ~ Surv(X,I) + Z) # no response
+# is_valid_censored_formula(wrong_cens_formula_1)
+# wrong_cens_formula_2 <- formula(Y ~ X + Z) # no censored variable
+# is_valid_censored_formula(wrong_cens_formula_2)
 is_valid_censored_formula <- function(formula, throw_error = TRUE){
   tmpfor_char <- as.character(formula)
   if (length(tmpfor_char) != 3) {
@@ -52,16 +52,16 @@ is_valid_censored_formula <- function(formula, throw_error = TRUE){
 }
 
 
-#' extract individuall components of 'Surv()' formula
-#'
-#' @param formula formula containing indication 'Surv()'.
-#'  See \code{\link{testDA_censoredGLMM}}
-#' @return list with elements 'censored_variable', 'censoring_indicator',
-#'  'response', 'covariates', 'random_covariates'. each a character vector.
-#' @export
-#' @examples 
-#'   cens_formula <- formula(Y ~ Surv(X,I) + Z)
-#'   extract_variables_from_formula(cens_formula)
+# extract individuall components of 'Surv()' formula
+#
+# @param formula formula containing indication 'Surv()'.
+#  See \code{\link{testDA_censoredGLMM}}
+# @return list with elements 'censored_variable', 'censoring_indicator',
+#  'response', 'covariates', 'random_covariates'. each a character vector.
+# @export
+# @examples 
+#   cens_formula <- formula(Y ~ Surv(X,I) + Z)
+#   extract_variables_from_formula(cens_formula)
 extract_variables_from_formula <- function(formula){
   is_valid_censored_formula(formula = formula, throw_error = TRUE)
   tmpfor_char <- as.character(formula)
@@ -89,18 +89,18 @@ extract_variables_from_formula <- function(formula){
               response = response, covariates = covariates, random_covariates = random_covariates))
 }
 
-#' create formula from formula containing 'Surv()'
-#'
-#' @param formula formula containing indication 'Surv()'.
-#'  See \code{\link{testDA_censoredGLMM}}
-#' @return formula containing no 'Surv()' terms.
-#' @export
-#' @examples 
-#'   cens_formula <- formula(Y ~ Surv(X,I) + Z)
-#'   create_glmm_formula(cens_formula)
+# create formula from formula containing 'Surv()'
+#
+# @param formula formula containing indication 'Surv()'.
+#  See \code{\link{testDA_censoredGLMM}}
+# @return formula containing no 'Surv()' terms.
+# @export
+# @examples 
+#   cens_formula <- formula(Y ~ Surv(X,I) + Z)
+#   create_glmm_formula(cens_formula)
 create_glmm_formula <- function(formula){
   extracted_vars <- extract_variables_from_formula(formula)
-  outformula <- stringr::str_replace(formula, "Surv\\([[:alnum:] ,.]*\\)",extracted_vars$censored_variable)
+  outformula <- stringr::str_replace(formula, "Surv\\([[:alnum:] ,._]*\\)",extracted_vars$censored_variable)
   as.formula(paste0(outformula[2],outformula[1],outformula[3]))
 }
 

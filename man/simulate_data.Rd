@@ -11,12 +11,12 @@ simulate_data(
   b = NULL,
   n_levels_fixeff = NULL,
   n_levels_raneff = NULL,
-  weibull_params = list(X = list(shape = 0.75, scale = 2), C = list(shape = 0.5, scale
-    = 10)),
+  weibull_params = list(X = list(shape = 0.5, scale = 0.25), C = list(shape = 1, scale
+    = 0.25)),
   number_of_clusters = NULL,
   number_of_differential_clusters = NULL,
   censoring_dependent_on_covariate = FALSE,
-  weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 10),
+  weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
   error_variance = 0,
   variance_fixeff = 0.5,
   variance_raneff = 0.5,
@@ -29,27 +29,35 @@ simulate_data(
 
 \item{formula}{the formula to specify the structure in the data. The censored
 variable should be written as following: 'Surv(X,I)', where 'X' is the observed
-value, and 'I' is the censoring indicator (1 if observed, 0 if censored).
+value, and 'I' is the event indicator (1 if observed, 0 if censored).
 A full example is: 'Y ~ Surv(X,I) + Covariate + (1|Random_effect)'.}
 
 \item{type}{which regression type is used, one of 'lm', 'glm', 'glmer'. For
 the generalized linear models the response is binomial with a logistic link
-function}
+function. default = 'lm'.}
 
-\item{b}{the regression coefficients, if Null uses 0 for the intercept and 1
-for the remaining coefficients}
+\item{b}{the regression coefficients, either
+\describe{
+ \item{NUll}{will us 0 for the intercept and 1
+ for the remaining coefficients} 
+ \item{a vector with regression coefficients}{the length has to be (1 
+ (intercept) + number of covariates (including the censored covariate))}
+ \item{a list}{each element is a vector of regression coefficients of 
+ length = (1 + number of covariates (including censored covariate)). The 
+ number of elements should be the same as 'number_of_differential_clusters'.}
+  }}
 
 \item{n_levels_fixeff}{The number of levels to use for each covariate, e.g.
-for two covariates: c(10,100). If null uses 'n' meaning all samples differ
-from each other (if random effect meaning observation level).}
+for two covariates: c(10,100). If NULL sets all to 2 (two groups).}
 
-\item{n_levels_raneff}{The number of levels to use for each random effect}
+\item{n_levels_raneff}{The number of levels to use for each random effect. 
+If NULL sets to 'n' (observation level random effects).}
 
 \item{weibull_params}{The parameters for the distribution of the censored
 variable and the censoring time. Should be a list of lists, where the elements
 of the outer lists are 'X' the true value and 'C' the censoring time. The
 inner lists should have two keywords, 'shape' and 'scale', for the parameters
-of the Weibull distribution.}
+of the Weibull distribution (See \code{\link[stats]{rweibull}}).}
 
 \item{number_of_clusters}{Positive Integer. The number of clusters per true differential
 cluster for testing \code{\link{testDA_censoredGLMM}}. The total number of clusters is
@@ -59,9 +67,10 @@ only one cluster is used (running \code{\link{conditional_multiple_imputation}})
 \item{number_of_differential_clusters}{Positive Integer. Total number of clusters
 with a true signal.}
 
-\item{censoring_dependent_on_covariate}{Logical or name of covariate. If
+\item{censoring_dependent_on_covariate}{Logical. If
 censoring should depend on a covariate. The respective covariate needs to
-have only two levels ('n_level_fixeff'=2).}
+have only two levels ('n_level_fixeff'=2). Will use first covariate
+in formula.}
 
 \item{weibull_params_covariate_dependent_censoring}{list with two elements,
 shape and scale, representing the parameters of a weibull distribution for
@@ -69,30 +78,39 @@ the second level of a covariate if 'censoring_dependent_on_covariate'=TRUE.}
 
 \item{error_variance}{positive double. Variance of additional gaussian
 noise to add in the linear sum of the predictors. For linear regression
-this is the only error added.}
+this is the only error added. Otherwise it should be set to zero. default = 0.}
 
-\item{variance_fixeff}{positive double. The variance of the gaussian distributed
-fixed effect covariates}
+\item{variance_fixeff}{positive double vector of the length of 
+'n_levels_fixeff'. The variance of the gaussian distributed fixed effect 
+covariates. default = 0.5.}
 
-\item{variance_raneff}{positive double. The variance of the gaussian distributed
-random effect covariates}
+\item{variance_raneff}{positive double vector of the length of 
+'n_levels_raneff'. The variance of the gaussian distributed
+random effect covariates. default = 0.5.}
 
 \item{transform_fn}{function to transform censored covariate or one of
 'identity' (no transformation), 'boxcox' (box-cox transformation),
 'boxcox_positive' (box-cox transformation and translation to all positive
  values), 'log_positive' (log transformation and translation to all positive
- values). default = 'identity'}
+ values). The transformation is applied before the response is modeled.  
+ default = 'identity'.}
 
 \item{verbose}{verbose}
 }
 \value{
-simulated dataset or list of simulated dataset if
- 'number_of_clusters' != NULL
+simulated dataset or if 'number_of_clusters' != NULL a 
+\code{\link[SummarizedExperiment]{SummarizedExperiment}} object with cell 
+counts per cluster in \code{\link[SummarizedExperiment]{assay}} slot, experiment
+information (covariates, etc.) in \code{\link[SummarizedExperiment]{rowData}} slot.
 }
 \description{
 Simulation of data with a censored covariate
 }
+\details{
+The total number of clusters is 'number_of_clusters' * 'number_of_differential_clusters'.
+}
 \examples{
+# single differential cluster
  lm_formula <- formula(Y ~ Surv(X,I) + Z)
  simulate_data(100, lm_formula, type = "lm")
 
@@ -101,4 +119,17 @@ Simulation of data with a censored covariate
 
  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
  simulate_data(100, glmer_formula, type = "glmer")
+
+# multiple clusters, 2 differential, 18 not ('number_of_differential_clusters' * 
+#'number_of_clusters' - number_of_differential_clusters'). In total 20 clusters.
+ glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
+ data_sim <- simulate_data(
+   n = 20,
+   formula = glmer_formula,
+   n_levels_fixeff = 2,
+   type = "glmer",
+   b = list(b=c(-5,-2,0.2)),
+   number_of_clusters = 10,
+   number_of_differential_clusters = 2)
+ 
 }

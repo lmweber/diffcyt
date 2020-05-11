@@ -6,25 +6,26 @@ data_sim <- simulate_data(
   # n_levels_raneff = 20,
   type = "glmer",
   b = list(b=c(-4,-0.5,0.5)),
-  weibull_params = list(X = list(shape = 0.75, scale = 0.5),
-                        C = list(shape = 0.5, scale = 0.75)),
+  # weibull_params = list(X = list(shape = 0.75, scale = 0.5),
+  #                       C = list(shape = 0.5, scale = 0.75)),
   censoring_dependent_on_covariate = FALSE,
   error_variance = 0,
-  variance_fixeff = 0,
-  variance_raneff = 0,
+  variance_fixeff = 1,
+  variance_raneff = 1,
   number_of_clusters = 10,
   number_of_differential_clusters = 2,
   transform_fn = "log_positive"
   )
-d_counts <- data_sim[["d_counts"]]
-data_sim <- data_sim[["out"]]
+d_counts <- data_sim
+experiment_info <- SummarizedExperiment::colData(data_sim)
 # data_sim$z <-
 #   factor(data_sim$z,labels = 0:(length(unique(data_sim$z))-1))
 # data_sim$r <-
 #   factor(data_sim$r,labels = 0:(length(unique(data_sim$r))-1))
-da_formula <- list(formula = tmp_formula,
-                   data = dplyr::select(data_sim,"X","I","z","r"),
-                   random_terms = TRUE)
+da_formula <- createFormula(experiment_info,cols_fixed = c("X","z"), cols_random = "r", event_indicator = "I")
+# da_formula <- list(formula = tmp_formula,
+#                    data = dplyr::select(experiment_info,"X","I","z","r"),
+#                    random_terms = TRUE)
 contrast <- diffcyt::createContrast(c(0, 1, 0))
 
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
@@ -34,13 +35,14 @@ SummarizedExperiment::rowData(outs)
 
 test_that("class testDA_censoredGLMM correct",{
   expect_true(is(outs, "SummarizedExperiment"))
-  expect_equal(dim(SummarizedExperiment::rowData(outs)),c(10,3))
-  expect_equal(dim(SummarizedExperiment::assay(outs)),c(10,20))
+  expect_equal(dim(SummarizedExperiment::rowData(outs)),c(20,4))
+  expect_equal(dim(SummarizedExperiment::assay(outs)),c(20,20))
 })
 
 test_that("testDA_censoredGLMM keeps entries",{
   expect_equal(SummarizedExperiment::assay(outs),SummarizedExperiment::assay(d_counts))
-  expect_equal(SummarizedExperiment::rowData(outs)[1],SummarizedExperiment::rowData(d_counts))
+  expect_equal(SummarizedExperiment::rowData(outs)[1],SummarizedExperiment::rowData(d_counts)[1])
+  expect_equal(SummarizedExperiment::rowData(outs)[4],SummarizedExperiment::rowData(d_counts)[2])
 })
 
 test_that(" testDA_censoredGLMM valid pvalues",{
