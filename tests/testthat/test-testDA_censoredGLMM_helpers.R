@@ -63,3 +63,13 @@ test_that("extract_variables_from_formula is FALSE if incorrect",{
   expect_false(is_valid_censored_formula(y~Surv( , ),throw_error = FALSE))
   expect_false(is_valid_censored_formula(y~Surv(x,i)+ Surv(a,j),throw_error = FALSE))
 })
+
+test_that("extract_variables_from_formula is TRUE if correct",{
+  expect_true(is_valid_censored_formula(y~Surv(x,i) + Surv))
+  expect_true(is_valid_censored_formula(y~Surv(x,i) + Surv.))
+  expect_true(is_valid_censored_formula(y~Surv(x,i) + .Surv))
+  expect_true(is_valid_censored_formula(y~Surv(x,i) + bla.bla))
+})
+
+
+

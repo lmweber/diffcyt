@@ -22,7 +22,7 @@ is_valid_censored_formula <- function(formula, throw_error = TRUE){
     if (throw_error) stop("no response specified in formula",call. = FALSE)
     return(FALSE)
   }
-  which_surv <- stringr::str_detect(tmpfor_char,"Surv")
+  which_surv <- stringr::str_detect(tmpfor_char,"Surv\\([[:alnum:]_,. ]+\\)")
   if (which_surv[2]) {
     if (throw_error) stop("censored response is not allowed in formula",call. = FALSE)
     return(FALSE)
@@ -31,12 +31,12 @@ is_valid_censored_formula <- function(formula, throw_error = TRUE){
     if (throw_error) stop("no censored covariate specified in formula",call. = FALSE)
     return(FALSE)
   }
-  how_many_surv <- stringr::str_count(tmpfor_char[3],"Surv")
+  how_many_surv <- stringr::str_count(tmpfor_char[3],"Surv\\([[:alnum:]_,. ]+\\)")
   if (how_many_surv != 1){
     if (throw_error) stop("currently only one censored covariate is supported",call. = FALSE)
     return(FALSE)
   }
-  tmp_str_1 <- stringr::str_locate(tmpfor_char[3], "Surv\\([[:alnum:]_, ]+\\)")
+  tmp_str_1 <- stringr::str_locate(tmpfor_char[3], "Surv\\([[:alnum:]_,. ]+\\)")
   tmp_str_2 <- stringr::str_sub(tmpfor_char[3], tmp_str_1[1]+5, tmp_str_1[2]-1)
   tmp_str_3 <- stringr::str_split(tmp_str_2, "[ ]*,[ ]*")[[1]]
   tmp_str_4 <- tmp_str_3[tmp_str_3 != ""]
