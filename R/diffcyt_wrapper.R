@@ -211,6 +211,13 @@
 #' 
 #' @param verbose Whether to print status messages during each step of the pipeline.
 #'   Default = TRUE.
+#'   
+#' @param m number of imputations in multiple imputation. default = 10.
+#'  See \code{\link{testDA_censoredGLMM}} for details.
+#'
+#' @param method_est which method should be used in the imputation step. One of
+#'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'. See 
+#'  \code{\link{testDA_censoredGLMM}} for details.
 #' 
 #' 
 #' @return Returns a list containing the results object \code{res}, as well as the data
@@ -311,7 +318,7 @@
 diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL, 
                     design = NULL, formula = NULL, contrast, 
                     analysis_type = c("DA", "DS"), 
-                    method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"), 
+                    method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM", "diffcyt-DA-censored-GLMM"), 
                     method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"), 
                     markers_to_test = NULL, 
                     clustering_to_use = NULL, 
@@ -325,7 +332,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     trend_method = "none", 
                     block_id = NULL, trend = TRUE, weights = TRUE, 
                     plot = FALSE, path = ".", 
-                    verbose = TRUE) {
+                    verbose = TRUE, nr_mult_imp = 10, method_est = "km") {
   
   # get arguments
   analysis_type <- match.arg(analysis_type)
@@ -432,6 +439,10 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-GLMM") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-GLMM'...")
     res <- testDA_GLMM(d_counts, formula, contrast, min_cells, min_samples, normalize, norm_factors)
+  }
+  if (analysis_type == "DA" && method_DA == "diffcyt-DA-censored-GLMM") {
+    if (verbose) message("calculating DA tests using method 'diffcyt-DA-censored-GLMM'...")
+    res <- testDA_censoredGLMM(d_counts, formula, contrast, m, method_est, min_cells, min_samples, normalize, norm_factors)
   }
   
   # DS tests
