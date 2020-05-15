@@ -134,17 +134,19 @@ set_last_as_censored <- function(data, censored_variable, censoring_indicator){
 }
 
 
-create_two_level_factor_data <- function(data, covariates){
+create_two_level_factor_data <- function(data, covariates, max_levels = 4){
   stopifnot(all(covariates %in% colnames(data)))
   # loop through covariates
   for (cov in covariates) {
     if (is.factor(data[[cov]])){
-      # loop through factor levels, total number is number of levels -1
-      for (i in seq_along(levels(data[[cov]])[-1])){
-        # new name
-        cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
-        # add to data frame
-        data[[cov_name]] <- factor(as.integer(data[[cov]] == levels(data[[cov]])[i+1]))
+      if (length(levels(data[[cov]]))<=max_levels){
+        # loop through factor levels, total number is number of levels -1
+        for (i in seq_along(levels(data[[cov]])[-1])){
+          # new name
+          cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
+          # add to data frame
+          data[[cov_name]] <- factor(as.integer(data[[cov]] == levels(data[[cov]])[i+1]))
+        } 
       }
     }
   }
@@ -152,21 +154,23 @@ create_two_level_factor_data <- function(data, covariates){
 }
 
 
-create_two_level_factor_covariates <- function(data, formula){
+create_two_level_factor_covariates <- function(data, formula, max_levels = 4){
   variables <- extract_variables_from_formula(formula)
   covariates <- variables$covariates
   stopifnot(all(covariates %in% colnames(data)))
   new_covariates <- c()
   # loop through covariates
   for (cov in covariates) {
-    if (is.factor(data[[cov]])){
+    if (length(levels(data[[cov]]))<=max_levels){
+      if (is.factor(data[[cov]])){
       # loop through factor levels, total number is number of levels -1
-      for (i in seq_along(levels(data[[cov]])[-1])){
-        # new name
-        cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
-        new_covariates <- c(new_covariates, cov_name)
+        for (i in seq_along(levels(data[[cov]])[-1])){
+          # new name
+          cov_name <- paste0(cov, "_",levels(data[[cov]])[i+1])
+          new_covariates <- c(new_covariates, cov_name)
+        }
       }
-    }
+    } 
   }
   return(new_covariates)
 }
