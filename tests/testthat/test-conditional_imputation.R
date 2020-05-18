@@ -59,32 +59,32 @@ test_for_valid_estimates <- function(output_to_test, output_name, test_data_sets
 
 
 ##### cond.single.imputation :
-combinations <- expand.grid(dataset=4:6,method_est=methods,stringsAsFactors = FALSE)
-combinations$method_est <- as.character(combinations$method_est)
+combinations <- expand.grid(dataset=4:6,imputation_method=methods,stringsAsFactors = FALSE)
+combinations$imputation_method <- as.character(combinations$imputation_method)
 conditional_single_imputation_result_without_z <- purrr::pmap(
   combinations,
-  function(dataset,method_est) {
+  function(dataset,imputation_method) {
     dplyr::arrange(conditional_single_imputation(
       data = test_data_sets[[dataset]],
       censored_variable = censored_variable,
       censoring_indicator = censoring_indicator,
       response = response, id = "ID",
-      method_est = method_est
+      imputation_method = imputation_method
       # covariates = covariates
       ), ID)})
 
-combinations <- expand.grid(dataset=1:3,method_est=methods,stringsAsFactors = FALSE)
-combinations$method_est <- as.character(combinations$method_est)
+combinations <- expand.grid(dataset=1:3,imputation_method=methods,stringsAsFactors = FALSE)
+combinations$imputation_method <- as.character(combinations$imputation_method)
 conditional_single_imputation_result_with_z <- purrr::pmap(
   combinations,
-  function(dataset,method_est) {
+  function(dataset,imputation_method) {
     dplyr::arrange(conditional_single_imputation(
     data = test_data_sets[[dataset]],
     censored_variable = censored_variable,
     censoring_indicator = censoring_indicator,
     response = response,
     covariates = covariates, id = "ID",
-    method_est = method_est
+    imputation_method = imputation_method
   ), ID)})
 
 test_for_equal_input_output(conditional_single_imputation_result_without_z,"conditional_single_imputation",rep(test_data_sets[4:6],length(methods)))

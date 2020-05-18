@@ -38,7 +38,7 @@ test_that("simulate_data correct class",{
 test_that("simulate_data correct size",{
    expect_error(simulate_data(-1, lm_formula, type = "lm"))
    expect_error(simulate_data(0, lm_formula, type = "lm"))
-   expect_equal(dim(simulate_data(1, lm_formula, type = "lm")),c(1,8))
+   expect_equal(dim(simulate_data(2, lm_formula, type = "lm")),c(2,8))
    expect_equal(dim(simulate_data(10, lm_formula, type = "lm")),c(10,8))
    expect_equal(dim(simulate_data(100, lm_formula, type = "lm")),c(100,8))
  })

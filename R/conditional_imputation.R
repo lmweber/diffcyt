@@ -5,8 +5,8 @@
 #' @importFrom rlang :=
 estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
                               response = NULL, covariates = NULL, id = NULL,
-                              method_est = c("mrl","rs","km")){
-  method_est <- match.arg(method_est)
+                              imputation_method = c("mrl","rs","km")){
+  imputation_method <- match.arg(imputation_method)
   n <- dim(data)[1]
   # create an id column if missing
   if (is.null(id)){
@@ -31,7 +31,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
   data_prep <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
   
   # do estimation
-  est <- switch(method_est,
+  est <- switch(imputation_method,
                 "mrl" = mean_residual_life_imputation(data_prep, censored_variable, censoring_indicator, covariates,id),
                 "rs" = risk_set_imputation(data_prep, censored_variable, censoring_indicator, covariates),
                 "km" = kaplan_meier_imputation(data_prep, censored_variable, censoring_indicator, covariates)
@@ -70,7 +70,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
 # @param covariates name(s) of column(s) containing the covariate that influences
 #  censoring
 # @param id Default = 'NULL'. name of column containing id of sample. 
-# @param method_est one of 'km','rs','mrl'. See \code{\link{conditional_multiple_imputation}}
+# @param imputation_method one of 'km','rs','mrl'. See \code{\link{conditional_multiple_imputation}}
 # @param verbose Logical
 # 
 # @examples 
@@ -82,12 +82,12 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
 #   censoring_indicator = "I",
 #   response = "Y", 
 #   covariates = "Z",
-#   method_est = "km")
+#   imputation_method = "km")
 #' @importFrom magrittr %>%
 conditional_single_imputation <- function(data, censored_variable,
                                           censoring_indicator, response = NULL,
                                           covariates = NULL, id = NULL,
-                                          method_est = c("km","rs","mrl"),
+                                          imputation_method = c("km","rs","mrl"),
                                           verbose = FALSE) {
   if (is.numeric(censored_variable)) censored_variable <- colnames(data)[[censored_variable]]
   if (is.numeric(censoring_indicator)) censoring_indicator <- colnames(data)[[censoring_indicator]]
@@ -98,7 +98,7 @@ conditional_single_imputation <- function(data, censored_variable,
   }
   if (is.numeric(id) & !is.null(id)) id <- colnames(data)[[id]]
   if (is.numeric(response) & !is.null(response)) response <- colnames(data)[[response]]
-  method_est <- match.arg(method_est)
+  imputation_method <- match.arg(imputation_method)
   # # check that data is in correct format, some type conversions, but keep covariates = NULL to not convert to factors
   data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates = NULL , id)
   
@@ -128,7 +128,7 @@ conditional_single_imputation <- function(data, censored_variable,
   # estimates with or without cov,
   data <- estimate_cens_vars(data = data, censored_variable = censored_variable,
                       censoring_indicator = censoring_indicator, response = response,
-                      covariates = covariates, method_est = method_est, id = id)
+                      covariates = covariates, imputation_method = imputation_method, id = id)
 
   data <- dplyr::arrange(data, !!dplyr::sym(id)) 
   return(data)

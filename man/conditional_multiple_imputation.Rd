@@ -8,8 +8,8 @@ conditional_multiple_imputation(
   data,
   formula,
   regression_type = c("lm", "glm", "glmer"),
-  repetitions = 10,
-  method_est = c("km", "rs", "mrl", "cc", "pmm"),
+  mi_reps = 10,
+  imputation_method = c("km", "rs", "mrl", "cc", "pmm"),
   weights = NULL,
   contrasts = NULL,
   family = "binomial",
@@ -29,9 +29,9 @@ censored and 'I' the event indicator (0=censored,1=observed).}
 regression, glm for general linear regression, glmer for generalized
 linear mixed-effects models. Default: lm}
 
-\item{repetitions}{number of repetitions for multiple imputation. Default: 10}
+\item{mi_reps}{number of repetitions for multiple imputation. Default: 10}
 
-\item{method_est}{which method should be used in the imputation step. One of
+\item{imputation_method}{which method should be used in the imputation step. One of
 'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.}
 
 \item{weights}{Weights to be used in fitting the regression model. Default = NULL}
@@ -56,7 +56,7 @@ A list with five elements:
   \item{'betasMean'}{the mean regression coefficients}
   \item{'betasVar'}{the variances of the mean regression coefficients}
   \item{'metadata'}{a list of three elements: \describe{
-    \item{'repetitions'}{number of repetitions in multiple imputation}
+    \item{'mi_reps'}{number of repetitions in multiple imputation}
     \item{'betas'}{all regression coefficients}
     \item{'vars'}{the variances of the regression coefficients}
   }}
@@ -68,7 +68,7 @@ First two steps for multiple imputation for censored covariates. Returns
 regression fits in a list that can be combined using \code{\link[mice]{pool}}().
 }
 \details{
-Possible methods in 'method_est' are:
+Possible methods in 'imputation_method' are:
 \describe{
   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
               but the random draw is according to the survival function of

@@ -29,8 +29,8 @@ da_formula <- createFormula(experiment_info,cols_fixed = c("X","z"), cols_random
 contrast <- diffcyt::createContrast(c(0, 1, 0))
 
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
-                            contrast = contrast, method_est = "rs",
-                            verbose = FALSE, m = 10, BPPARAM = BiocParallel::MulticoreParam(workers=14))
+                            contrast = contrast, imputation_method = "rs",
+                            verbose = FALSE, mi_reps = 10, BPPARAM = BiocParallel::MulticoreParam(workers=14))
 SummarizedExperiment::rowData(outs)
 
 test_that("class testDA_censoredGLMM correct",{

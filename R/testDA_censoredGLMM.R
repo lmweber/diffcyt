@@ -27,9 +27,9 @@
 #'  'X' is observed and 'I' = 0 if 'X' is censored, ) needs to specified as well. 
 #'  The notation in the formula is then 'Surv(X,I)'. 
 #'  
-#' @param m number of imputations in multiple imputation. default = 10.
+#' @param mi_reps number of imputations in multiple imputation. default = 10.
 #' 
-#' @param method_est which method should be used in the imputation step. One of
+#' @param imputation_method which method should be used in the imputation step. One of
 #'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.
 #'  
 #' @param BPPARAM specify parallelization option as one of 
@@ -44,7 +44,7 @@
 #' 
 #' @inherit testDA_GLMM return
 #' 
-#' @details Possible methods in 'method_est' are:
+#' @details Possible methods in 'imputation_method' are:
 #' \describe{
 #'   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
 #'               but the random draw is according to the survival function of
@@ -90,19 +90,23 @@
 #'
 #' # run testing with imputation method 'km' 
 #' outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
-#'                            contrast = contrast, m = 2, method_est = "km")
+#'                            contrast = contrast, m = 2, imputation_method = "km")
 #'
-testDA_censoredGLMM <- function(d_counts, formula, contrast, m = 10,
-                                method_est = c("km","rs","mrl","cc","pmm"),
+testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
+                                imputation_method = c("km","rs","mrl","cc","pmm"),
                                 min_cells = 3,
-                                min_samples = 3,
+                                min_samples = NULL,
                                 normalize = FALSE, 
                                 norm_factors = "TMM",
                                 BPPARAM=BiocParallel::SerialParam(),
                                 verbose = FALSE
                                 )
 {
-  method_est <- match.arg(method_est)
+  if (is.null(min_samples)) {
+    min_samples <- ncol(d_counts) / 2
+  }
+  
+  imputation_method <- match.arg(imputation_method)
   BPPARAM <- if(requireNamespace("BiocParallel")){BPPARAM} else{NULL}
   # variable names from the given formula
   cmi_input <- extract_variables_from_formula(formula$formula)
@@ -113,8 +117,10 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, m = 10,
   cluster_id <- SummarizedExperiment::rowData(d_counts)$cluster_id
   # only keep counts with more than the minimum number of cells
   counts_to_keep <- counts >= min_cells
+  
   # only keep clusters with more than the minimum number of samples
   rows_to_keep <- apply(counts_to_keep, 1, function(r) sum(r) >= min_samples)
+  
   # subset counts and cluster_id's
   counts <- counts[rows_to_keep, , drop = FALSE]
   cluster_id <- cluster_id[rows_to_keep]
@@ -147,13 +153,13 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, m = 10,
     colnames(data_i)[c(1,2)] <- c(cmi_input$response,"weights")
     
     # do conditional multiple imputation
-    if (method_est %in% c("mrl","rs","km","pmm")){
+    if (imputation_method %in% c("mrl","rs","km","pmm")){
       out_test <- tryCatch(suppressMessages(suppressWarnings(
         conditional_multiple_imputation(
           data = data_i,
           formula = formula$formula,
-          repetitions = m,
-          method_est = method_est,
+          mi_reps = mi_reps,
+          imputation_method = imputation_method,
           regression_type = "glmer",
           family = "binomial",
           verbose = verbose,
@@ -173,7 +179,7 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, m = 10,
       #     paste(rownames(hmi)[2],"\t",paste(ceiling(hmi[2,]), collapse = "\t")))
       # }
     } # complete case fitting and testing
-    else if (method_est == "cc"){
+    else if (imputation_method == "cc"){
       p_val <- tryCatch({
       fit <- suppressMessages(suppressWarnings(complete_case(
         data = data_i,censored_variable = cmi_input[["censored_variable"]],
@@ -196,9 +202,9 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, m = 10,
                          p_adj = p_adj,
                          stringsAsFactors = FALSE)
   # return NA if cluster has been excluded from testing because of too few observations
-  row_data <- suppressMessages(
+  row_data <- suppressMessages(suppressWarnings(
     dplyr::right_join(row_data,
-                      data.frame(SummarizedExperiment::rowData(d_counts))))
+                      data.frame(SummarizedExperiment::rowData(d_counts)))))
   
   res <- SummarizedExperiment::SummarizedExperiment(
     assays = list(counts = SummarizedExperiment::assay(d_counts)),

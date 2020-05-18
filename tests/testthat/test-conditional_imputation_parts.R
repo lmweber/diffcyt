@@ -23,44 +23,44 @@ test_that("mean_residual_life_imputation outcome values greater or equal",{
 
 
 test_that("estimate_cens_vars works",{
-  expect_equal(class(estimate_cens_vars(syn_data,"X","censored",method_est = "rs")),c("tbl_df","tbl","data.frame"))
+  expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "rs")),c("tbl_df","tbl","data.frame"))
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored",method_est = "rs")
+  ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "rs")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- risk_set_imputation(syn_data,"X","censored")
   expect_equal(ecov,ecov)
 
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z",method_est = "rs")
+  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z",imputation_method = "rs")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- risk_set_imputation(syn_data,"X","censored", "Z")
   expect_equal(ecov,ecov)
 
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored",method_est = "km")
+  ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "km")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- kaplan_meier_imputation(syn_data,"X","censored")
   expect_equal(ecov,ecov)
 
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", method_est = "km")
+  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", imputation_method = "km")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- kaplan_meier_imputation(syn_data,"X","censored", "Z")
   expect_equal(ecov,ecov)
 
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored",method_est = "mrl")
+  ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "mrl")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- mean_residual_life_imputation(syn_data,"X","censored")
   expect_equal(ecov,ecov)
 
   set.seed(123)
-  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z" ,method_est = "mrl")
+  ecov <- estimate_cens_vars(syn_data,"X","censored", "Z" ,imputation_method = "mrl")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
   comp <- mean_residual_life_imputation(syn_data,"X","censored", "Z")

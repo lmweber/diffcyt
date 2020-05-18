@@ -15,9 +15,9 @@
 #' regression, glm for general linear regression, glmer for generalized
 #' linear mixed-effects models. Default: lm
 #' 
-#' @param repetitions number of repetitions for multiple imputation. Default: 10
+#' @param mi_reps number of repetitions for multiple imputation. Default: 10
 #' 
-#' @param method_est which method should be used in the imputation step. One of
+#' @param imputation_method which method should be used in the imputation step. One of
 #'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.
 #'  
 #' @param weights Weights to be used in fitting the regression model. Default = NULL
@@ -35,7 +35,7 @@
 #' @param n_obs_min minimum number of observed events needed. default = 2.
 #'  if lower than this value will throw an error.
 #'  
-#' @details Possible methods in 'method_est' are:
+#' @details Possible methods in 'imputation_method' are:
 #' \describe{
 #'   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
 #'               but the random draw is according to the survival function of
@@ -60,7 +60,7 @@
 #'   \item{'betasMean'}{the mean regression coefficients}
 #'   \item{'betasVar'}{the variances of the mean regression coefficients}
 #'   \item{'metadata'}{a list of three elements: \describe{
-#'     \item{'repetitions'}{number of repetitions in multiple imputation}
+#'     \item{'mi_reps'}{number of repetitions in multiple imputation}
 #'     \item{'betas'}{all regression coefficients}
 #'     \item{'vars'}{the variances of the regression coefficients}
 #'   }}
@@ -81,8 +81,8 @@ conditional_multiple_imputation <-
   function(data,
            formula,
            regression_type = c("lm", "glm", "glmer"),
-           repetitions = 10,
-           method_est = c("km", "rs", "mrl", "cc", "pmm"),
+           mi_reps = 10,
+           imputation_method = c("km", "rs", "mrl", "cc", "pmm"),
            weights = NULL,
            contrasts = NULL,
            family = "binomial",
@@ -109,7 +109,7 @@ conditional_multiple_imputation <-
   if (is.numeric(id) & !is.null(id)) {
     id <- colnames(data)[[id]]
   }
-  method_est <- match.arg(method_est)
+  imputation_method <- match.arg(imputation_method)
   regression_type <- match.arg(regression_type)
   
   if (is.character(weights)) {
@@ -131,7 +131,7 @@ conditional_multiple_imputation <-
     stop(paste0("Not enough observed events, consider decreasing 'n_obs_min (currently = ",n_obs_min," )"),call. = FALSE)
   }
   # complete case
-  if (method_est == "cc"){
+  if (imputation_method == "cc"){
     return(
       complete_case(
         data = data,
@@ -144,7 +144,7 @@ conditional_multiple_imputation <-
       )
     )
     # predictive mean matching (treating censored values as missing)
-  } else if (method_est == "pmm"){
+  } else if (imputation_method == "pmm"){
     return(
       predictive_mean_matching(
         data = data,
@@ -153,7 +153,7 @@ conditional_multiple_imputation <-
         variables_for_imputation = c(response,covariates,variables_formula[["random_covariates"]]),
         formula = formula_uncens,
         regression_type = regression_type,
-        repetitions = repetitions,
+        mi_reps = mi_reps,
         weights = weights,
         family = family
       )
@@ -163,9 +163,9 @@ conditional_multiple_imputation <-
   data_spread <- create_two_level_factor_data(data, covariates)
   covariates_spread <- create_two_level_factor_covariates(data, formula)
   # iterate
-  all_csi_out <- lapply(seq_len(repetitions), function(i){
+  all_csi_out <- lapply(seq_len(mi_reps), function(i){
       # if CSI, no random sampling
-      if (repetitions == 1 | method_est %in% c("rs","km")) {
+      if (mi_reps == 1 | imputation_method %in% c("rs","km")) {
         randsam <- seq_len(n)
       } else {
         # random sample same length
@@ -179,7 +179,7 @@ conditional_multiple_imputation <-
           response = response,
           covariates = covariates_spread,
           id = id,
-          method_est = method_est,
+          imputation_method = imputation_method,
           verbose = verbose
         )
       )
@@ -197,8 +197,8 @@ conditional_multiple_imputation <-
       id = id,
       formula = formula_uncens_est_name,
       regression_type = regression_type,
-      repetitions = repetitions,
-      method_est = method_est,
+      mi_reps = mi_reps,
+      imputation_method = imputation_method,
       verbose = verbose,
       weights = weights,
       contrasts = contrasts,
@@ -233,8 +233,8 @@ conditional_multiple_imputation_testing <-
            id = NULL,
            formula = NULL,
            regression_type = c("lm", "glm", "glmer"),
-           repetitions = 10,
-           method_est = c("mrl", "rs", "km"),
+           mi_reps = 10,
+           imputation_method = c("mrl", "rs", "km"),
            verbose = FALSE,
            weights = NULL,
            contrasts = NULL,
@@ -289,7 +289,7 @@ conditional_multiple_imputation_testing <-
       betasMean = colMeans(betas),
       betasVar = colMeans(betasVar),
       metadata = list(
-        repetitions = repetitions,
+        mi_reps = mi_reps,
         betas = betas,
         vars = betasVar
       ),

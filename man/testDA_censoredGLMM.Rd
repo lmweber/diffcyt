@@ -8,8 +8,8 @@ testDA_censoredGLMM(
   d_counts,
   formula,
   contrast,
-  m = 10,
-  method_est = c("km", "rs", "mrl", "cc", "pmm"),
+  mi_reps = 10,
+  imputation_method = c("km", "rs", "mrl", "cc", "pmm"),
   min_cells = 3,
   min_samples = 3,
   normalize = FALSE,
@@ -32,9 +32,9 @@ The notation in the formula is then 'Surv(X,I)'.}
 \item{contrast}{Contrast matrix, created with \code{\link{createContrast}}. See
 \code{\link{createContrast}} for details.}
 
-\item{m}{number of imputations in multiple imputation. default = 10.}
+\item{mi_reps}{number of imputations in multiple imputation. default = 10.}
 
-\item{method_est}{which method should be used in the imputation step. One of
+\item{imputation_method}{which method should be used in the imputation step. One of
 'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.}
 
 \item{min_cells}{Filtering parameter. Default = 3. Clusters are kept for differential
@@ -88,7 +88,7 @@ the 'normal' use of multiple imputation where some data is missing (See Details)
 Alternativaly the samples with censored data can be removed (complete case analysis) 
 or the censored values can be treated as missing (predictive mean matching) (See Details).
 
-Possible methods in 'method_est' are:
+Possible methods in 'imputation_method' are:
 \describe{
   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
               but the random draw is according to the survival function of
@@ -133,6 +133,6 @@ contrast <- createContrast(c(0, 1, 0))
 
 # run testing with imputation method 'km' 
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
-                           contrast = contrast, m = 2, method_est = "km")
+                           contrast = contrast, m = 2, imputation_method = "km")
 
 }

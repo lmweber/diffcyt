@@ -55,36 +55,37 @@ test_for_valid_estimates <- function(output_to_test, output_name, test_data_sets
   })
 }
 
+set.seed(123)
 ##### conditional_multiple_imputation :
-combinations <- expand.grid(dataset=4:6,method_est=methods,stringsAsFactors = FALSE)
-combinations$method_est <- as.character(combinations$method_est)
+combinations <- expand.grid(dataset=4:6,imputation_method=methods,stringsAsFactors = FALSE)
+combinations$imputation_method <- as.character(combinations$imputation_method)
 conditional_multiple_imputation_result_without_z_compl <- suppressWarnings(purrr::pmap(
   combinations,
-  function(dataset,method_est) {
+  function(dataset,imputation_method) {
     conditional_multiple_imputation(
       data = test_data_sets[[dataset]],
       id = "ID",
       formula = conditions$formulas_surv[[dataset]],
       regression_type = conditions$regression_type[[dataset]],
       weights = "n_cells",
-      method_est = method_est
+      imputation_method = imputation_method
     )}))
 conditional_multiple_imputation_result_without_z <- purrr::map(
   conditional_multiple_imputation_result_without_z_compl,
   ~ dplyr::arrange(.x$data, ID))
 
-combinations <- expand.grid(dataset=1:3,method_est=methods,stringsAsFactors = FALSE)
-combinations$method_est <- as.character(combinations$method_est)
+combinations <- expand.grid(dataset=1:3,imputation_method=methods,stringsAsFactors = FALSE)
+combinations$imputation_method <- as.character(combinations$imputation_method)
 conditional_multiple_imputation_result_with_z_compl <- suppressWarnings(purrr::pmap(
   combinations,
-  function(dataset,method_est) {
+  function(dataset,imputation_method) {
     conditional_multiple_imputation(
       data = test_data_sets[[dataset]],
       id = "ID",
       formula = conditions$formulas_surv[[dataset]],
       regression_type = conditions$regression_type[[dataset]], 
       weights = "n_cells",
-      method_est = method_est
+      imputation_method = imputation_method
     )}))
 conditional_multiple_imputation_result_with_z <- purrr::map(
   conditional_multiple_imputation_result_with_z_compl,
@@ -148,3 +149,4 @@ test_that("conditional_multiple_imputation returns input if fewer or equal than 
     n_obs_min = 4
   ))
 })
+

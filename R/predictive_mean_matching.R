@@ -11,7 +11,7 @@
 # @param regression_type The regression type to be used, one of 'lm' (linear
 # regression), 'glm' (generalized linear regression), 'glmer' (generalized
 # linear mixed-effects models). Default: 'lm'.
-# @param repetitions number of repetitions for multiple imputation. Default: 10
+# @param mi_reps number of repetitions for multiple imputation. Default: 10
 # @param weights name of column containing weights to be used in fitting the
 #  regression model. Default = 'weights'. Ignored if no weights used.
 # @param family The family to be used in the regression model.
@@ -33,7 +33,7 @@ predictive_mean_matching <- function(data,
                                      variables_for_imputation = NULL,
                                      formula = NULL,
                                      regression_type = c("lm", "glm", "glmer"),
-                                     repetitions = 10,
+                                     mi_reps = 10,
                                      weights = "weights",
                                      family = NULL){
   regression_type <- match.arg(regression_type)
@@ -56,7 +56,7 @@ predictive_mean_matching <- function(data,
   }
   # run mice, generating complete datasets
   capout <- capture.output({suppressWarnings(
-    ini2 <- mice::mice(data = data_proc, m=repetitions, method = "pmm", maxit = 5)
+    ini2 <- mice::mice(data = data_proc, m=mi_reps, method = "pmm", maxit = 5)
   )})
   
   # construct arguments list

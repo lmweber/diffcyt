@@ -212,10 +212,10 @@
 #' @param verbose Whether to print status messages during each step of the pipeline.
 #'   Default = TRUE.
 #'   
-#' @param m number of imputations in multiple imputation. default = 10.
+#' @param mi_reps number of imputations in multiple imputation. default = 10.
 #'  See \code{\link{testDA_censoredGLMM}} for details.
 #'
-#' @param method_est which method should be used in the imputation step. One of
+#' @param imputation_method which method should be used in the imputation step. One of
 #'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'. See 
 #'  \code{\link{testDA_censoredGLMM}} for details.
 #' 
@@ -332,12 +332,13 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     trend_method = "none", 
                     block_id = NULL, trend = TRUE, weights = TRUE, 
                     plot = FALSE, path = ".", 
-                    verbose = TRUE, nr_mult_imp = 10, method_est = "km") {
+                    verbose = TRUE, mi_reps = 10, imputation_method = c("km","rs","mrl","cc","pmm")) {
   
   # get arguments
   analysis_type <- match.arg(analysis_type)
   method_DA <- match.arg(method_DA)
   method_DS <- match.arg(method_DS)
+  imputation_method <- match.arg(imputation_method)
   
   # preliminary steps (if input is not a SingleCellExperiment object from CATALYST)
   if (!is(d_input, "SingleCellExperiment")) {
@@ -442,7 +443,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-censored-GLMM") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-censored-GLMM'...")
-    res <- testDA_censoredGLMM(d_counts, formula, contrast, m, method_est, min_cells, min_samples, normalize, norm_factors)
+    res <- testDA_censoredGLMM(d_counts, formula, contrast, mi_reps, imputation_method, min_cells, min_samples, normalize, norm_factors)
   }
   
   # DS tests

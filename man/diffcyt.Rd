@@ -13,7 +13,8 @@ diffcyt(
   formula = NULL,
   contrast,
   analysis_type = c("DA", "DS"),
-  method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM"),
+  method_DA = c("diffcyt-DA-edgeR", "diffcyt-DA-voom", "diffcyt-DA-GLMM",
+    "diffcyt-DA-censored-GLMM"),
   method_DS = c("diffcyt-DS-limma", "diffcyt-DS-LMM"),
   markers_to_test = NULL,
   clustering_to_use = NULL,
@@ -39,7 +40,9 @@ diffcyt(
   weights = TRUE,
   plot = FALSE,
   path = ".",
-  verbose = TRUE
+  verbose = TRUE,
+  mi_reps = 10,
+  imputation_method = "km"
 )
 }
 \arguments{
@@ -211,6 +214,13 @@ See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 
 \item{verbose}{Whether to print status messages during each step of the pipeline.
 Default = TRUE.}
+
+\item{mi_reps}{number of imputations in multiple imputation. default = 10.
+See \code{\link{testDA_censoredGLMM}} for details.}
+
+\item{imputation_method}{which method should be used in the imputation step. One of
+'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'. See 
+\code{\link{testDA_censoredGLMM}} for details.}
 }
 \value{
 Returns a list containing the results object \code{res}, as well as the data
