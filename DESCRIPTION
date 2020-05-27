@@ -44,7 +44,8 @@ Imports:
     rlang,
     stringr,
     survival,
-    tibble
+    tibble,
+    BiocParallel    
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,
@@ -52,6 +53,5 @@ Suggests:
     rmarkdown,
     testthat,
     HDCytoData,
-    CATALYST,
-    BiocParallel
+    CATALYST
 RoxygenNote: 7.1.0

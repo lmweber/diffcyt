@@ -74,13 +74,15 @@
 #' @param analysis_type Type of differential analysis to perform: differential abundance
 #'   (DA) of cell populations, or differential states (DS) within cell populations.
 #'   Options are \code{"DA"} and \code{"DS"}. See \code{\link{testDA_edgeR}},
-#'   \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDS_limma}}, or
-#'   \code{\link{testDS_LMM}}.
+#'   \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, \code{\link{testDA_censoredGLMM}},  
+#'   \code{\link{testDS_limma}}, or \code{\link{testDS_LMM}}.
 #' 
 #' @param method_DA Method to use for calculating differential abundance (DA) tests.
-#'   Options are \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"}, and
-#'   \code{"diffcyt-DA-GLMM"}. Default = \code{"diffcyt-DA-edgeR"}. See
-#'   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, or \code{\link{testDA_GLMM}}.
+#'   Options are \code{"diffcyt-DA-edgeR"}, \code{"diffcyt-DA-voom"},
+#'   \code{"diffcyt-DA-GLMM"}, and \code{\link{testDA_censoredGLMM}}. 
+#'   Default = \code{"diffcyt-DA-edgeR"}. See
+#'   \code{\link{testDA_edgeR}}, \code{\link{testDA_voom}}, \code{\link{testDA_GLMM}}, 
+#'   or code{\link{testDA_censoredGLMM}}.
 #' 
 #' @param method_DS Method to use for calculating differential state (DS) tests. Options
 #'   are \code{"diffcyt-DS-limma"} and \code{"diffcyt-DS-LMM"}. Default =
@@ -216,8 +218,15 @@
 #'  See \code{\link{testDA_censoredGLMM}} for details.
 #'
 #' @param imputation_method which method should be used in the imputation step. One of
-#'  'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'. See 
+#'  'km', 'rs', 'mrl', 'cc', 'pmm'. default = 'km'. See 
 #'  \code{\link{testDA_censoredGLMM}} for details.
+#'  
+#' @param BPPARAM specify parallelization option for method \code{\link{testDA_censoredGLMM}}  
+#'  as one of \code{\link[BiocParallel]{BiocParallelParam}} if 'BiocParallel' is 
+#'  available otherwise no parallelization is used.
+#'  e.g. \code{\link[BiocParallel]{MulticoreParam}}(workers=2) for parallelization 
+#'  with two cores. Default is \code{\link[BiocParallel]{SerialParam}}()
+#'  (no parallelization). 
 #' 
 #' 
 #' @return Returns a list containing the results object \code{res}, as well as the data
@@ -332,7 +341,9 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     trend_method = "none", 
                     block_id = NULL, trend = TRUE, weights = TRUE, 
                     plot = FALSE, path = ".", 
-                    verbose = TRUE, mi_reps = 10, imputation_method = c("km","rs","mrl","cc","pmm")) {
+                    verbose = TRUE, mi_reps = 10, 
+                    imputation_method = c("km","rs","mrl","cc","pmm"),
+                    BPPARAM=BiocParallel::SerialParam()) {
   
   # get arguments
   analysis_type <- match.arg(analysis_type)
@@ -443,7 +454,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   }
   if (analysis_type == "DA" && method_DA == "diffcyt-DA-censored-GLMM") {
     if (verbose) message("calculating DA tests using method 'diffcyt-DA-censored-GLMM'...")
-    res <- testDA_censoredGLMM(d_counts, formula, contrast, mi_reps, imputation_method, min_cells, min_samples, normalize, norm_factors)
+    res <- testDA_censoredGLMM(d_counts, formula, contrast, mi_reps, imputation_method, min_cells, min_samples, normalize, norm_factors, BPPARAM)
   }
   
   # DS tests
