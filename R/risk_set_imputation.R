@@ -62,8 +62,8 @@ risk_set_cov_adjusted <- function(data, censored_variable, censoring_indicator,
   Risk_Set <- purrr::map(censored_indices, function(j){
     startind <- which((data[[censored_variable]][j] < data[[censored_variable]]))[1]
     startind <- ifelse(is.na(startind), n, startind)
-    if (n-startind > 1){
-      risk_set_j <- as.integer(names(sort(d2[j,startind:n])[seq_len(min(nn,n-startind))]))
+    if (n-startind >= 1){
+      risk_set_j <- as.integer(names(sort(d2[j,startind:n])[seq_len(min(nn,n-startind+1))]))
     } else{
       risk_set_j <- n
     }

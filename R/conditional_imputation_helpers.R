@@ -99,7 +99,7 @@ args_for_fitting <- function(data, formula, regression_type, family = "binomial"
   if (!identical(regression_type,"lm")) {
     args[["family"]] <- family
     if (!is.null(weights)) {
-      args[[weights]] <- data$weights
+      args[["weights"]] <- data[[weights]]
     }
   }
   return(args)

@@ -9,6 +9,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
                               mi_reps = 1){
   imputation_method <- match.arg(imputation_method)
   n <- dim(data)[1]
+  est_name <- paste0(censored_variable,"_est")
   # create an id column if missing
   if (is.null(id)){
     data$id <- seq_along(data[[censored_variable]])
@@ -30,18 +31,17 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
   # check that data is in correct format, some type conversions
   data_prep <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
   
-  duplicates_of_last_bool <- FALSE
-  # if last value was censored, set it back to censored
-  if (last_censored){
-    data <- set_last_as_censored(data, censored_variable, censoring_indicator)
-    
-    # for duplicates
-    duplicates_of_last_bool <- purrr::as_vector(data[n,id]) == purrr::as_vector(data[,id])
-    if (sum(duplicates_of_last_bool) > 1){
-      data[n,est_name] <- purrr::as_vector(data[duplicates_of_last_bool,est_name])[1]
-    }
-  }
-  
+  # duplicates_of_last_bool <- FALSE
+  # # if last value was censored, set it back to censored
+  # if (last_censored){
+  #   data <- set_last_as_censored(data, censored_variable, censoring_indicator)
+  #   
+  #   # for duplicates
+  #   duplicates_of_last_bool <- purrr::as_vector(data[n,id]) == purrr::as_vector(data[,id])
+  #   if (sum(duplicates_of_last_bool) > 1){
+  #     data[n,est_name] <- purrr::as_vector(data[duplicates_of_last_bool,est_name])[1]
+  #   }
+  # }
   # do estimation
   est <- switch(imputation_method,
                 "mrl" = mean_residual_life_imputation(data_prep, censored_variable, censoring_indicator, covariates,id),
@@ -49,22 +49,44 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
                 "km" = kaplan_meier_imputation(data_prep, censored_variable, censoring_indicator, covariates, mi_reps=mi_reps),
                 "km_exp" =  kaplan_meier_imputation(data_prep, censored_variable, censoring_indicator, covariates, "exp",mi_reps)
   )
-  censored_bool <- data[[censoring_indicator]] == 0
-  data_ls <- purrr::map(seq_len(mi_reps),data=data,est=est,function(x,data=data,est=est){  
-    # expr <- rlang::enquo(censored_variable)
-    # est_name <- paste0(rlang::quo_name(expr),"_est")
-    est_name <- paste0(censored_variable,"_est")
+  # censored_bool <- data[[censoring_indicator]] == 0
+  # data_ls <- purrr::map(seq_len(mi_reps),data=data,est=est,function(x,data=data,est=est){  
+  #   # expr <- rlang::enquo(censored_variable)
+  #   # est_name <- paste0(rlang::quo_name(expr),"_est")
+  #   est_name <- paste0(censored_variable,"_est")
+  #   # estimates of observed values are the same
+  #   data[[est_name]] <- data[[censored_variable]]
+  #   # estimates of censored values are real estimates
+  #   data[c(censored_bool & !duplicates_of_last_bool), est_name] <- est[, x]
+  # 
+  #   return(data)
+  # })
+  if (mi_reps == 1) {
+    duplicates_of_last_bool <- purrr::as_vector(data[n,id]) == purrr::as_vector(data[,id])
+    
     # estimates of observed values are the same
     data[[est_name]] <- data[[censored_variable]]
     # estimates of censored values are real estimates
-    data[c(censored_bool & !duplicates_of_last_bool), est_name] <- est[, x]
-
-    return(data)
-  })
-  if (mi_reps == 1) {
-    data_ls <- data_ls[[1]]    
+    data[c(data[[censoring_indicator]] == 0 & !duplicates_of_last_bool), est_name] <- est[, 1]
+    
+  
+    # duplicates_of_last_bool <- FALSE
+    # if last value was censored, set it back to censored
+    if (last_censored){
+      data <- set_last_as_censored(data, censored_variable, censoring_indicator)
+      
+      # for duplicates
+      # duplicates_of_last_bool <- purrr::as_vector(data[n,id]) == purrr::as_vector(data[,id])
+      if (sum(duplicates_of_last_bool) > 1){
+        data[n,est_name] <- purrr::as_vector(data[duplicates_of_last_bool,est_name])[1]
+      }
+    }
+ 
+    return(data)  
   }
-  return(data_ls)
+  return(asplit(est,2))
+  
+  # return(data_ls)
 }
 
 
@@ -135,7 +157,6 @@ conditional_single_imputation <- function(data, censored_variable,
       dplyr::arrange(!!dplyr::sym(id))
     return(data)
   }
-
   # estimates with or without cov,
   data <- estimate_cens_vars(data = data, censored_variable = censored_variable,
                       censoring_indicator = censoring_indicator, response = response,

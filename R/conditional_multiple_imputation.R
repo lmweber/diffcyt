@@ -247,15 +247,25 @@ conditional_multiple_imputation_fitting <-
     # name of imputed variable
     est_name <- paste0(censored_variable,"_est")
     regression_type <- match.arg(regression_type)
-    
     if (is.character(weights)) {
       stopifnot(all(weights %in% colnames(data)))
     } else if (is.numeric(weights) | is.logical(weights)) {
       weights <- colnames(data)[weights]
     }
-    
+    censored_bool <- data[[censoring_indicator]] == 0
     # do fitting of all imputed data sets
     fits <- lapply(imputed_datasets, function(csi_out) {
+      
+      if(is(csi_out,"vector")){
+        if(sum(censored_bool) != length(csi_out)){
+          censored_bool[length(censored_bool)] <- FALSE
+          stopifnot(sum(censored_bool)==length(csi_out))
+        }
+        est_col <- data[[censored_variable]]
+        est_col[censored_bool] <- csi_out
+        csi_out <- cbind(data,est_col)
+        colnames(csi_out)[dim(csi_out)[2]] <- est_name
+      }
       # some checks of imputed values, only do fitting if imputation gave reasonable results
       max_est_name <- max(na.omit(csi_out[[est_name]]))
       cond_2 <- ifelse(is.na(max_est_name),

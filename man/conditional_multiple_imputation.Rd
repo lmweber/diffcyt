@@ -9,7 +9,7 @@ conditional_multiple_imputation(
   formula,
   regression_type = c("lm", "glm", "glmer"),
   mi_reps = 10,
-  imputation_method = c("km", "rs", "mrl", "cc", "pmm"),
+  imputation_method = c("km", "km_exp", "rs", "mrl", "cc", "pmm"),
   weights = NULL,
   contrasts = NULL,
   family = "binomial",
