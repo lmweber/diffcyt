@@ -61,6 +61,7 @@ risk_set_cov_adjusted <- function(data, censored_variable, censoring_indicator,
   # create risk set for all censored values
   Risk_Set <- purrr::map(censored_indices, function(j){
     startind <- which((data[[censored_variable]][j] < data[[censored_variable]]))[1]
+    startind <- ifelse(is.na(startind), n, startind)
     if (n-startind > 1){
       risk_set_j <- as.integer(names(sort(d2[j,startind:n])[seq_len(min(nn,n-startind))]))
     } else{
@@ -72,7 +73,7 @@ risk_set_cov_adjusted <- function(data, censored_variable, censoring_indicator,
 }
 
 
-risk_set_imputation <- function(data, censored_variable, censoring_indicator, covariates = NULL){
+risk_set_imputation <- function(data, censored_variable, censoring_indicator, covariates = NULL, mi_reps = 1){
   n <- dim(data)[1]
   # assumes sorted dataset according to censored variable
   censored_indices <- which(data[ ,censoring_indicator] == 0)
@@ -84,6 +85,13 @@ risk_set_imputation <- function(data, censored_variable, censoring_indicator, co
     Risk_Set <- risk_set_cov_adjusted(data, censored_variable, censoring_indicator, covariates)
   }
   # estimate is a random value from the risk set
-  est_ind <- unlist(purrr::map_dbl(Risk_Set, ~ sample(.x, size = 1)))
-  return(as.double(data[[censored_variable]][est_ind]))
+  est <-
+    tryCatch(
+      purrr::reduce(purrr::map(Risk_Set, ~ matrix(
+        as.double(data[[censored_variable]][sample(.x, size = mi_reps, replace = TRUE)]), nrow = 1
+      )), rbind),
+      error = function(e)
+        integer(0)
+    )
+  return(est)
 }

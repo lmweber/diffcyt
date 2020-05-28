@@ -103,5 +103,5 @@ mean_residual_life_imputation <- function(data,
     # end calculation, get estimates for all censored values
     est <- tmp_E0[,4] / (2 * tmp_E0[,1] ^ exp(rowSums(t(cox_coef_z*t(tmp_cov_mat))))) +  tmp_E0[ ,2]
   }
-  return(est)
+  return(matrix(est,ncol=1))
 }

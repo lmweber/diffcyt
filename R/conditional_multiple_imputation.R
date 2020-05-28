@@ -82,7 +82,7 @@ conditional_multiple_imputation <-
            formula,
            regression_type = c("lm", "glm", "glmer"),
            mi_reps = 10,
-           imputation_method = c("km", "rs", "mrl", "cc", "pmm"),
+           imputation_method = c("km","km_exp", "rs", "mrl", "cc", "pmm"),
            weights = NULL,
            contrasts = NULL,
            family = "binomial",
@@ -163,6 +163,10 @@ conditional_multiple_imputation <-
   data_spread <- create_two_level_factor_data(data, covariates)
   covariates_spread <- create_two_level_factor_covariates(data, formula)
   # iterate
+  if (mi_reps > 1 & imputation_method %in% c("km","km_exp","rs")){
+    all_csi_out <- estimate_cens_vars(data_spread,censored_variable,censoring_indicator,response,covariates,id,imputation_method,mi_reps)
+  }
+  else{
   all_csi_out <- lapply(seq_len(mi_reps), function(i){
       # if CSI, no random sampling
       if (mi_reps == 1 | imputation_method %in% c("rs","km")) {
@@ -171,6 +175,7 @@ conditional_multiple_imputation <-
         # random sample same length
         randsam <- sample(seq_len(n), size = n, replace = TRUE)
       }
+
       return(
         conditional_single_imputation(
           data = data_spread[randsam, ],
@@ -184,10 +189,11 @@ conditional_multiple_imputation <-
         )
       )
     })
+  }
   formula_uncens_est_name <- sub(censored_variable,est_name,Reduce(paste, deparse(formula_uncens)))
   
   data_cmi <-
-    conditional_multiple_imputation_testing(
+    conditional_multiple_imputation_fitting(
       data = data,
       imputed_datasets = all_csi_out,
       censored_variable = censored_variable,
@@ -198,7 +204,6 @@ conditional_multiple_imputation <-
       formula = formula_uncens_est_name,
       regression_type = regression_type,
       mi_reps = mi_reps,
-      imputation_method = imputation_method,
       verbose = verbose,
       weights = weights,
       contrasts = contrasts,
@@ -223,7 +228,7 @@ conditional_multiple_imputation <-
 #' @importFrom lme4 glmer
 #' @importFrom  stats na.omit
 #' @importFrom rlang :=
-conditional_multiple_imputation_testing <-
+conditional_multiple_imputation_fitting <-
   function(data,
            imputed_datasets,
            censored_variable,
@@ -234,7 +239,6 @@ conditional_multiple_imputation_testing <-
            formula = NULL,
            regression_type = c("lm", "glm", "glmer"),
            mi_reps = 10,
-           imputation_method = c("mrl", "rs", "km"),
            verbose = FALSE,
            weights = NULL,
            contrasts = NULL,
