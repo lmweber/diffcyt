@@ -3,7 +3,7 @@ estimate <- paste0(censored_variable,"_est")
 censoring_indicator <- "I"
 covariates <-  c("Z")
 response <-  "Y"
-methods <- c("cc","pmm","rs","km","mrl")
+methods <- c("cc","pmm","rs","km","km_exp","km_wei","km_os","mrl")
 
 set.seed(123)
 conditions <- list(formulas = list(lm_z = formula(Y ~ X + Z),
@@ -68,7 +68,8 @@ conditional_multiple_imputation_result_without_z_compl <- suppressWarnings(purrr
       formula = conditions$formulas_surv[[dataset]],
       regression_type = conditions$regression_type[[dataset]],
       weights = "n_cells",
-      imputation_method = imputation_method
+      imputation_method = imputation_method,
+      mi_reps = 2
     )}))
 conditional_multiple_imputation_result_without_z <- purrr::map(
   conditional_multiple_imputation_result_without_z_compl,
@@ -85,7 +86,8 @@ conditional_multiple_imputation_result_with_z_compl <- suppressWarnings(purrr::p
       formula = conditions$formulas_surv[[dataset]],
       regression_type = conditions$regression_type[[dataset]], 
       weights = "n_cells",
-      imputation_method = imputation_method
+      imputation_method = imputation_method,
+      mi_reps = 2
     )}))
 conditional_multiple_imputation_result_with_z <- purrr::map(
   conditional_multiple_imputation_result_with_z_compl,

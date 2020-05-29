@@ -70,7 +70,6 @@ conditional_single_imputation_result_without_z <- purrr::pmap(
       censoring_indicator = censoring_indicator,
       response = response, id = "ID",
       imputation_method = imputation_method
-      # covariates = covariates
       ), ID)})
 
 combinations <- expand.grid(dataset=1:3,imputation_method=methods,stringsAsFactors = FALSE)

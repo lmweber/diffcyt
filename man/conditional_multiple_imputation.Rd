@@ -9,7 +9,7 @@ conditional_multiple_imputation(
   formula,
   regression_type = c("lm", "glm", "glmer"),
   mi_reps = 10,
-  imputation_method = c("km", "km_exp", "rs", "mrl", "cc", "pmm"),
+  imputation_method = c("km", "km_exp", "km_wei", "km_os", "rs", "mrl", "cc", "pmm"),
   weights = NULL,
   contrasts = NULL,
   family = "binomial",
@@ -32,7 +32,7 @@ linear mixed-effects models. Default: lm}
 \item{mi_reps}{number of repetitions for multiple imputation. Default: 10}
 
 \item{imputation_method}{which method should be used in the imputation step. One of
-'km', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.}
+'km','km_exp','km_wei','km_os', 'rs', 'mrl', 'cc', 'pmm'. See details. default = 'km'.}
 
 \item{weights}{Weights to be used in fitting the regression model. Default = NULL}
 
@@ -73,6 +73,18 @@ Possible methods in 'imputation_method' are:
   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
               but the random draw is according to the survival function of
               the respective risk set.}
+  \item{'km_exp'}{The same as 'km' but if the largest value is censored the 
+             tail of the survival function is modeled as an exponential 
+             distribution where the rate parameter is obtained by fixing
+             the distribution to the last observed value. 
+             See (Moeschberger and Klein, 1985).}
+  \item{'km_wei'}{The same as 'km' but if the largest value is censored the 
+             tail of the survival function is modeled as an weibull 
+             distribution where the parameters are obtained by MLE fitting on
+             the whole data. See (Moeschberger and Klein, 1985).}
+  \item{'km_os'}{The same as 'km' but if the largest value is censored the 
+             tail of the survival function is modeled by order statistics. 
+             See (Moeschberger and Klein, 1985).}
   \item{'rs'}{Risk Set imputation replaces the censored values with a random
               draw from the risk set of the respective censored value.}
   \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
@@ -84,6 +96,11 @@ Possible methods in 'imputation_method' are:
   \item{'pmm'}{predictive mean matching treats censored values as missing and
                uses predictive mean matching method from \code{\link[mice]{mice}}.}
 }
+ 
+ @references {
+ A Comparison of Several Methods of Estimating the Survival Function When 
+ There is Extreme Right Censoring (M. L. Moeschberger and John P. Klein, 1985)
+ }
 }
 \examples{
  lm_formula <- formula(Y ~ Surv(X,I) + Z)

@@ -218,7 +218,7 @@
 #'  See \code{\link{testDA_censoredGLMM}} for details.
 #'
 #' @param imputation_method which method should be used in the imputation step. One of
-#'  'km', 'rs', 'mrl', 'cc', 'pmm'. default = 'km'. See 
+#'  'km','km_exp','km_wei','km_os', 'rs', 'mrl', 'cc', 'pmm'. default = 'km'. See 
 #'  \code{\link{testDA_censoredGLMM}} for details.
 #'  
 #' @param BPPARAM specify parallelization option for method \code{\link{testDA_censoredGLMM}}  
@@ -342,7 +342,7 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
                     block_id = NULL, trend = TRUE, weights = TRUE, 
                     plot = FALSE, path = ".", 
                     verbose = TRUE, mi_reps = 10, 
-                    imputation_method = c("km","rs","mrl","cc","pmm"),
+                    imputation_method = c("km","km_exp","km_wei","km_os","rs","mrl","cc","pmm"),
                     BPPARAM=BiocParallel::SerialParam()) {
   
   # get arguments

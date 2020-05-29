@@ -12,16 +12,9 @@ test_that("risk_set_imputation correct output format",{
   expect_equal(typeof(suppressWarnings(risk_set_imputation(syn_data,"X","censored","Z"))),"double")
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data,"X","censored","Z"))),sum(syn_data$censored==0))
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data2,"X","censored","Z"))),sum(syn_data2$censored==0))
-  # expect_error(suppressWarnings(risk_set_imputation(syn_data3,"X","censored","Z")))
   expect_equal(length(suppressWarnings(risk_set_imputation(syn_data4,"X","censored","Z"))),sum(syn_data4$censored==0))
 })
 
-# test_that("risk_set_imputation correct output values",{
-#   set.seed(123)
-#   expect_equal(risk_set_imputation(syn_data,"X","censored"),c(3,5,6))
-#   set.seed(123)
-#   expect_equal(suppressWarnings(risk_set_imputation(syn_data,"X","censored","Z")),c(4,4,3))
-# })
 
 
 test_that("risk_set_cov_adjusted correct output format",{
@@ -30,5 +23,5 @@ test_that("risk_set_cov_adjusted correct output format",{
   expect_equal(class(suppressWarnings(risk_set_cov_adjusted(syn_data4,"X","censored", "Z"))),"list")
 })
 test_that("risk_set_cov_adjusted correct output values",{
-  expect_equal(suppressWarnings(risk_set_cov_adjusted(syn_data,"X","censored", "Z")),list(c(2,3,4,5),c(4,5),6))
+  expect_equal(suppressWarnings(risk_set_cov_adjusted(syn_data,"X","censored", "Z")),list(c(2,3,4,5,6),c(4,5,6),6))
 })
