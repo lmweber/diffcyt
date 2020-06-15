@@ -88,7 +88,7 @@ risk_set_imputation <- function(data, censored_variable, censoring_indicator, co
   est <-
     tryCatch(
       purrr::reduce(purrr::map(Risk_Set, ~ matrix(
-        as.double(data[[censored_variable]][sample(.x, size = mi_reps, replace = TRUE)]), nrow = 1
+        as.double(data[[censored_variable]][resample(.x, size = mi_reps, replace = TRUE)]), nrow = 1
       )), rbind),
       error = function(e)
         integer(0)

@@ -86,7 +86,7 @@ kaplan_meier_imputation <-
       }  else if (tail_approx_method == "os"){
         # random draw from order statistics
         pot_replace_vals_adj <- pot_replace_vals[pot_replace_vals >= current_cens_val]
-        replacement_value[too_high] <- matrix(sample(pot_replace_vals_adj,sum(too_high),replace = TRUE),nrow=1)
+        replacement_value[too_high] <- matrix(resample(pot_replace_vals_adj,sum(too_high),replace = TRUE),nrow=1)
       }
     }
     return(replacement_value)
@@ -102,7 +102,8 @@ kaplan_meier_imputation <-
             matrix(qexp(x, theta_compl),nrow = 1)
           } else if (tail_approx_method == "os"){
             pot_replace_vals_adj <- pot_replace_vals[pot_replace_vals >= current_cens_val]
-            matrix(matrix(sample(pot_replace_vals_adj,mi_reps,replace = TRUE),nrow=1),nrow = 1)
+            mat <- matrix(matrix(resample(pot_replace_vals_adj,mi_reps,replace = TRUE),nrow=1),nrow = 1)
+            return(mat)
           } else if (tail_approx_method == "wei"){
             # random draw from truncated weibull
             x <- runif(mi_reps,min = pweibull(current_cens_val, weibull_params$shape, weibull_params$scale))
@@ -114,7 +115,11 @@ kaplan_meier_imputation <-
     }
   dimnames(est) <- NULL
   return(est)
-}
+  }
+
+# resample function from 'sample' manual to get correcto behaviour if length of x is 1
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
 
 # random replacement from survival curve
 surv_tail_lao <- function(km_fit_summary,mi_reps=1){
@@ -128,7 +133,7 @@ surv_tail_lao <- function(km_fit_summary,mi_reps=1){
       prob <- 1
     }
     return(matrix(
-    sample(
+    resample(
       km_fit_summary$time,
       size = mi_reps,
       replace = TRUE,
