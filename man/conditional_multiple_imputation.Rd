@@ -96,11 +96,6 @@ Possible methods in 'imputation_method' are:
   \item{'pmm'}{predictive mean matching treats censored values as missing and
                uses predictive mean matching method from \code{\link[mice]{mice}}.}
 }
- 
- @references {
- A Comparison of Several Methods of Estimating the Survival Function When 
- There is Extreme Right Censoring (M. L. Moeschberger and John P. Klein, 1985)
- }
 }
 \examples{
  lm_formula <- formula(Y ~ Surv(X,I) + Z)
@@ -108,4 +103,10 @@ Possible methods in 'imputation_method' are:
  cmi_out <- conditional_multiple_imputation(data,lm_formula)
  comb_out <- mice::pool(cmi_out$fits)
  pvals <- summary(comb_out)$p.value
+}
+\references{
+{
+ A Comparison of Several Methods of Estimating the Survival Function When 
+ There is Extreme Right Censoring (M. L. Moeschberger and John P. Klein, 1985)
+ }
 }

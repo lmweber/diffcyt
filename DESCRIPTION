@@ -46,7 +46,8 @@ Imports:
     survival,
     tibble,
     BiocParallel,
-    fitdistrplus
+    fitdistrplus,
+    dirmult
 VignetteBuilder: knitr
 Suggests:
     BiocStyle,
