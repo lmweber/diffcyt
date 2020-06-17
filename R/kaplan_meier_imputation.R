@@ -58,11 +58,10 @@ kaplan_meier_imputation <-
     # if last value is not observed set it to observed
     data <- set_last_as_observed(data , censored_variable, censoring_indicator)
   }
-  
   # loop through each censored value
+  if (length(censored_indices_with_risk_set) > 0){
   est <- purrr::map(seq_along(censored_indices_with_risk_set) , function(js){
     current_cens_val <- purrr::as_vector(data[censored_indices_with_risk_set[js],censored_variable])
-    
     subdata_sorted <- data[sort(Risk_Set[[js]]),c(censored_variable,censoring_indicator)]
     
     # fit kapplan meier curve
@@ -91,7 +90,9 @@ kaplan_meier_imputation <-
     }
     return(replacement_value)
   }) %>% purrr::reduce(rbind)
-  
+  } else {
+    est <- NULL
+  }
   # for censored values higher than the highest observed one impute with exponential distribution
   if (length(censored_indices_no_risk_set) > 0){
       est <- rbind(est,purrr::map(censored_indices_no_risk_set, function(i){
@@ -124,7 +125,7 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 # random replacement from survival curve
 surv_tail_lao <- function(km_fit_summary,mi_reps=1){
   if(length(km_fit_summary$surv) == 1){
-    return(km_fit_summary$time)
+    return(matrix(rep(km_fit_summary$time,mi_reps),nrow = 1))
   } else {
     prob <- diff(c(0,1 - km_fit_summary$surv, 1))
     prob[length(prob)-1] <- sum(prob[(length(prob)-1):length(prob)])
