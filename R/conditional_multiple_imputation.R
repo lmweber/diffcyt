@@ -89,7 +89,7 @@
 #' @export
 #' @examples
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
+#'  data <- simulate_singlecluster(100, lm_formula, type = "lm", n_levels_fixeff=2)
 #'  cmi_out <- conditional_multiple_imputation(data,lm_formula)
 #'  comb_out <- mice::pool(cmi_out$fits)
 #'  pvals <- summary(comb_out)$p.value
@@ -139,7 +139,6 @@ conditional_multiple_imputation <-
   data <- data_processing_for_imputation(data, 
                                          censored_variable, 
                                          censoring_indicator, 
-                                         response, 
                                          covariates = NULL , 
                                          id)
   
@@ -180,7 +179,7 @@ conditional_multiple_imputation <-
   covariates_spread <- create_two_level_factor_covariates(data, formula)
   # iterate
   if (mi_reps > 1 & imputation_method %in% c("km","km_exp","km_wei","km_os","rs")){
-    all_csi_out <- estimate_cens_vars(data_spread,censored_variable,censoring_indicator,response,covariates,id,imputation_method,mi_reps)
+    all_csi_out <- estimate_cens_vars(data_spread,censored_variable,censoring_indicator,covariates,id,imputation_method,mi_reps)
   }
   else{
   all_csi_out <- lapply(seq_len(mi_reps), function(i){

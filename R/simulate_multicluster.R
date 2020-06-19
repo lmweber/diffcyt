@@ -13,18 +13,22 @@
 #' @param group either Null (no group effect), double between 0 and 1 (proportion of samples with group effect), 
 #'   integer (total number of samples with group effect), vector of 0 and 1 (indicating which samples have a group effect)
 #'   or TRUE (effect with even group size).
+#' @param group_slope regression coefficient of second covariate 'group'. If Null will choose a value automatically.
 #' @param diff_cluster Logical. Should the clusters be choosen random (TRUE) or according to a minimal distance of
 #'                              of mean cluster sizes (FALSE). Alternatively a list of length 'nr_diff' with each element
 #'                              a vector of length 2 indicating the paired clusters can be given. Default is FALSE.
 #' @param enforce_sum_alpha Logical. Should the total sum of alphas be kept constant to ensure randomness of
 #'                          non association clusters. The drawback is that one of the two paired clusters with an association
 #'                          will not follow a GLMM (binomial link function) exactly any more. Default is TRUE.
+#' @param return_summarized_experiment logical. Should the counts returned as a \code{\link[SummarizedExperiment]{SummarizedExperiment}}
+#'   object. Default is FALSE.
 #'
 #' @return returns a list with elements counts (either matrix or SummarizedExperiment object, depending on input),
 #'   row_data (data per cluster: regression coefficients used), col_data (data per sample: covariates), 
 #'   alphas (matrix of alpha parameters used), theta (theta parameter), 
 #'   var_counts (theoretical variance of counts).
 #' @export
+#' @importFrom stats rexp
 #'
 #' @examples
 #' # without data reference:
@@ -48,7 +52,8 @@ simulate_multicluster <-
            group = NULL,
            group_slope = NULL,
            diff_cluster = FALSE,
-           enforce_sum_alpha = TRUE) {
+           enforce_sum_alpha = TRUE,
+           return_summarized_experiment = FALSE) {
   # either reference or parameters needs to be given
   stopifnot(!is.null(counts) | (!is.null(alphas) & !is.null(sizes)))
     
@@ -75,7 +80,11 @@ simulate_multicluster <-
       nr_samples <- length(sizes)
     } else if(!is.null(counts)){
       nr_samples <- dim(counts_inv)[1]
-      sample_names <- rownames(counts_inv)
+      if (is.null(rownames(counts_inv))){
+        sample_names <- seq_len(nr_samples)
+      } else {
+        sample_names <- rownames(counts_inv)
+      }
     }
   }
 
@@ -86,10 +95,14 @@ simulate_multicluster <-
   if (is.null(counts)){
     stopifnot(nr_samples==length(sizes))
     n_clu <- length(alphas)
-    cluster_names <- paste0("cluster_",seq_len(n_clu))
+    cluster_names <- as.character(seq_len(n_clu))
   } else{
-    cluster_names <- colnames(counts_inv)
     n_clu <- dim(counts_inv)[2]
+    if (is.null(colnames(counts_inv))){
+      cluster_names <- seq_len(n_clu)
+    } else {
+      cluster_names <- colnames(counts_inv)
+    }
     # estimate alphas and theta from data
     if(is.null(alphas)){
       # fit dirichlet multinomial on counts
@@ -227,11 +240,11 @@ simulate_multicluster <-
   # create row data
   probs_tmp <- alphas/sum(alphas)
   if (is.null(group)){
-    row_data_df <- data.frame(cluster = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,paired=NA)
+    row_data_df <- data.frame(cluster_id = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,paired=NA)
     diff_clu_betas <- as.integer(colnames(betas))
     row_data_df[diff_clu_betas,c("b0","b1")] <- t(betas)
   }else {
-    row_data_df <- data.frame(cluster = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,b2=0,paired=NA)
+    row_data_df <- data.frame(cluster_id = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,b2=0,paired=NA)
     diff_clu_betas <- as.integer(colnames(betas))
     row_data_df[diff_clu_betas,c("b0","b1","b2")] <- t(betas)
   }
@@ -253,11 +266,17 @@ simulate_multicluster <-
   rownames(out_data) <- cluster_names
   if (is(counts, "SummarizedExperiment")){
     out_data_se <- counts
-    assay(out_data_se) <- out_data
+    SummarizedExperiment::assay(out_data_se) <- out_data
     SummarizedExperiment::rowData(out_data_se) <- cbind(SummarizedExperiment::rowData(out_data_se),row_data_df)
     SummarizedExperiment::colData(out_data_se) <- cbind(SummarizedExperiment::colData(out_data_se),col_data_df)
     out_data <- out_data_se
   } 
+  if (return_summarized_experiment){
+    out_data <- SummarizedExperiment::SummarizedExperiment(
+      assays = list(counts=out_data),
+      rowData = row_data_df,
+      colData = col_data_df)
+  }
   return(list(counts=out_data,
               row_data=row_data_df, 
               col_data = col_data_df,

@@ -4,7 +4,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom rlang :=
 estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
-                              response = NULL, covariates = NULL, id = NULL,
+                              covariates = NULL, id = NULL,
                               imputation_method = c("mrl","rs","km","km_exp","km_wei","km_os"),
                               mi_reps = 1){
   imputation_method <- match.arg(imputation_method)
@@ -29,8 +29,8 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
   }
   
   # check that data is in correct format, some type conversions
-  data_prep <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates , id)
-  
+  data_prep <- data_processing_for_imputation(data, censored_variable, censoring_indicator, covariates , id)
+
   # do estimation
   est <- switch(imputation_method,
                 "mrl" = mean_residual_life_imputation(data_prep, censored_variable, censoring_indicator, covariates,id),
@@ -84,7 +84,7 @@ estimate_cens_vars <- function(data, censored_variable, censoring_indicator,
 # 
 # @examples 
 # lm_formula <- formula(Y ~ Surv(X,I) + Z)
-# data <- simulate_data(50, lm_formula, type = "lm")
+# data <- simulate_singlecluster(50, lm_formula, type = "lm")
 # conditional_single_imputation(
 #   data = data,
 #   censored_variable = "X",
@@ -109,7 +109,7 @@ conditional_single_imputation <- function(data, censored_variable,
   if (is.numeric(response) & !is.null(response)) response <- colnames(data)[[response]]
   imputation_method <- match.arg(imputation_method)
   # # check that data is in correct format, some type conversions, but keep covariates = NULL to not convert to factors
-  data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, response, covariates = NULL , id)
+  data <- data_processing_for_imputation(data, censored_variable, censoring_indicator, covariates = NULL , id)
   
   est_name <- paste0(censored_variable,"_est")
   # check if censored values are present, if not return input
@@ -134,8 +134,7 @@ conditional_single_imputation <- function(data, censored_variable,
     return(data)
   }
   # estimates with or without cov,
-  data <- estimate_cens_vars(data = data, censored_variable = censored_variable,
-                      censoring_indicator = censoring_indicator, response = response,
+  data <- estimate_cens_vars(data = data, censored_variable = censored_variable,censoring_indicator=censoring_indicator,
                       covariates = covariates, imputation_method = imputation_method, id = id)
 
   data <- dplyr::arrange(data, !!dplyr::sym(id)) 

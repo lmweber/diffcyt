@@ -99,7 +99,7 @@ Possible methods in 'imputation_method' are:
 }
 \examples{
  lm_formula <- formula(Y ~ Surv(X,I) + Z)
- data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
+ data <- simulate_singlecluster(100, lm_formula, type = "lm", n_levels_fixeff=2)
  cmi_out <- conditional_multiple_imputation(data,lm_formula)
  comb_out <- mice::pool(cmi_out$fits)
  pvals <- summary(comb_out)$p.value

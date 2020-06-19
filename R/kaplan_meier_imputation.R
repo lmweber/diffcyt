@@ -10,7 +10,7 @@
 # See: 'A Comparison of Several Methods of Estimating the Survival Function When 
 #   There is Extreme Right Censoring' (M. L. Moeschberger and John P. Klein, 1985)
 # 
-#' @importFrom stats runif 
+#' @importFrom stats runif pexp qexp pweibull qweibull
 kaplan_meier_imputation <-
   function(data,
            censored_variable,
@@ -77,7 +77,16 @@ kaplan_meier_imputation <-
       if(tail_approx_method == "exp"){
         # random draw from truncated exponential
         x <- runif(sum(too_high),min = pexp(current_cens_val, theta_compl))
-        replacement_value[too_high] <- qexp(x, theta)
+        # if x == 1 this would mean the replacement value is Inf
+        if (x == 1){
+          if (qexp(x-1e-10, theta_compl) >= current_cens_val){
+            replacement_value[too_high] <- qexp(x-1e-10, theta_compl)
+          } else {
+            replacement_value[too_high] <- rep(current_cens_val,length(x))
+          }
+        } else {
+          replacement_value[too_high] <- qexp(x, theta_compl)
+        }
       } else if (tail_approx_method == "wei"){
         # random draw from truncated weibull
         x <- runif(sum(too_high),min = pweibull(current_cens_val, weibull_params$shape, weibull_params$scale))
@@ -95,12 +104,21 @@ kaplan_meier_imputation <-
   }
   # for censored values higher than the highest observed one impute with exponential distribution
   if (length(censored_indices_no_risk_set) > 0){
-      est <- rbind(est,purrr::map(censored_indices_no_risk_set, function(i){
+       est <- rbind(est,purrr::map(censored_indices_no_risk_set, function(i){
         current_cens_val <- purrr::as_vector(data[i,censored_variable])
           if(tail_approx_method == "exp"){
             # random draw from truncated exponential
             x <- runif(mi_reps,min = pexp(current_cens_val, theta_compl))
-            matrix(qexp(x, theta_compl),nrow = 1)
+            # if x == 1 this would mean the replacement value is Inf
+            if (x == 1){
+              if (qexp(x-1e-10, theta_compl) >= current_cens_val){
+                return(matrix(qexp(x-1e-10, theta_compl),nrow = 1))
+              } else {
+                return(matrix(rep(current_cens_val,length(x)),nrow = 1))
+              }
+            } else {
+              return(matrix(qexp(x, theta_compl),nrow = 1))
+            }
           } else if (tail_approx_method == "os"){
             pot_replace_vals_adj <- pot_replace_vals[pot_replace_vals >= current_cens_val]
             mat <- matrix(matrix(resample(pot_replace_vals_adj,mi_reps,replace = TRUE),nrow=1),nrow = 1)

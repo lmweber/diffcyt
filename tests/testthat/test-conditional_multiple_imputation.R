@@ -25,12 +25,12 @@ conditions <- list(formulas = list(lm_z = formula(Y ~ X + Z),
                                           glm = "glm",
                                           glmer = "glmer"))
 
-test_data_sets <- list(lm_z = dplyr::arrange(simulate_data(50, conditions$formulas_surv$lm_z, type = "lm"),ID),
-                       glm_z = dplyr::arrange(simulate_data(50, conditions$formulas_surv$glm_z, type = "glm"),ID),
-                       glmer_z = dplyr::arrange(simulate_data(50, conditions$formulas_surv$glmer_z, type = "glmer"),ID),
-                       lm = dplyr::arrange(simulate_data(50, conditions$formulas_surv$lm, type = "lm"),ID),
-                       glm = dplyr::arrange(simulate_data(50, conditions$formulas_surv$glm, type = "glm"),ID),
-                       glmer = dplyr::arrange(simulate_data(50, conditions$formulas_surv$glmer, type = "glmer"),ID))
+test_data_sets <- list(lm_z = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$lm_z, type = "lm"),ID),
+                       glm_z = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$glm_z, type = "glm"),ID),
+                       glmer_z = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$glmer_z, type = "glmer"),ID),
+                       lm = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$lm, type = "lm"),ID),
+                       glm = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$glm, type = "glm"),ID),
+                       glmer = dplyr::arrange(simulate_singlecluster(50, conditions$formulas_surv$glmer, type = "glmer"),ID))
 
 test_for_equal_input_output <- function(output_to_test, output_name, test_data_sets){
   test_that(paste(output_name, "keeps entries"),{

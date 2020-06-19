@@ -77,7 +77,6 @@
 #' @details 
 #' The total number of clusters is 'number_of_clusters' * 'number_of_differential_clusters'. 
 #' 
-#' 
 #' @export
 #' 
 #' @importFrom stats runif rnorm rweibull
@@ -91,18 +90,18 @@
 #' @examples
 #' # single differential cluster
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  simulate_data(100, lm_formula, type = "lm")
+#'  simulate_singlecluster(100, lm_formula, type = "lm")
 #'
 #'  glm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  simulate_data(100, glm_formula, type = "glm")
+#'  simulate_singlecluster(100, glm_formula, type = "glm")
 #'
 #'  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
-#'  simulate_data(100, glmer_formula, type = "glmer")
+#'  simulate_singlecluster(100, glmer_formula, type = "glmer")
 #'
 #' # multiple clusters, 2 differential, 18 not ('number_of_differential_clusters' * 
 #' #'number_of_clusters' - number_of_differential_clusters'). In total 20 clusters.
 #'  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
-#'  data_sim <- simulate_data(
+#'  data_sim <- simulate_singlecluster(
 #'    n = 20,
 #'    formula = glmer_formula,
 #'    n_levels_fixeff = 2,
@@ -111,7 +110,7 @@
 #'    number_of_clusters = 10,
 #'    number_of_differential_clusters = 2)
 #'  
-simulate_data <- function(n,
+simulate_singlecluster <- function(n,
                           formula,
                           type = c("lm","glm","glmer"),
                           b = NULL,

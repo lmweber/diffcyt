@@ -23,7 +23,7 @@
 # @export
 # @examples
 #  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
+#  data <- simulate_singlecluster(100, lm_formula, type = "lm", n_levels_fixeff=2)
 #  pmm_out <- predictive_mean_matching(data,"X","I",c("Y","Z"),Y~X+Z)
 #  summary(mice::pool(pmm_out$fits))
 #' @importFrom utils capture.output

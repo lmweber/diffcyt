@@ -2,13 +2,13 @@
 
 lm_formula_s <- formula(Y ~ Surv(X,I) + Z)
 lm_formula <- formula(Y ~ X + Z)
-data_sim_lm <- simulate_data(100, lm_formula_s, type = "lm")
+data_sim_lm <- simulate_singlecluster(100, lm_formula_s, type = "lm")
 glm_formula_s <- formula(Y ~ Surv(X,I) + Z)
 glm_formula <- formula(Y ~ X + Z)
-data_sim_glm <- simulate_data(100, glm_formula_s, type = "glm",)
+data_sim_glm <- simulate_singlecluster(100, glm_formula_s, type = "glm",)
 glmer_formula_s <- formula(Y ~ Surv(X,I) + Z + (1|R))
 glmer_formula <- formula(Y ~ X + Z + (1|R))
-data_sim_glmer <- simulate_data(100, glmer_formula_s, type = "glmer")
+data_sim_glmer <- simulate_singlecluster(100, glmer_formula_s, type = "glmer")
 
 comp_lm_out <- complete_case(data_sim_lm, "X","I", lm_formula, "lm")
 comp_glm_out <- complete_case(data_sim_glm, "X","I", glm_formula, "glm",weights = "size_tot",family = "binomial")

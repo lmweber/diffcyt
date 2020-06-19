@@ -20,7 +20,7 @@
 #
 # @examples
 #  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#  data <- simulate_data(100, lm_formula, type = "lm", n_levels_fixeff=2)
+#  data <- simulate_singlecluster(100, lm_formula, type = "lm", n_levels_fixeff=2)
 #  cc_out <- complete_case(data,"X","I",Y~X+Z)
 #  summary(cc_out$fits)
 complete_case <- function(data,

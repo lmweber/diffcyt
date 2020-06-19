@@ -1,5 +1,6 @@
 # kaplan meier imputation
 km_test <- function(tail_approx_method,last_value_is,syn_data){
+  suppressWarnings({
   test_that(paste0("kaplan_meier_imputation with survival tail method '",tail_approx_method,"' works when last value is ",last_value_is),{
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method =tail_approx_method)), dim_cens)
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method =tail_approx_method,mi_reps = 2)), dim_cens_2reps)
@@ -8,6 +9,7 @@ km_test <- function(tail_approx_method,last_value_is,syn_data){
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method)), dim_cens)
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method,mi_reps = 2)), dim_cens_2reps)
     expect_true(all(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method) >= syn_data[syn_data$censored==0,"X"]))
+  })
   })
 }
 
@@ -51,15 +53,15 @@ test_that("estimate_cens_vars 'rs' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "rs")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- risk_set_imputation(syn_data,"X","censored")
-  expect_equal(ecov,ecov)
+  comp <- c(risk_set_imputation(syn_data,"X","censored"))
+  expect_equal(ecov,comp)
   
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z",imputation_method = "rs")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- risk_set_imputation(syn_data,"X","censored", "Z")
-  expect_equal(ecov,ecov)
+  comp <- c(risk_set_imputation(syn_data,"X","censored", "Z"))
+  expect_equal(ecov,comp)
 })
 test_that("estimate_cens_vars 'km' works",{
   expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "km")),c("tbl_df","tbl","data.frame"))
@@ -67,15 +69,15 @@ test_that("estimate_cens_vars 'km' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "km")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored"))
+  expect_equal(ecov,comp)
   
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", imputation_method = "km")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", "Z")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", "Z"))
+  expect_equal(ecov,comp)
 })
 test_that("estimate_cens_vars 'km_exp' works",{  
   expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_exp")),c("tbl_df","tbl","data.frame"))
@@ -83,15 +85,15 @@ test_that("estimate_cens_vars 'km_exp' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_exp")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method = "exp")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method = "exp"))
+  expect_equal(ecov,comp)
   
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", imputation_method = "km_exp")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "exp")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "exp"))
+  expect_equal(ecov,comp)
 })
 test_that("estimate_cens_vars 'km_wei' works",{  
   expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_wei")),c("tbl_df","tbl","data.frame"))
@@ -99,15 +101,15 @@ test_that("estimate_cens_vars 'km_wei' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_wei")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", tail_approx_method = "wei")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", tail_approx_method = "wei"))
+  expect_equal(ecov,comp)
   
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", imputation_method = "km_wei")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "wei")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "wei"))
+  expect_equal(ecov,comp)
 })
 test_that("estimate_cens_vars 'km_os' works",{
   expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_os")),c("tbl_df","tbl","data.frame"))
@@ -115,15 +117,15 @@ test_that("estimate_cens_vars 'km_os' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "km_os")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", tail_approx_method = "os")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", tail_approx_method = "os"))
+  expect_equal(ecov,comp)
   
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z", imputation_method = "km_os")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "os")
-  expect_equal(ecov,ecov)
+  comp <- c(kaplan_meier_imputation(syn_data,"X","censored", "Z", tail_approx_method = "os"))
+  expect_equal(ecov,comp)
 })
 test_that("estimate_cens_vars 'mrl' works",{
   expect_equal(class(estimate_cens_vars(syn_data,"X","censored",imputation_method = "mrl")),c("tbl_df","tbl","data.frame"))
@@ -131,15 +133,15 @@ test_that("estimate_cens_vars 'mrl' works",{
   ecov <- estimate_cens_vars(syn_data,"X","censored",imputation_method = "mrl")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- mean_residual_life_imputation(syn_data,"X","censored")
-  expect_equal(ecov,ecov)
+  comp <- c(mean_residual_life_imputation(syn_data,"X","censored"))
+  expect_equal(ecov,comp)
 
   set.seed(123)
   ecov <- estimate_cens_vars(syn_data,"X","censored", "Z" ,imputation_method = "mrl")
   ecov <- ecov[ecov$"censored"==0, ]$"X_est"
   set.seed(123)
-  comp <- mean_residual_life_imputation(syn_data,"X","censored", "Z")
-  expect_equal(ecov,ecov)
+  comp <- c(mean_residual_life_imputation(syn_data,"X","censored", "Z"))
+  expect_equal(ecov,comp)
 })
 
 testtib_to_test  <- tibble::tibble(x=factor(rep(c(1,2),3)),y=factor(rep(c(1,2,3),2)),z=1:6,u=rep(c(1,2),3))

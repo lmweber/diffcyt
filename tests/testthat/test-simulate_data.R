@@ -24,89 +24,89 @@ test_that("linear_sum correct",{
 })
 
 ################################################################################
-### simulate_data
+### simulate_singlecluster
 lm_formula <- formula(Y ~ Surv(X,I) + Z)
 glm_formula <- formula(Y ~ Surv(X,I) + Z)
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 
-test_that("simulate_data correct class",{
-   expect_equal(class(simulate_data(100, lm_formula, type = "lm")),c("tbl_df","tbl","data.frame"))
-   expect_equal(class(simulate_data(100, glm_formula, type = "glm")),c("tbl_df","tbl","data.frame"))
-   expect_equal(class(simulate_data(100, glmer_formula, type = "glmer")),c("tbl_df","tbl","data.frame"))
+test_that("simulate_singlecluster correct class",{
+   expect_equal(class(simulate_singlecluster(100, lm_formula, type = "lm")),c("tbl_df","tbl","data.frame"))
+   expect_equal(class(simulate_singlecluster(100, glm_formula, type = "glm")),c("tbl_df","tbl","data.frame"))
+   expect_equal(class(simulate_singlecluster(100, glmer_formula, type = "glmer")),c("tbl_df","tbl","data.frame"))
    })
 
-test_that("simulate_data correct size",{
-   expect_error(simulate_data(-1, lm_formula, type = "lm"))
-   expect_error(simulate_data(0, lm_formula, type = "lm"))
-   expect_equal(dim(simulate_data(2, lm_formula, type = "lm")),c(2,8))
-   expect_equal(dim(simulate_data(10, lm_formula, type = "lm")),c(10,8))
-   expect_equal(dim(simulate_data(100, lm_formula, type = "lm")),c(100,8))
+test_that("simulate_singlecluster correct size",{
+   expect_error(simulate_singlecluster(-1, lm_formula, type = "lm"))
+   expect_error(simulate_singlecluster(0, lm_formula, type = "lm"))
+   expect_equal(dim(simulate_singlecluster(2, lm_formula, type = "lm")),c(2,8))
+   expect_equal(dim(simulate_singlecluster(10, lm_formula, type = "lm")),c(10,8))
+   expect_equal(dim(simulate_singlecluster(100, lm_formula, type = "lm")),c(100,8))
  })
 
-test_that("simulate_data correct n_levels_fixeff for lm",{
-   expect_error( length(unique(simulate_data(60, lm_formula, type = "lm",n_levels_fixeff = 0)$Z)))
-   expect_equal( length(unique(simulate_data(60, lm_formula, type = "lm",n_levels_fixeff = 1)$Z)),1)
-   expect_equal( length(unique(simulate_data(60, lm_formula, type = "lm",n_levels_fixeff = 2)$Z)),2)
-   expect_equal( length(unique(simulate_data(60, lm_formula, type = "lm",n_levels_fixeff = 3)$Z)),3)
-   expect_equal( length(unique(simulate_data(60, lm_formula, type = "lm",n_levels_fixeff = 60)$Z)),60)
+test_that("simulate_singlecluster correct n_levels_fixeff for lm",{
+   expect_error( length(unique(simulate_singlecluster(60, lm_formula, type = "lm",n_levels_fixeff = 0)$Z)))
+   expect_equal( length(unique(simulate_singlecluster(60, lm_formula, type = "lm",n_levels_fixeff = 1)$Z)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, lm_formula, type = "lm",n_levels_fixeff = 2)$Z)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, lm_formula, type = "lm",n_levels_fixeff = 3)$Z)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, lm_formula, type = "lm",n_levels_fixeff = 60)$Z)),60)
  })
-test_that("simulate_data correct n_levels_fixeff for glm",{
-   expect_error( length(unique(simulate_data(60, glm_formula, type = "glm",n_levels_fixeff = 0)$Z)))
-   expect_equal( length(unique(simulate_data(60, glm_formula, type = "glm",n_levels_fixeff = 1)$Z)),1)
-   expect_equal( length(unique(simulate_data(60, glm_formula, type = "glm",n_levels_fixeff = 2)$Z)),2)
-   expect_equal( length(unique(simulate_data(60, glm_formula, type = "glm",n_levels_fixeff = 3)$Z)),3)
-   expect_equal( length(unique(simulate_data(60, glm_formula, type = "glm",n_levels_fixeff = 60)$Z)),60)
+test_that("simulate_singlecluster correct n_levels_fixeff for glm",{
+   expect_error( length(unique(simulate_singlecluster(60, glm_formula, type = "glm",n_levels_fixeff = 0)$Z)))
+   expect_equal( length(unique(simulate_singlecluster(60, glm_formula, type = "glm",n_levels_fixeff = 1)$Z)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, glm_formula, type = "glm",n_levels_fixeff = 2)$Z)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, glm_formula, type = "glm",n_levels_fixeff = 3)$Z)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, glm_formula, type = "glm",n_levels_fixeff = 60)$Z)),60)
  })
-test_that("simulate_data correct n_levels_fixeff for glmer",{
-   expect_error( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_fixeff = 0)$Z)))
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_fixeff = 1)$Z)),1)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_fixeff = 2)$Z)),2)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_fixeff = 3)$Z)),3)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_fixeff = 60)$Z)),60)
- })
-
-test_that("simulate_data correct n_levels_raneff for glmer",{
-   expect_error( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 0)$R)))
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 1)$R)),1)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 2)$R)),2)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 3)$R)),3)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 60)$R)),60)
+test_that("simulate_singlecluster correct n_levels_fixeff for glmer",{
+   expect_error( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_fixeff = 0)$Z)))
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_fixeff = 1)$Z)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_fixeff = 2)$Z)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_fixeff = 3)$Z)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_fixeff = 60)$Z)),60)
  })
 
-test_that("simulate_data correct n_levels_fixeff and n_levels_raneff for glmer",{
-   expect_error( simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 0,n_levels_fixeff = 0))
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 1,n_levels_fixeff = 1)$R)),1)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 1,n_levels_fixeff = 1)$Z)),1)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 2,n_levels_fixeff = 2)$R)),2)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 2,n_levels_fixeff = 2)$Z)),2)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 3,n_levels_fixeff = 3)$R)),3)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 3,n_levels_fixeff = 3)$Z)),3)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 60,n_levels_fixeff = 60)$R)),60)
-   expect_equal( length(unique(simulate_data(60, glmer_formula, type = "glmer",n_levels_raneff = 60,n_levels_fixeff = 60)$Z)),60)
+test_that("simulate_singlecluster correct n_levels_raneff for glmer",{
+   expect_error( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 0)$R)))
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 1)$R)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 2)$R)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 3)$R)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 60)$R)),60)
  })
 
-test_that("simulate_data throw error for negative shapes or scales",{
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = -1, scale = 2),
+test_that("simulate_singlecluster correct n_levels_fixeff and n_levels_raneff for glmer",{
+   expect_error( simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 0,n_levels_fixeff = 0))
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 1,n_levels_fixeff = 1)$R)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 1,n_levels_fixeff = 1)$Z)),1)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 2,n_levels_fixeff = 2)$R)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 2,n_levels_fixeff = 2)$Z)),2)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 3,n_levels_fixeff = 3)$R)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 3,n_levels_fixeff = 3)$Z)),3)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 60,n_levels_fixeff = 60)$R)),60)
+   expect_equal( length(unique(simulate_singlecluster(60, glmer_formula, type = "glmer",n_levels_raneff = 60,n_levels_fixeff = 60)$Z)),60)
+ })
+
+test_that("simulate_singlecluster throw error for negative shapes or scales",{
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = -1, scale = 2),
                                                                                   C = list(shape = 0.5, scale = 10))))
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = -2),
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = -2),
                                                                                   C = list(shape = 0.5, scale = 10))))
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = 2),
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = 2),
                                                                                   C = list(shape = -0.5, scale = 10))))
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = 2),
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params = list(X = list(shape = 1, scale = 2),
                                                                                   C = list(shape = 0.5, scale = -10))))
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params_covariate_dependent_censoring = list(shape = -1, scale = 10)))
-   expect_error(simulate_data(100, lm_formula, type = "lm", weibull_params_covariate_dependent_censoring = list(shape = 1, scale = -10)))
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params_covariate_dependent_censoring = list(shape = -1, scale = 10)))
+   expect_error(simulate_singlecluster(100, lm_formula, type = "lm", weibull_params_covariate_dependent_censoring = list(shape = 1, scale = -10)))
  })
 
 
-test_that("simulate_data correct output censoring indicator",{
-  expect_true(all(simulate_data(100, lm_formula, type = "lm",censoring_dependent_on_covariate = TRUE)$I %in% c(0,1)))
+test_that("simulate_singlecluster correct output censoring indicator",{
+  expect_true(all(simulate_singlecluster(100, lm_formula, type = "lm",censoring_dependent_on_covariate = TRUE)$I %in% c(0,1)))
  })
 
 
 
-simulate_data_params_beta <- function(b,number_of_differential_clusters,glmer_formula){
-   simulate_data(
+simulate_singlecluster_params_beta <- function(b,number_of_differential_clusters,glmer_formula){
+   simulate_singlecluster(
        n = 10,
        formula = glmer_formula,
        n_levels_fixeff = c(2),
@@ -130,32 +130,32 @@ b_l3 <- c(-4,-1.5,0.5)
 b_l4 <- c(-4,-1.5,0.5,0.5)
 glmer_formula <- formula(Y ~ Surv(X,I) + (1|R))
 test_that("error if no covariate",{
-   expect_error(simulate_data_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l3),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l4),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
 })
 
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 test_that("list of betas matches with formula for 1 covariate",{
-   expect_error(simulate_data_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_true(is(simulate_data_params_beta(list(b_l3),1,glmer_formula), "SummarizedExperiment"))
-   expect_true(is(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula), "SummarizedExperiment"))
-   expect_error(simulate_data_params_beta(list(b_l4),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula), "SummarizedExperiment"))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula), "SummarizedExperiment"))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
 })
 
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + ZZ + (1|R))
 test_that("list of betas matches with formula for 2 covariates",{
-   expect_error(simulate_data_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l3),1,glmer_formula))
-   expect_error(simulate_data_params_beta(list(b_l3,b_l3),2,glmer_formula))
-   expect_true(is(simulate_data_params_beta(list(b_l4),1,glmer_formula), "SummarizedExperiment"))
-   expect_true(is(simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula), "SummarizedExperiment"))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula), "SummarizedExperiment"))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula), "SummarizedExperiment"))
 })
 
 
@@ -163,7 +163,7 @@ test_that("list of betas matches with formula for 2 covariates",{
 ## multi cluster
 
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + ZZ + (1|R))
-multsimdat <- simulate_data_params_beta(list(b_l4,b_l4),2,glmer_formula)
+multsimdat <- simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula)
 test_that("multicluster simulated data has correct dimensionality",{
    expect_true(is(multsimdat,"SummarizedExperiment"))
    expect_true(all(dim(SummarizedExperiment::rowData(multsimdat)) == c(40,2)))

@@ -4,7 +4,7 @@
 #' @importFrom rlang :=
 data_processing_for_imputation <- function(data, censored_variable,
                                            censoring_indicator,
-                                           response = NULL, covariates = NULL,
+                                           covariates = NULL,
                                            id = NULL){
   data <- dplyr::as_tibble(data)
   # transform censored variable to double

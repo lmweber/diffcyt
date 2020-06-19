@@ -1,7 +1,7 @@
 
 imputation_methods <- c("cc","pmm","rs","km","km_exp","km_wei","km_os","mrl")
 tmp_formula <- formula(y~Surv(X,I)+z+(1|r))
-data_sim <- simulate_data(
+data_sim <- simulate_singlecluster(
   n = 20,
   formula = tmp_formula,
   n_levels_fixeff = 2,
@@ -46,4 +46,3 @@ test_testDA_censoredGLMM <- function(method){
 for(method in imputation_methods){
   test_testDA_censoredGLMM(method)
 }
-
