@@ -81,7 +81,7 @@
 #' @export
 #' @examples 
 #' # create small data set with 4 clusters with 10 samples.
-#' sim_data_ls <- simulate_multicluster(alphas = runif(20,0,100),
+#' d_counts <- simulate_multicluster(alphas = runif(20,0,100),
 #'                                      sizes = runif(10,1e4,1e5),
 #'                                      nr_diff = 4,
 #'                                      group=2,

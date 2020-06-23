@@ -9,11 +9,16 @@
 #' @param sizes total sizes for each sample
 #' @param covariate covariates, one for each sample. Default Null means random draws from an exponential distribution with rate = 1.
 #' @param slope negative double. Coefficients corresponding to the covariate for the DA clusters. One for each pair of DA clusters. 
-#'   To ensure correctness of the final distribution use only negative values.
+#'   To ensure correctness of the final distribution use only negative values. Alternatively can be a list of length 'nr_diff'/2, 
+#'   where each elements indicates the proportion of the cluster size at the maximum covariate relative to the mean. E.g. 0.1 means
+#'   that the cluster proportion at the maximum covariate is 0.1 times smaller than the mean.
 #' @param group either Null (no group effect), double between 0 and 1 (proportion of samples with group effect), 
 #'   integer (total number of samples with group effect), vector of 0 and 1 (indicating which samples have a group effect)
 #'   or TRUE (effect with even group size).
 #' @param group_slope regression coefficient of second covariate 'group'. If Null will choose a value automatically.
+#'  Alternatively can be a list of length 'nr_diff'/2, where each elements indicates the proportion of the cluster 
+#'  size at the maximum covariate relative to the mean. E.g. 0.1 means that the cluster proportion at the maximum 
+#'  covariate is 0.1 times smaller than the mean.
 #' @param diff_cluster Logical. Should the clusters be choosen random (TRUE) or according to a minimal distance of
 #'                              of mean cluster sizes (FALSE). Alternatively a list of length 'nr_diff' with each element
 #'                              a vector of length 2 indicating the paired clusters can be given. Default is FALSE.
@@ -58,9 +63,33 @@ simulate_multicluster <-
   stopifnot(!is.null(counts) | (!is.null(alphas) & !is.null(sizes)))
     
   # stop if any slope is positive
-  if(!is.null(slope) & any(slope > 0)){
+  if(!is.null(slope) & any(slope >= 0) & !is.list(slope)){
     stop("Slopes should be negative",call. = FALSE)
+  # if factor is given make sure length is right
+  } else if (is.list(slope) & length(slope)==1){
+    slope <- lapply(seq_len(nr_diff/2),function(x) slope)
   }
+  if (is.list(slope) & any(slope >= 1 | slope < 0 )){
+    stop("elements in 'slope' (if list) have to be between 0 and 1",call. = FALSE)
+  }
+  # stop if any group_slope is positive
+  if(!is.null(group_slope) & any(group_slope >= 0) & !is.list(group_slope)){
+    stop("Slopes should be negative",call. = FALSE)
+    # if factor is given make sure length is right
+  } else if (is.list(group_slope) & length(group_slope)==1){
+    group_slope <- lapply(seq_len(nr_diff/2),function(x) group_slope)
+  }
+  if (is.list(group_slope) & any(group_slope >= 1 | group_slope < 0 )){
+    stop("elements in 'group_slope' (if list) have to be between 0 and 1",call. = FALSE)
+  }
+  # sum needs to be smaller than one
+  if (is.list(slope) & is.list(group_slope)){
+    if (any(sapply(seq_len(nr_diff/2), function(i) (slope[[i]] + group_slope[[i]]) >= 1))){
+      stop("The sum of elements in 'slope' and 'group_slope' with the same index needs to be between 0 and 1")
+    }
+  }
+    
+    
   if(nr_diff%%2!=0){
     stop("'nr_diff' has to be an even number.",call. = FALSE)
   }
@@ -189,13 +218,19 @@ simulate_multicluster <-
     # if z=0 b0=logit(pi0)
     b0 <- log(pi0/(1-pi0))
     
+    # if slope is given as a factor
+    if (is.list(slope)){
+      slope_factor <- slope[[i]]
+    } else {
+      slope_factor <- 0.7
+    }
     # max proportion at z=zmax
-    pimax <- c(pi0[1]-pi0[1]*0.7, pi0[2]+pi0[1]*0.7)
+    pimax <- c(pi0[1]-pi0[1]*slope_factor, pi0[2]+pi0[1]*slope_factor)
     # logit(pimax) = b0+b1*zmax, solve for b1
     b1 <- matrix((log(pimax/(1-pimax))-b0)/zmax,ncol=1,dimnames = list(names(b0)))
     
     # if a slope is given, overwrite the calculated one
-    if (!is.null(slope)){
+    if (!is.null(slope) & !is.list(slope)){
       b1[1,1] <- slope[i]
     }
     
@@ -207,12 +242,18 @@ simulate_multicluster <-
     pi <- t(1/(1+exp(-(b0+b1%*%covariate))))
     
     if (!is.null(group)){
+      # if group slope is given as a factor
+      if (is.list(group_slope)){
+        group_slope_factor <- group_slope[[i]]
+      } else {
+        group_slope_factor <- 0.2
+      }
       # effect is 0.2
-      pi02 <- c(pi0[1]-pi0[1]*0.2, pi0[2]+pi0[1]*0.2)
+      pi02 <- c(pi0[1]-pi0[1]*group_slope_factor, pi0[2]+pi0[1]*group_slope_factor)
       # logit(pi0) = b0+b2, at z=0 and group=1
       b2 <- matrix(log(pi02/(1-pi02))-b0,ncol=1,dimnames = list(names(b0)))
       # if a group_slope is given, overwrite the calculated one
-      if (!is.null(group_slope)){
+      if (!is.null(group_slope) & !is.list(group_slope)){
         b2[1,1] <- group_slope[i]
       }
       betas[3,c((2*i-1):(2*i))] <- c(b2)

@@ -54,4 +54,19 @@ test_that("output same as input in simulate_multicluster if from parameters",{
   expect_equal(length(out$theta),1)
   expect_equal(dim(out$var_counts),c(nr_cluster,nr_samples))
 })
-
+test_that("list input in 'slope' and 'group_slope' parameter work in simulate_multicluster",{
+  suppressWarnings({
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5),slope = 0))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5),slope = 0.1))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5),slope = list(-0.2,0.2)))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5),group_slope = list(-0.2,0.2)))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), group_slope = 0))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), group_slope = 0.2))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
+                                       slope= list(0.8,0.2), 
+                                       group_slope = list(0.2,0.2)))
+    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
+                                       slope= list(0.7,0.2), 
+                                       group_slope = list(0.2,0.9)))
+  })
+})
