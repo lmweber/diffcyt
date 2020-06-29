@@ -89,11 +89,17 @@ the 'normal' use of multiple imputation where data is missing (See Details).
 Alternativaly the samples with censored data can be removed (complete case analysis) 
 or the censored values can be treated as missing (predictive mean matching) (See Details).
 
-Possible methods in 'imputation_method' are:
+
+ The first step in multiple imputation consists of creating multiple complete
+ data sets by replacing the incomplete values random draws from a
+ distribution of possible replacements. The distribution of possible replacement
+ values differs between methods. 
+ Possible imputation methods in 'imputation_method' are:
 \describe{
   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
               but the random draw is according to the survival function of
-              the respective risk set.}
+              the respective risk set. The largest value is treated as observed
+              to obtain a complete survival function.}
   \item{'km_exp'}{The same as 'km' but if the largest value is censored the 
              tail of the survival function is modeled as an exponential 
              distribution where the rate parameter is obtained by fixing
@@ -108,10 +114,9 @@ Possible methods in 'imputation_method' are:
              See (Moeschberger and Klein, 1985).}
   \item{'rs'}{Risk Set imputation replaces the censored values with a random
               draw from the risk set of the respective censored value.}
-  \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
-               \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
-               is a multiple imputation procedure that bootstraps the data and
-               imputes the censored values by replacing them with their 
+  \item{'mrl'}{Mean Residual Life (Conditional single imputation, See Atem
+               et al. 2017) is a multiple imputation procedure that bootstraps 
+               the data and imputes the censored values by replacing them with their 
                respective mean residual life.}
   \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
   \item{'pmm'}{predictive mean matching treats censored values as missing and
@@ -120,7 +125,7 @@ Possible methods in 'imputation_method' are:
 }
 \examples{
 # create small data set with 4 clusters with 10 samples.
-sim_data_ls <- simulate_multicluster(alphas = runif(20,0,100),
+d_counts <- simulate_multicluster(alphas = runif(20,0,100),
                                      sizes = runif(10,1e4,1e5),
                                      nr_diff = 4,
                                      group=2,
@@ -151,5 +156,8 @@ outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
 {
  A Comparison of Several Methods of Estimating the Survival Function When 
  There is Extreme Right Censoring (M. L. Moeschberger and John P. Klein, 1985)
+ 
+ Improved conditional imputation for linear regression with a randomly 
+ censored predictor (Atem et al. 2017)
  }
 }

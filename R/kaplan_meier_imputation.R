@@ -178,8 +178,9 @@ integrand <- function(x,r,n,shape=1, scale=1, left_trunc=0) {
   x * (1 - ptweibull(x, shape, scale,left_trunc))^(r-1) * ptweibull(x, shape, scale,left_trunc)^(n-r) * dtweibull(x, shape, scale,left_trunc)
 }
 
+#' @importFrom stats integrate
 expected_j_order_stat <- function(r,n, shape=1, scale=1, left_trunc=0) {
-  (1/beta(n-r+1,n-(n-r+1)+1)) * integrate(integrand,left_trunc,Inf, n-r+1, n, shape, scale, left_trunc)$value
+  (1/beta(n-r+1,n-(n-r+1)+1)) * stats::integrate(integrand,left_trunc,Inf, n-r+1, n, shape, scale, left_trunc)$value
 }
 
 params_from_weibull_fit <- function(data, censored_variable, censoring_indicator){

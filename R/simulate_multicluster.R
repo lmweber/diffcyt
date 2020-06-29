@@ -31,20 +31,38 @@
 #' @return returns a list with elements counts (either matrix or SummarizedExperiment object, depending on input),
 #'   row_data (data per cluster: regression coefficients used), col_data (data per sample: covariates), 
 #'   alphas (matrix of alpha parameters used), theta (theta parameter), 
-#'   var_counts (theoretical variance of counts).
+#'   var_counts (covariance matrix of a DM distribution with the given alphas and sizes).
 #' @export
 #' @importFrom stats rexp
 #'
 #' @examples
 #' # without data reference:
-#'  output <- simulate_multicluster(alphas=runif(20,10,100),sizes=runif(10,1e4,1e5))
+#' alphas <- runif(20,10,100)
+#' sizes <- runif(10,1e4,1e5)
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes)
+#' # counts:
+#' counts <- output$counts
 #' 
 #' # with data reference:
-#'  # first simulate reference data set (normally this would be a real data set):
-#'  data <- t(dirmult::simPop(n=runif(10,1e4,1e5),theta=0.001)$data)
-#'  # then generate new data set based on original one but if DA clusters
-#'  output <- simulate_multicluster(data)
-#'  
+#' # first simulate reference data set (normally this would be a real data set):
+#' data <- t(dirmult::simPop(n=runif(10,1e4,1e5),theta=0.001)$data)
+#' # then generate new data set based on original one but if DA clusters
+#' output <- simulate_multicluster(data)
+#' 
+#' # specify number of differential clusters (has to be an even number):
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4)
+#' 
+#' # specify which clusters should be differential:
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4, diff_cluster = list(c(2,9),c(6,7)))
+#' 
+#' # with second covariate (group):
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes, group = TRUE)
+#' 
+#' # with second covariate (group), specify group proportion:
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes, group = 0.5)
+#' 
+#' # with second covariate (group), specify id of group memberships for one group:
+#' output <- simulate_multicluster(alphas=alphas,sizes=sizes, group = 3:7)
 simulate_multicluster <-
   function(counts = NULL,
            nr_diff = 2,
@@ -67,7 +85,7 @@ simulate_multicluster <-
     stop("Slopes should be negative",call. = FALSE)
   # if factor is given make sure length is right
   } else if (is.list(slope) & length(slope)==1){
-    slope <- lapply(seq_len(nr_diff/2),function(x) slope)
+    slope <- lapply(seq_len(nr_diff/2),function(x) slope[[1]])
   }
   if (is.list(slope) & any(slope >= 1 | slope < 0 )){
     stop("elements in 'slope' (if list) have to be between 0 and 1",call. = FALSE)
@@ -89,13 +107,12 @@ simulate_multicluster <-
     }
   }
     
-    
   if(nr_diff%%2!=0){
     stop("'nr_diff' has to be an even number.",call. = FALSE)
   }
   # in case group is set to 'FALSE', set it to NULL
   if (!is.null(group)){
-    if (!group){
+    if (is.logical(group) & all(!group)){
       group <- NULL
     }
   }
@@ -212,7 +229,12 @@ simulate_multicluster <-
     
     # pi0: pi at z=0; as mean(x)
     pi0 <- alphas[clu_ind]/sum(alphas)
-    pi0_order <- order(pi0)
+    
+    if (enforce_sum_alpha){
+      pi0_order <- seq_along(pi0)
+    } else{
+      pi0_order <- order(pi0)
+    }
     pi0 <- pi0[pi0_order]
     
     # if z=0 b0=logit(pi0)
@@ -241,6 +263,7 @@ simulate_multicluster <-
     # calculate pi for all covariate values
     pi <- t(1/(1+exp(-(b0+b1%*%covariate))))
     
+    # if second covariate is present
     if (!is.null(group)){
       # if group slope is given as a factor
       if (is.list(group_slope)){
@@ -248,7 +271,6 @@ simulate_multicluster <-
       } else {
         group_slope_factor <- 0.2
       }
-      # effect is 0.2
       pi02 <- c(pi0[1]-pi0[1]*group_slope_factor, pi0[2]+pi0[1]*group_slope_factor)
       # logit(pi0) = b0+b2, at z=0 and group=1
       b2 <- matrix(log(pi02/(1-pi02))-b0,ncol=1,dimnames = list(names(b0)))
@@ -261,21 +283,14 @@ simulate_multicluster <-
       pi <- t(1/(1+exp(-(b0+b1%*%covariate+b2%*%group_covariate))))
     }
     
-
-
     if (enforce_sum_alpha){
       # adapt proportions of second cluster so that total sum of alphas will stay the same
       pi[,2] <- pi0[2]-(pi[,1]-pi0[1])
     }
     pi <- pi[,pi0_order]
-    # corresponding alphas
-    # this is based on the fact that the marginal distribution of a dirichlet 
-    # follows a beta distribution with parameters shape1 = a_i, shape2 = sum(a)-a_i
-    # the mean of a beta distribution is shape1/(shape1+shape2), so in this case
-    # a_i/sum(a), sum(a) is kept constant so that non DA clusters are really non DA
-    # the a of DA clusters will change
     alphas_inv[,clu_ind] <- pi*sum(alphas)
   }
+  # all clusters with an association
   diff_clus <- seq_len(n_clu)[!(seq_len(n_clu) %in% cluster_pool)]
   
   # create row data
@@ -299,12 +314,17 @@ simulate_multicluster <-
     col_data_df <- data.frame(sample = sample_names, covariate = c(covariate), group_covariate=c(group_covariate))
   }
     
-  # simulate
+  # calculate covariance matrices
   var_counts <- sapply(seq_len(nr_samples), function(i){var_dirichlet_multinomial(t(alphas_inv)[,i],seq_len(n_clu),sizes[i])})
+  # mean proportions
   probs_compl <- t(apply(alphas_inv,1,function(x) x/sum(x)))
-  out_data <- sapply(seq_len(nr_samples), function(i) dirmult::simPop(J=1,n=sizes[i],pi=probs_compl[i,],theta=theta)$data)
+  # simulate data
+  out_data <- sapply(seq_len(nr_samples), function(i) {
+    dirmult::simPop(J=1,n=sizes[i],pi=probs_compl[i,],theta=theta)$data
+  })
   colnames(out_data) <- sample_names
   rownames(out_data) <- cluster_names
+  # adjust output format
   if (is(counts, "SummarizedExperiment")){
     out_data_se <- counts
     SummarizedExperiment::assay(out_data_se) <- out_data

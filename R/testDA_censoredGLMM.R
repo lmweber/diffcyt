@@ -45,11 +45,17 @@
 #' 
 #' @inherit testDA_GLMM return
 #' 
-#' @details Possible methods in 'imputation_method' are:
+#' @details 
+#'  The first step in multiple imputation consists of creating multiple complete
+#'  data sets by replacing the incomplete values random draws from a
+#'  distribution of possible replacements. The distribution of possible replacement
+#'  values differs between methods. 
+#'  Possible imputation methods in 'imputation_method' are:
 #' \describe{
 #'   \item{'km'}{Kaplan Meier imputation is similar to 'rs' (Risk set imputation) 
 #'               but the random draw is according to the survival function of
-#'               the respective risk set.}
+#'               the respective risk set. The largest value is treated as observed
+#'               to obtain a complete survival function.}
 #'   \item{'km_exp'}{The same as 'km' but if the largest value is censored the 
 #'              tail of the survival function is modeled as an exponential 
 #'              distribution where the rate parameter is obtained by fixing
@@ -64,10 +70,9 @@
 #'              See (Moeschberger and Klein, 1985).}
 #'   \item{'rs'}{Risk Set imputation replaces the censored values with a random
 #'               draw from the risk set of the respective censored value.}
-#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation from 
-#'                \href{https://www.researchgate.net/publication/319246304_Improved_conditional_imputation_for_linear_regression_with_a_randomly_censored_predictor}{Atem et al. 2017})
-#'                is a multiple imputation procedure that bootstraps the data and
-#'                imputes the censored values by replacing them with their 
+#'   \item{'mrl'}{Mean Residual Life (Conditional single imputation, See Atem
+#'                et al. 2017) is a multiple imputation procedure that bootstraps 
+#'                the data and imputes the censored values by replacing them with their 
 #'                respective mean residual life.}
 #'   \item{'cc'}{complete case (listwise deletion) analysis removes incomlete samples.}
 #'   \item{'pmm'}{predictive mean matching treats censored values as missing and
@@ -77,24 +82,27 @@
 #' @references {
 #'  A Comparison of Several Methods of Estimating the Survival Function When 
 #'  There is Extreme Right Censoring (M. L. Moeschberger and John P. Klein, 1985)
+#'  
+#'  Improved conditional imputation for linear regression with a randomly 
+#'  censored predictor (Atem et al. 2017)
 #'  }
 #' @export
 #' @examples 
-#' # create small data set with 4 clusters with 10 samples.
-#' d_counts <- simulate_multicluster(alphas = runif(20,0,100),
-#'                                      sizes = runif(10,1e4,1e5),
-#'                                      nr_diff = 4,
-#'                                      group=2,
-#'                                      return_summarized_experiment = TRUE)$counts
+#' # create small data set with 2 differential clusters with 10 samples.
+#' d_counts <- simulate_multicluster(alphas = runif(10,1e4,1e5),
+#'                                   sizes = runif(10,1e4,1e5),
+#'                                   nr_diff = 2,
+#'                                   group=2,
+#'                                   return_summarized_experiment = TRUE)$counts
 #' 
 #' # extract covariates data.frame
 #' experiment_info <- SummarizedExperiment::colData(d_counts)
 #' # add censoring
 #' experiment_info$status <- sample(c(0,1),size=10,replace = TRUE,prob = c(0.3,0.7))
-#' experiment_info$covariate[experiment_info$status == 0] <- 
-#'   runif(10-sum(experiment_info$status), 
-#'   min=0, 
-#'   max=experiment_info$covariate[experiment_info$status == 0]) 
+#' experiment_info$covariate[experiment_info$status == 0] <-
+#'   runif(10-sum(experiment_info$status),
+#'         min=0,
+#'         max=experiment_info$covariate[experiment_info$status == 0])
 #' 
 #' # create model formula object
 #' da_formula <- createFormula(experiment_info,
@@ -107,6 +115,10 @@
 #' # run testing with imputation method 'km'
 #' outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
 #'                             contrast = contrast, mi_reps = 2, imputation_method = "km")
+#' topTable(outs)
+#' # differential clusters:
+#' which(!is.na(SummarizedExperiment::rowData(d_counts)$paired))
+#' 
 testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
                                 imputation_method = c("km","km_exp","km_wei","km_os","rs","mrl","cc","pmm"),
                                 min_cells = 3,
@@ -122,7 +134,7 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
   }
   
   imputation_method <- match.arg(imputation_method)
-  BPPARAM <- if(requireNamespace("BiocParallel")){BPPARAM} else{NULL}
+  BPPARAM <- if(requireNamespace("BiocParallel",quietly = TRUE)){BPPARAM} else{NULL}
   # variable names from the given formula
   cmi_input <- extract_variables_from_formula(formula$formula)
   
@@ -193,7 +205,13 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
         ))),
       error=function(e) NA)
       # pooling of results from multiple imputation
-      p_val <- tryCatch(summary(mice::pool(out_test$fits))$p.value[ which(contrast == 1)],
+      pooled_results <- mice::pool(out_test$fits)
+      # how many imputations under quadratic rule
+      fraction_missing_information_u <- plogis(qlogis(max(pooled_results$pooled$fmi)) + 
+                                                 qnorm(0.975) * sqrt(2/pooled_results$m))
+      that_many_imps <- ceiling(1 + 1/2*(fraction_missing_information_u/0.05)^2)
+      # p-value
+      p_val <- tryCatch(summary(pooled_results)$p.value[ which(contrast == 1)],
                         error=function(e) NA)
     } # complete case fitting and testing
     else if (imputation_method == "cc"){
@@ -207,9 +225,17 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
       summary(test)$test$pvalues
       },error=function(e) NA)
     }
-    return(p_val)
+    return(c(p_val,that_many_imps))
   })
-  p_vals <- unlist(p_vals_ls)
+  pvals_imps_mat <- purrr::reduce(p_vals_ls,rbind)
+  that_many_imps_max <- max(pvals_imps_mat[,2])
+  if (verbose){
+    message(paste("suggested number of imputations:\t",
+        that_many_imps_max,
+        "\n"))
+  }
+
+  p_vals <- pvals_imps_mat[,1]
   # fdr correction
   p_adj <- p.adjust(p_vals, method = "fdr")
   stopifnot(length(p_vals) == length(p_adj))
