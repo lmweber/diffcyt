@@ -125,6 +125,8 @@ conditional_multiple_imputation <-
   if (is.numeric(id) & !is.null(id)) {
     id <- colnames(data)[[id]]
   }
+  binarise_covariate <- stringr::str_detect(imputation_method,"_bin")
+  imputation_method <- ifelse(binarise_covariate,stringr::str_split(imputation_method,"_bin")[[1]][1],imputation_method)
   imputation_method <- match.arg(imputation_method)
   regression_type <- match.arg(regression_type)
   
@@ -155,7 +157,8 @@ conditional_multiple_imputation <-
         formula = formula_uncens,
         regression_type = regression_type,
         weights = weights,
-        family = family
+        family = family,
+        binarise_covariate = binarise_covariate
       )
     )
     # predictive mean matching (treating censored values as missing)
@@ -222,8 +225,8 @@ conditional_multiple_imputation <-
       verbose = verbose,
       weights = weights,
       contrasts = contrasts,
-      family = family
-      
+      family = family,
+      binarise_covariate = binarise_covariate
     )
   return(data_cmi)
 }
@@ -257,7 +260,8 @@ conditional_multiple_imputation_fitting <-
            verbose = FALSE,
            weights = NULL,
            contrasts = NULL,
-           family = "binomial"
+           family = "binomial",
+           binarise_covariate = FALSE
            ) {
     # name of imputed variable
     est_name <- paste0(censored_variable,"_est")
@@ -289,6 +293,9 @@ conditional_multiple_imputation_fitting <-
       if (!any(is.na(csi_out[[censored_variable]])) &
           cond_2 &
           (sum(csi_out[[censoring_indicator]]) > 2)) {
+        if (binarise_covariate){
+          csi_out[[est_name]] <- binarised_covariate(csi_out[[est_name]])
+        }
         # fitting
         return(tryCatch({
           args <- args_for_fitting(csi_out, formula, regression_type, family, weights)

@@ -29,7 +29,8 @@ complete_case <- function(data,
                           formula,
                           regression_type = c("lm", "glm", "glmer"),
                           weights = "weights",
-                          family = "binomial"){
+                          family = "binomial",
+                          binarise_covariate = FALSE){
   regression_type <- match.arg(regression_type)
   # checking for right format of data, some type conversions
   data <- data_processing_for_imputation(data = data,
@@ -40,7 +41,9 @@ complete_case <- function(data,
   if (sum(data[[censoring_indicator]]) <= 3){
     stop("too few observed events for fitting regression models", call. = FALSE)
   }
-  
+  if (binarise_covariate){
+    data[[censored_variable]] <- binarised_covariate(data[[censored_variable]])
+  }
   # create arguments list, only keep observed values
   args <- list(formula = formula,
                data = data[c(data[[censoring_indicator]] == 1), ])

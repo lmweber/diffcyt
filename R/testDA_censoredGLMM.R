@@ -132,7 +132,9 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
   if (is.null(min_samples)) {
     min_samples <- ncol(d_counts) / 2
   }
-  
+  # if censored covariate should be binarized for testing (does not influence imputation)
+  binarise_covariate <- stringr::str_detect(imputation_method,"_bin")
+  imputation_method <- ifelse(binarise_covariate,stringr::str_split(imputation_method,"_bin")[[1]][1],imputation_method)
   imputation_method <- match.arg(imputation_method)
   BPPARAM <- if(requireNamespace("BiocParallel",quietly = TRUE)){BPPARAM} else{NULL}
   # variable names from the given formula
@@ -191,12 +193,13 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
     
     # do conditional multiple imputation
     if (imputation_method %in% c("mrl","rs","km", "km_exp","km_wei","km_os","pmm")){
+      imputation_method_cmi <- ifelse(binarise_covariate,paste0(imputation_method,"_bin"),imputation_method) 
       out_test <- tryCatch(suppressMessages(suppressWarnings(
         conditional_multiple_imputation(
           data = data_i,
           formula = formula$formula,
           mi_reps = mi_reps,
-          imputation_method = imputation_method,
+          imputation_method = imputation_method_cmi,
           regression_type = "glmer",
           family = "binomial",
           verbose = verbose,
@@ -220,11 +223,12 @@ testDA_censoredGLMM <- function(d_counts, formula, contrast, mi_reps = 10,
         data = data_i,censored_variable = cmi_input[["censored_variable"]],
         censoring_indicator = cmi_input[["censoring_indicator"]],
         formula = formula_glmm,regression_type = "glmer",
-        weights = "weights",family = "binomial")$fits))
+        weights = "weights",family = "binomial",binarise_covariate)$fits))
       test <- multcomp::glht(fit, contrast)
       summary(test)$test$pvalues
       },error=function(e) NA)
     }
+    that_many_imps <- ifelse(exists("that_many_imps"),that_many_imps,NA)
     return(c(p_val,that_many_imps))
   })
   pvals_imps_mat <- purrr::reduce(p_vals_ls,rbind)
