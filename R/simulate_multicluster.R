@@ -75,7 +75,7 @@ simulate_multicluster <-
            group = NULL,
            group_slope = NULL,
            diff_cluster = FALSE,
-           enforce_sum_alpha = TRUE,
+           enforce_sum_alpha = FALSE,
            return_summarized_experiment = FALSE) {
   # either reference or parameters needs to be given
   stopifnot(!is.null(counts) | (!is.null(alphas) & !is.null(sizes)))
@@ -95,17 +95,17 @@ simulate_multicluster <-
     stop("Slopes should be negative",call. = FALSE)
     # if factor is given make sure length is right
   } else if (is.list(group_slope) & length(group_slope)==1){
-    group_slope <- lapply(seq_len(nr_diff/2),function(x) group_slope)
+    group_slope <- lapply(seq_len(nr_diff/2),function(x) group_slope[[1]])
   }
   if (is.list(group_slope) & any(group_slope >= 1 | group_slope < 0 )){
     stop("elements in 'group_slope' (if list) have to be between 0 and 1",call. = FALSE)
   }
-  # sum needs to be smaller than one
-  if (is.list(slope) & is.list(group_slope)){
-    if (any(sapply(seq_len(nr_diff/2), function(i) (slope[[i]] + group_slope[[i]]) >= 1))){
-      stop("The sum of elements in 'slope' and 'group_slope' with the same index needs to be between 0 and 1")
-    }
-  }
+  # # sum needs to be smaller than one
+  # if (is.list(slope) & is.list(group_slope)){
+  #   if (any(sapply(seq_len(nr_diff/2), function(i) (slope[[i]] + group_slope[[i]]) >= 1))){
+  #     stop("The sum of elements in 'slope' and 'group_slope' with the same index needs to be between 0 and 1")
+  #   }
+  # }
     
   if(nr_diff%%2!=0){
     stop("'nr_diff' has to be an even number.",call. = FALSE)
