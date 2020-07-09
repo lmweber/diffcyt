@@ -64,6 +64,17 @@ kaplan_meier_imputation <-
     current_cens_val <- purrr::as_vector(data[censored_indices_with_risk_set[js],censored_variable])
     subdata_sorted <- data[sort(Risk_Set[[js]]),c(censored_variable,censoring_indicator)]
     
+    # in case no observed cases present (caused by cov_dep_risk_set) revert to simple risk set imputation
+    if (all(subdata_sorted[[censoring_indicator]] == 0)){
+      return(matrix(
+        resample(
+          subdata_sorted[[censored_variable]],
+          size = mi_reps,
+          replace = TRUE,
+        ),
+        nrow = 1
+      ))
+    }
     # fit kapplan meier curve
     km_fit <- survival::survfit(survival::Surv(subdata_sorted[[censored_variable]], subdata_sorted[[censoring_indicator]]) ~ 1)
     km_fit_summary <- summary(km_fit)

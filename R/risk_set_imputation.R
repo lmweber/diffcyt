@@ -13,7 +13,7 @@ RS_cent_calc <- function(data, cox_coef_mat){
 
 # data needs to be sorted according to censored_variable
 risk_set_cov_adjusted <- function(data, censored_variable, censoring_indicator,
-                                  covariates, nn=10, wc=0.5){
+                                  covariates, nn=max(ceiling(dim(data)[1]/4),10), wc=0.5){
   # check that correct weight is given
   if (wc < 0 | wc > 1){
     stop("weight 'wc' in 'risk_set_cov_adjusted' not between 0 and 1", 
