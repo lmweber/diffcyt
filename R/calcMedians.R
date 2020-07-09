@@ -131,7 +131,7 @@ calcMedians <- function(d_se) {
     colnames(assaydata_i)[1] <- "value"
     
     assaydata_i %>% 
-      group_by(cluster_id, sample_id) %>% 
+      group_by(cluster_id, sample_id, .drop = FALSE) %>% 
       summarize(median = median(value)) -> 
       med
     

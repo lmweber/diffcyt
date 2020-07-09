@@ -93,7 +93,7 @@ calcCounts <- function(d_se) {
   rowdata_df <- as.data.frame(rowData(d_se))
   
   rowdata_df %>% 
-    group_by(cluster_id, sample_id) %>% 
+    group_by(cluster_id, sample_id, .drop = FALSE) %>% 
     tally %>% 
     complete(sample_id) -> 
     n_cells

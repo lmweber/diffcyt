@@ -121,7 +121,7 @@ calcMediansByClusterMarker <- function(d_se) {
   d_all <- melt(d_all, id.vars = seq_len(ncol(rowdata_df)), variable.name = "marker_id")
   
   d_all %>% 
-    group_by(cluster_id, marker_id) %>% 
+    group_by(cluster_id, marker_id, .drop = FALSE) %>% 
     summarize(median = median(value)) -> 
     medians
   
