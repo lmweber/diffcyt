@@ -33,8 +33,8 @@ test_testDA_censoredGLMM <- function(method){
   
   test_that(paste("testDA_censoredGLMM keeps entries",method),{
     expect_equal(SummarizedExperiment::assay(outs),SummarizedExperiment::assay(d_counts))
-    expect_equal(SummarizedExperiment::rowData(outs)[1],SummarizedExperiment::rowData(d_counts)[1])
-    expect_equal(SummarizedExperiment::rowData(outs)[4],SummarizedExperiment::rowData(d_counts)[2])
+    expect_equal(sort(SummarizedExperiment::rowData(outs)[1]),sort(SummarizedExperiment::rowData(d_counts)[1]))
+    expect_equal(sort(SummarizedExperiment::rowData(outs)[4]),sort(SummarizedExperiment::rowData(d_counts)[2]))
   })
   
   test_that(paste("testDA_censoredGLMM valid pvalues",method),{

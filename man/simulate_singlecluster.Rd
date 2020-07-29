@@ -18,7 +18,7 @@ simulate_singlecluster(
   censoring_dependent_on_covariate = FALSE,
   weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
   error_variance = 0,
-  variance_fixeff = 0.5,
+  variance_fixeff = NULL,
   variance_raneff = 0.5,
   transform_fn = "identity",
   verbose = FALSE
@@ -80,9 +80,7 @@ the second level of a covariate if 'censoring_dependent_on_covariate'=TRUE.}
 noise to add in the linear sum of the predictors. For linear regression
 this is the only error added. Otherwise it should be set to zero. default = 0.}
 
-\item{variance_fixeff}{positive double vector of the length of 
-'n_levels_fixeff'. The variance of the gaussian distributed fixed effect 
-covariates. default = 0.5.}
+\item{variance_fixeff}{deprecated.}
 
 \item{variance_raneff}{positive double vector of the length of 
 'n_levels_raneff'. The variance of the gaussian distributed

@@ -218,16 +218,16 @@ See \code{\link{testDA_voom}} or \code{\link{testDS_limma}}.}
 \item{verbose}{Whether to print status messages during each step of the pipeline.
 Default = TRUE.}
 
-\item{mi_reps}{number of imputations in multiple imputation. default = 10.
-See \code{\link{testDA_censoredGLMM}} for details.}
+\item{mi_reps}{Only for 'method_DA' == 'testDA_censoredGLMM'. Number of imputations 
+in multiple imputation. default = 10. See \code{\link{testDA_censoredGLMM}} for details.}
 
-\item{imputation_method}{which method should be used in the imputation step. One of
-'km','km_exp','km_wei','km_os', 'rs', 'mrl', 'cc', 'pmm'. default = 'km'. See 
-\code{\link{testDA_censoredGLMM}} for details.}
+\item{imputation_method}{Only for 'method_DA' == 'testDA_censoredGLMM'. Method 
+to be used in the imputation step. One of km','km_exp','km_wei','km_os', 'rs', '
+mrl', 'cc', 'pmm'. default = 'km'. See \code{\link{testDA_censoredGLMM}} for details.}
 
-\item{BPPARAM}{specify parallelization option for method \code{\link{testDA_censoredGLMM}}
-as one of \code{\link[BiocParallel]{BiocParallelParam}} if 'BiocParallel' is 
-available otherwise no parallelization is used.
+\item{BPPARAM}{Only for 'method_DA' == 'testDA_censoredGLMM'. Specification of 
+parallelization option as one of \code{\link[BiocParallel]{BiocParallelParam}} 
+if 'BiocParallel' is available otherwise no parallelization is used.
 e.g. \code{\link[BiocParallel]{MulticoreParam}}(workers=2) for parallelization 
 with two cores. Default is \code{\link[BiocParallel]{SerialParam}}()
 (no parallelization).}

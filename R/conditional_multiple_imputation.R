@@ -125,7 +125,7 @@ conditional_multiple_imputation <-
   if (is.numeric(id) & !is.null(id)) {
     id <- colnames(data)[[id]]
   }
-  binarise_covariate <- stringr::str_detect(imputation_method,"_bin")
+  binarise_covariate <- stringr::str_detect(imputation_method,"_bin")[1]
   imputation_method <- ifelse(binarise_covariate,stringr::str_split(imputation_method,"_bin")[[1]][1],imputation_method)
   imputation_method <- match.arg(imputation_method)
   regression_type <- match.arg(regression_type)

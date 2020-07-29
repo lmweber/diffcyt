@@ -62,11 +62,11 @@ test_that("list input in 'slope' and 'group_slope' parameter work in simulate_mu
     expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5),group_slope = list(-0.2,0.2)))
     expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), group_slope = 0))
     expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), group_slope = 0.2))
-    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
-                                       slope= list(0.8,0.2), 
-                                       group_slope = list(0.2,0.2)))
-    expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
-                                       slope= list(0.7,0.2), 
-                                       group_slope = list(0.2,0.9)))
+    # expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
+    #                                    slope= list(0.8,0.2), 
+    #                                    group_slope = list(0.2,0.2)))
+    # expect_error(simulate_multicluster(nr_diff = nr_diff,alphas = alphas_theo,sizes = runif(10,1e4,1e5), 
+    #                                    slope= list(0.7,0.2), 
+    #                                    group_slope = list(0.2,0.9)))
   })
 })

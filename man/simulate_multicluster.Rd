@@ -16,7 +16,7 @@ simulate_multicluster(
   group = NULL,
   group_slope = NULL,
   diff_cluster = FALSE,
-  enforce_sum_alpha = TRUE,
+  enforce_sum_alpha = FALSE,
   return_summarized_experiment = FALSE
 )
 }

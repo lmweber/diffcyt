@@ -124,21 +124,21 @@ or the censored values can be treated as missing (predictive mean matching) (See
 }
 }
 \examples{
-# create small data set with 4 clusters with 10 samples.
-d_counts <- simulate_multicluster(alphas = runif(20,0,100),
-                                     sizes = runif(10,1e4,1e5),
-                                     nr_diff = 4,
-                                     group=2,
-                                     return_summarized_experiment = TRUE)$counts
+# create small data set with 2 differential clusters with 10 samples.
+d_counts <- simulate_multicluster(alphas = runif(10,1e4,1e5),
+                                  sizes = runif(10,1e4,1e5),
+                                  nr_diff = 2,
+                                  group=2,
+                                  return_summarized_experiment = TRUE)$counts
 
 # extract covariates data.frame
 experiment_info <- SummarizedExperiment::colData(d_counts)
 # add censoring
 experiment_info$status <- sample(c(0,1),size=10,replace = TRUE,prob = c(0.3,0.7))
-experiment_info$covariate[experiment_info$status == 0] <- 
-  runif(10-sum(experiment_info$status), 
-  min=0, 
-  max=experiment_info$covariate[experiment_info$status == 0]) 
+experiment_info$covariate[experiment_info$status == 0] <-
+  runif(10-sum(experiment_info$status),
+        min=0,
+        max=experiment_info$covariate[experiment_info$status == 0])
 
 # create model formula object
 da_formula <- createFormula(experiment_info,
@@ -151,6 +151,10 @@ contrast <- createContrast(c(0, 1, 0))
 # run testing with imputation method 'km'
 outs <- testDA_censoredGLMM(d_counts = d_counts, formula = da_formula,
                             contrast = contrast, mi_reps = 2, imputation_method = "km")
+topTable(outs)
+# differential clusters:
+which(!is.na(SummarizedExperiment::rowData(d_counts)$paired))
+
 }
 \references{
 {

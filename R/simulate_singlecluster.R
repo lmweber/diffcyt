@@ -57,9 +57,7 @@
 #'  noise to add in the linear sum of the predictors. For linear regression
 #'  this is the only error added. Otherwise it should be set to zero. default = 0.
 #'  
-#' @param variance_fixeff positive double vector of the length of 
-#'  'n_levels_fixeff'. The variance of the gaussian distributed fixed effect 
-#'  covariates. default = 0.5.
+#' @param variance_fixeff deprecated. 
 #'  
 #' @param variance_raneff positive double vector of the length of 
 #'  'n_levels_raneff'. The variance of the gaussian distributed
@@ -123,7 +121,7 @@ simulate_singlecluster <- function(n,
                           censoring_dependent_on_covariate = FALSE,
                           weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
                           error_variance = 0,
-                          variance_fixeff = 0.5,
+                          variance_fixeff = NULL,
                           variance_raneff = 0.5,
                           transform_fn = "identity",
                           verbose = FALSE){
@@ -184,11 +182,6 @@ simulate_singlecluster <- function(n,
   # fixed effects covariates
   if (!is.null(variables$covariates)){ 
     fixed_effects <- lapply(seq_along(n_levels_fixeff), function(x) gl(n = n_levels_fixeff[x], k = n/n_levels_fixeff[x]))
-    if (length(variance_fixeff) != length(variables$covariates) & length(variance_fixeff) == 1){
-      variances_fixed_effects <- rep(variance_fixeff, length(variables$covariates))
-    } else {
-      variances_fixed_effects <- variance_fixeff
-    }
   }
   
   # need random covariates if type is glmer
@@ -250,7 +243,7 @@ simulate_singlecluster <- function(n,
   if (!is.null(variables$covariates)){ 
     values_fixed_effects <- lapply(seq_along(variables$covariates), function(x){
       # random value for each sample with the same covariate level
-      pat_intercept <- c(0,rnorm(n_levels_fixeff[x]-1, 0, variances_fixed_effects[x])) 
+      pat_intercept <- c(0, seq_len(n_levels_fixeff[x]-1)) 
       rep(pat_intercept, each = n/n_levels_fixeff[x])
     })
     covariates_list <- append(covariates_list,lapply(seq_along(variables$covariates), function(x){values_fixed_effects[[x]]}))
