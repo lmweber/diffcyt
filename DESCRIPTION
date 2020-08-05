@@ -46,4 +46,4 @@ Suggests:
     testthat,
     HDCytoData,
     CATALYST
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

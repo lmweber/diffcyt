@@ -215,7 +215,7 @@ topTable <- function(res, d_counts = NULL, d_medians = NULL,
     }
     # sort columns
     if (sort_cols) {
-      ix_cols <- levels(colData(d_medians)$sample_id)
+      ix_cols <- levels(colData(d_counts)$sample_id)
       out_counts <- out_counts[, ix_cols]
       out_props <- out_props[, ix_cols]
     }
@@ -257,6 +257,7 @@ topTable <- function(res, d_counts = NULL, d_medians = NULL,
     # sort columns
     if (sort_cols) {
       ix_cols <- levels(colData(d_medians)$sample_id)
+      stopifnot(all(ix_cols == levels(colData(d_counts)$sample_id)))
       out_meds <- out_meds[, ix_cols]
     }
     colnames(out_meds) <- paste("meds", colnames(out_meds), sep = "_")
