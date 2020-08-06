@@ -277,7 +277,7 @@ conditional_multiple_imputation_fitting <-
       
       if(is(csi_out,"vector")){
         if(sum(censored_bool) != length(csi_out)){
-          censored_bool[length(censored_bool)] <- FALSE
+          censored_bool <- set_last_as_observed(data_i,censored_variable, censoring_indicator)[[censoring_indicator]]==0
           stopifnot(sum(censored_bool)==length(csi_out))
         }
         est_col <- data[[censored_variable]]
