@@ -1,21 +1,21 @@
 # kaplan meier imputation
 km_test <- function(tail_approx_method,last_value_is,syn_data){
-  suppressWarnings({
   test_that(paste0("kaplan_meier_imputation with survival tail method '",tail_approx_method,"' works when last value is ",last_value_is),{
+    dim_cens <- c(3,1)
+    dim_cens_2reps <- c(3,2)
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method =tail_approx_method)), dim_cens)
     expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method =tail_approx_method,mi_reps = 2)), dim_cens_2reps)
     expect_true(all(kaplan_meier_imputation(syn_data,"X","censored",tail_approx_method =tail_approx_method) >= syn_data[syn_data$censored==0,"X"]))
     
-    expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method)), dim_cens)
-    expect_equal(dim(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method,mi_reps = 2)), dim_cens_2reps)
-    expect_true(all(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method) >= syn_data[syn_data$censored==0,"X"]))
-  })
+    expect_equal(dim(suppressWarnings(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method))), dim_cens)
+    expect_equal(dim(suppressWarnings(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method,mi_reps = 2))), dim_cens_2reps)
+    expect_true(all(suppressWarnings(kaplan_meier_imputation(syn_data,"X","censored","Z",tail_approx_method =tail_approx_method)) >= syn_data[syn_data$censored==0,"X"]))
   })
 }
 
 syn_data <- data.frame(X=as.double(1:6),censored=rep(c(0,1),3), Z = rep(c(0,1),each=3))
-dim_cens <- c(3,1)
-dim_cens_2reps <- c(3,2)
+# dim_cens <- c(3,1)
+# dim_cens_2reps <- c(3,2)
 
 km_test("lao","observed",syn_data)
 km_test("exp","observed",syn_data)
@@ -23,8 +23,8 @@ km_test("wei","observed",syn_data)
 km_test("os","observed",syn_data)
 
 syn_data <- data.frame(X=as.double(1:6),censored=rep(c(1,0),3), Z = rep(c(0,1),each=3))
-dim_cens <- c(3,1)
-dim_cens_2reps <- c(3,2)
+# dim_cens <- c(3,1)
+# dim_cens_2reps <- c(3,2)
 
 km_test("lao","censored",syn_data)
 km_test("exp","censored",syn_data)

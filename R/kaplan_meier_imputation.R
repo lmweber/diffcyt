@@ -121,7 +121,7 @@ kaplan_meier_imputation <-
             # random draw from truncated exponential
             x <- runif(mi_reps,min = pexp(current_cens_val, theta_compl))
             # if x == 1 this would mean the replacement value is Inf
-            if (x == 1){
+            if (any(x == 1)){
               if (qexp(x-1e-10, theta_compl) >= current_cens_val){
                 return(matrix(qexp(x-1e-10, theta_compl),nrow = 1))
               } else {

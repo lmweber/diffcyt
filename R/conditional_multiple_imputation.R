@@ -88,11 +88,17 @@
 #' @importFrom rlang :=
 #' @export
 #' @examples
+#'  # define association
 #'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
+#'  # simulate data
 #'  data <- simulate_singlecluster(100, lm_formula, type = "lm", n_levels_fixeff=2)
+#'  # run fitting
 #'  cmi_out <- conditional_multiple_imputation(data,lm_formula)
+#'  # pool fits
 #'  comb_out <- mice::pool(cmi_out$fits)
+#'  # result
 #'  pvals <- summary(comb_out)$p.value
+#'  
 conditional_multiple_imputation <-
   function(data,
            formula,

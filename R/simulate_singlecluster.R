@@ -1,11 +1,11 @@
-#' data simulation function
-#'
 #' Simulation of data with a censored covariate
+#'
+#' Function to simulate an association between a censored covariate and a predictor.
 #'
 #' @param n number of samples
 #' 
 #' @param formula the formula to specify the structure in the data. The censored
-#'  variable should be written as following: 'Surv(X,I)', where 'X' is the observed
+#'  variable should be written in the following format: 'Surv(X,I)', where 'X' is the observed
 #'  value, and 'I' is the event indicator (1 if observed, 0 if censored).
 #'  A full example is: 'Y ~ Surv(X,I) + Covariate + (1|Random_effect)'.
 #'  
@@ -19,9 +19,6 @@
 #'  for the remaining coefficients} 
 #'  \item{a vector with regression coefficients}{the length has to be (1 
 #'  (intercept) + number of covariates (including the censored covariate))}
-#'  \item{a list}{each element is a vector of regression coefficients of 
-#'  length = (1 + number of covariates (including censored covariate)). The 
-#'  number of elements should be the same as 'number_of_differential_clusters'.}
 #'   }
 #'   
 #' @param n_levels_fixeff The number of levels to use for each covariate, e.g.
@@ -36,14 +33,6 @@
 #' inner lists should have two keywords, 'shape' and 'scale', for the parameters
 #' of the Weibull distribution (See \code{\link[stats]{rweibull}}).
 #' 
-#' @param number_of_clusters Positive Integer. The number of clusters per true differential
-#'  cluster for testing \code{\link{testDA_censoredGLMM}}. The total number of clusters is
-#'  'number_of_clusters' * 'number_of_differential_clusters'. If NULL (default)
-#'  only one cluster is used (running \code{\link{conditional_multiple_imputation}})
-#'  
-#' @param number_of_differential_clusters Positive Integer. Total number of clusters
-#'  with a true signal.
-#'  
 #' @param censoring_dependent_on_covariate Logical. If
 #'  censoring should depend on a covariate. The respective covariate needs to
 #'  have only two levels ('n_level_fixeff'=2). Will use first covariate
@@ -56,8 +45,6 @@
 #' @param error_variance positive double. Variance of additional gaussian
 #'  noise to add in the linear sum of the predictors. For linear regression
 #'  this is the only error added. Otherwise it should be set to zero. default = 0.
-#'  
-#' @param variance_fixeff deprecated. 
 #'  
 #' @param variance_raneff positive double vector of the length of 
 #'  'n_levels_raneff'. The variance of the gaussian distributed
@@ -72,41 +59,16 @@
 #'   
 #' @param verbose verbose
 #' 
-#' @details 
-#' The total number of clusters is 'number_of_clusters' * 'number_of_differential_clusters'. 
-#' 
 #' @export
 #' 
 #' @importFrom stats runif rnorm rweibull
 #' @importFrom rlang :=
 #' 
-#' @return simulated dataset or if 'number_of_clusters' != NULL a 
-#' \code{\link[SummarizedExperiment]{SummarizedExperiment}} object with cell 
-#' counts per cluster in \code{\link[SummarizedExperiment]{assay}} slot, experiment
-#' information (covariates, etc.) in \code{\link[SummarizedExperiment]{rowData}} slot.
-#' 
+#' @return \code{\link[tibble]{tibble}} 
 #' @examples
 #' # single differential cluster
-#'  lm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  simulate_singlecluster(100, lm_formula, type = "lm")
-#'
-#'  glm_formula <- formula(Y ~ Surv(X,I) + Z)
-#'  simulate_singlecluster(100, glm_formula, type = "glm")
-#'
 #'  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 #'  simulate_singlecluster(100, glmer_formula, type = "glmer")
-#'
-#' # multiple clusters, 2 differential, 18 not ('number_of_differential_clusters' * 
-#' #'number_of_clusters' - number_of_differential_clusters'). In total 20 clusters.
-#'  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
-#'  data_sim <- simulate_singlecluster(
-#'    n = 20,
-#'    formula = glmer_formula,
-#'    n_levels_fixeff = 2,
-#'    type = "glmer",
-#'    b = list(b=c(-5,-2,0.2)),
-#'    number_of_clusters = 10,
-#'    number_of_differential_clusters = 2)
 #'  
 simulate_singlecluster <- function(n,
                           formula,
@@ -116,12 +78,9 @@ simulate_singlecluster <- function(n,
                           n_levels_raneff = NULL,
                           weibull_params = list(X = list(shape = 0.5, scale = 0.25),
                                                 C = list(shape = 1, scale = 0.25)),
-                          number_of_clusters = NULL,
-                          number_of_differential_clusters = NULL,
                           censoring_dependent_on_covariate = FALSE,
                           weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
                           error_variance = 0,
-                          variance_fixeff = NULL,
                           variance_raneff = 0.5,
                           transform_fn = "identity",
                           verbose = FALSE){
@@ -140,9 +99,9 @@ simulate_singlecluster <- function(n,
   
   # variables from formula
   variables <- extract_variables_from_formula(formula)
-  if (is.null(number_of_differential_clusters)){
+  # if (is.null(number_of_differential_clusters)){
     number_of_differential_clusters <- 1
-  }
+  # }
   if (verbose) message(cat("Formula elements: \n",paste("\t",names(variables),"\t", variables, collapse = "\n"),"\n"))
   
   # regression coefficients
@@ -299,81 +258,15 @@ simulate_singlecluster <- function(n,
     }
     
     # response name to use as label
-    tmp_response_name <- ifelse(is.null(number_of_clusters), variables$response, paste0(variables$response,"_",i))
+    tmp_response_name <- variables$response
     
     y_tib <- tibble::tibble(!!tmp_response_name := as.vector(Y),
                             !!paste0(tmp_response_name,"_True") := as.vector(Y_True))
     
-    # for multi cluster data
-    if (!is.null(number_of_clusters)){
-      stopifnot((number_of_clusters%%1==0) & (number_of_clusters > 2))
-      if (type %in% c("glm","glmer")){
-        # rest size (Y is a proportion)
-        remaining_y <- 1-Y 
-        # random sizes for the remaining clusters without signal
-        Y_rand <- unlist(purrr::map(seq_along(remaining_y), function(i){
-          tmp <- runif(number_of_clusters-1,0,remaining_y[i])
-          tmp_diff <- diff(sort(tmp))
-          tmp_cumsum <- cumsum(tmp_diff)
-          tmp_y_rand <- c(tmp_diff,remaining_y[i]-tmp_cumsum[number_of_clusters-2])
-          return(tmp_y_rand)
-        }))
-        Y_rand <- matrix(Y_rand,nrow = number_of_clusters-1)
-        # complete Y data set with 1 differential Y and 'number_of_clusters' not
-        # differential Y's
-        Y_comp <- abs(rbind(Y,Y_rand))
-      } else {
-        Y_rand <- matrix(runif(n * (number_of_clusters-1), min(Y),max(Y)), ncol = n)
-        Y_comp <- rbind(Y,Y_rand)
-      }
-      return(list(col_data = y_tib, d_counts = Y_comp))
-      
-    # for single cluster data
-    } else{
-      return(list(col_data = y_tib))
-    }
+    return(list(col_data = y_tib))
   })
   
   
   # for single cluster data
-  if (is.null(number_of_clusters)){
-    return(dplyr::bind_cols(col_data,out_counts_ls[[1]]$col_data))
-    
-  # for multi cluster data
-  } else {
-    # complete data without undifferential Y's
-    col_data <- dplyr::bind_cols(col_data,purrr::map(out_counts_ls, ~ .x$col_data))
-    # maximal sizes of differential Y's
-    real_sizes <- unlist(purrr::map(out_counts_ls, function(counts){
-      max(counts[[2]][1, ])
-    }))
-    # wanted total proportion for one batch of one diff cluster and mult undiff clusters
-    wanted_sizes <- calculate_wanted_cluster_proportion(real_sizes)
-    # rescale undiff cluster proportions
-    comb_counts <- purrr::map(seq_along(out_counts_ls), function(i){
-      counts <- out_counts_ls[[i]][[2]]
-      c <- (colSums(counts[-1, ]))/(wanted_sizes[i]-(1-colSums(counts[-1, ])))
-      stopifnot(c>0)
-      counts[-1, ] <- t(t(counts[-1, ])/c)
-      return(counts)
-    })
-    # combine all Y
-    Y_comp <- do.call(rbind,purrr::map(comb_counts, ~ .x))
-    rownames(Y_comp) <- paste0("F_",seq_len(number_of_clusters*number_of_differential_clusters))
-    rownames(Y_comp)[((0:(number_of_differential_clusters-1)))*number_of_clusters+1] <-
-      gsub(pattern = "F",replacement = "T",
-           x = rownames(Y_comp)[((0:(number_of_differential_clusters-1)))*number_of_clusters+1])
-    colnames(Y_comp) <- seq_len(n)
-    
-    counts_rounded <- round(t(col_data$n_cells*t(Y_comp)))
-    col_data$n_cells <- colSums(counts_rounded)
-    row_data <- data.frame(cluster_id = rownames(Y_comp),
-                     n_cells = rowSums(counts_rounded))
-    # create SummarizedExperiment object
-    d_counts <- SummarizedExperiment::SummarizedExperiment(
-      assays = list(counts = counts_rounded),
-      rowData = row_data,
-      colData = col_data)
-    return( d_counts)
-  }
+  return(dplyr::bind_cols(col_data,out_counts_ls[[1]]$col_data))
 }

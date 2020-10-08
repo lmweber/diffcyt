@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_singlecluster.R
 \name{simulate_singlecluster}
 \alias{simulate_singlecluster}
-\title{data simulation function}
+\title{Simulation of data with a censored covariate}
 \usage{
 simulate_singlecluster(
   n,
@@ -13,12 +13,9 @@ simulate_singlecluster(
   n_levels_raneff = NULL,
   weibull_params = list(X = list(shape = 0.5, scale = 0.25), C = list(shape = 1, scale
     = 0.25)),
-  number_of_clusters = NULL,
-  number_of_differential_clusters = NULL,
   censoring_dependent_on_covariate = FALSE,
   weibull_params_covariate_dependent_censoring = list(shape = 1, scale = 0.1),
   error_variance = 0,
-  variance_fixeff = NULL,
   variance_raneff = 0.5,
   transform_fn = "identity",
   verbose = FALSE
@@ -28,7 +25,7 @@ simulate_singlecluster(
 \item{n}{number of samples}
 
 \item{formula}{the formula to specify the structure in the data. The censored
-variable should be written as following: 'Surv(X,I)', where 'X' is the observed
+variable should be written in the following format: 'Surv(X,I)', where 'X' is the observed
 value, and 'I' is the event indicator (1 if observed, 0 if censored).
 A full example is: 'Y ~ Surv(X,I) + Covariate + (1|Random_effect)'.}
 
@@ -42,9 +39,6 @@ function. default = 'lm'.}
  for the remaining coefficients} 
  \item{a vector with regression coefficients}{the length has to be (1 
  (intercept) + number of covariates (including the censored covariate))}
- \item{a list}{each element is a vector of regression coefficients of 
- length = (1 + number of covariates (including censored covariate)). The 
- number of elements should be the same as 'number_of_differential_clusters'.}
   }}
 
 \item{n_levels_fixeff}{The number of levels to use for each covariate, e.g.
@@ -59,14 +53,6 @@ of the outer lists are 'X' the true value and 'C' the censoring time. The
 inner lists should have two keywords, 'shape' and 'scale', for the parameters
 of the Weibull distribution (See \code{\link[stats]{rweibull}}).}
 
-\item{number_of_clusters}{Positive Integer. The number of clusters per true differential
-cluster for testing \code{\link{testDA_censoredGLMM}}. The total number of clusters is
-'number_of_clusters' * 'number_of_differential_clusters'. If NULL (default)
-only one cluster is used (running \code{\link{conditional_multiple_imputation}})}
-
-\item{number_of_differential_clusters}{Positive Integer. Total number of clusters
-with a true signal.}
-
 \item{censoring_dependent_on_covariate}{Logical. If
 censoring should depend on a covariate. The respective covariate needs to
 have only two levels ('n_level_fixeff'=2). Will use first covariate
@@ -79,8 +65,6 @@ the second level of a covariate if 'censoring_dependent_on_covariate'=TRUE.}
 \item{error_variance}{positive double. Variance of additional gaussian
 noise to add in the linear sum of the predictors. For linear regression
 this is the only error added. Otherwise it should be set to zero. default = 0.}
-
-\item{variance_fixeff}{deprecated.}
 
 \item{variance_raneff}{positive double vector of the length of 
 'n_levels_raneff'. The variance of the gaussian distributed
@@ -96,38 +80,14 @@ random effect covariates. default = 0.5.}
 \item{verbose}{verbose}
 }
 \value{
-simulated dataset or if 'number_of_clusters' != NULL a 
-\code{\link[SummarizedExperiment]{SummarizedExperiment}} object with cell 
-counts per cluster in \code{\link[SummarizedExperiment]{assay}} slot, experiment
-information (covariates, etc.) in \code{\link[SummarizedExperiment]{rowData}} slot.
+\code{\link[tibble]{tibble}}
 }
 \description{
-Simulation of data with a censored covariate
-}
-\details{
-The total number of clusters is 'number_of_clusters' * 'number_of_differential_clusters'.
+Function to simulate an association between a censored covariate and a predictor.
 }
 \examples{
 # single differential cluster
- lm_formula <- formula(Y ~ Surv(X,I) + Z)
- simulate_singlecluster(100, lm_formula, type = "lm")
-
- glm_formula <- formula(Y ~ Surv(X,I) + Z)
- simulate_singlecluster(100, glm_formula, type = "glm")
-
  glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
  simulate_singlecluster(100, glmer_formula, type = "glmer")
-
-# multiple clusters, 2 differential, 18 not ('number_of_differential_clusters' * 
-#'number_of_clusters' - number_of_differential_clusters'). In total 20 clusters.
- glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
- data_sim <- simulate_singlecluster(
-   n = 20,
-   formula = glmer_formula,
-   n_levels_fixeff = 2,
-   type = "glmer",
-   b = list(b=c(-5,-2,0.2)),
-   number_of_clusters = 10,
-   number_of_differential_clusters = 2)
  
 }

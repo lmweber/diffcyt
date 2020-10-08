@@ -105,7 +105,7 @@ test_that("simulate_singlecluster correct output censoring indicator",{
 
 
 
-simulate_singlecluster_params_beta <- function(b,number_of_differential_clusters,glmer_formula){
+simulate_singlecluster_params_beta <- function(b,glmer_formula){
    simulate_singlecluster(
        n = 10,
        formula = glmer_formula,
@@ -115,12 +115,9 @@ simulate_singlecluster_params_beta <- function(b,number_of_differential_clusters
        b = b,
        weibull_params = list(X = list(shape = 0.75, scale = 0.25),
                              C = list(shape = 0.5, scale = 0.7)),
-       number_of_clusters = 20,
-       number_of_differential_clusters = number_of_differential_clusters,
        censoring_dependent_on_covariate = FALSE,
        weibull_params_covariate_dependent_censoring = list(shape = 0.5, scale = 0.9),
        error_variance = 0.0,
-       variance_fixeff = 0.5,
        variance_raneff = 0.5,
        transform_fn = "boxcox_positive")
 }
@@ -130,52 +127,33 @@ b_l3 <- c(-4,-1.5,0.5)
 b_l4 <- c(-4,-1.5,0.5,0.5)
 glmer_formula <- formula(Y ~ Surv(X,I) + (1|R))
 test_that("error if no covariate",{
-   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
 })
 
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + (1|R))
 test_that("list of betas matches with formula for 1 covariate",{
-   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_true(is(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula), "SummarizedExperiment"))
-   expect_true(is(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula), "SummarizedExperiment"))
-   expect_error(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l3),glmer_formula), "data.frame"))
+   # expect_true(is(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula), "SummarizedExperiment"))
+   expect_error(simulate_singlecluster_params_beta(list(b_l4),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula))
 })
 
 glmer_formula <- formula(Y ~ Surv(X,I) + Z + ZZ + (1|R))
 test_that("list of betas matches with formula for 2 covariates",{
-   expect_error(simulate_singlecluster_params_beta(list(b_l2),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l3),1,glmer_formula))
-   expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
-   expect_true(is(simulate_singlecluster_params_beta(list(b_l4),1,glmer_formula), "SummarizedExperiment"))
-   expect_true(is(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula), "SummarizedExperiment"))
+   expect_error(simulate_singlecluster_params_beta(list(b_l2),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l2,b_l2),2,glmer_formula))
+   expect_error(simulate_singlecluster_params_beta(list(b_l3),glmer_formula))
+   # expect_error(simulate_singlecluster_params_beta(list(b_l3,b_l3),2,glmer_formula))
+   expect_true(is(simulate_singlecluster_params_beta(list(b_l4),glmer_formula), "data.frame"))
+   # expect_true(is(simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula), "SummarizedExperiment"))
 })
-
-
-
-## multi cluster
-
-glmer_formula <- formula(Y ~ Surv(X,I) + Z + ZZ + (1|R))
-multsimdat <- simulate_singlecluster_params_beta(list(b_l4,b_l4),2,glmer_formula)
-test_that("multicluster simulated data has correct dimensionality",{
-   expect_true(is(multsimdat,"SummarizedExperiment"))
-   expect_true(all(dim(SummarizedExperiment::rowData(multsimdat)) == c(40,2)))
-   expect_true(all(dim(SummarizedExperiment::colData(multsimdat)) == c(10,12)))
-   expect_true(all(dim(SummarizedExperiment::assay(multsimdat)) == c(40,10)))
-})
-
-
-test_that("multicluster simulated data has correct total sizes of samples",{
-   expect_true(all(colSums(SummarizedExperiment::assay(multsimdat)) == SummarizedExperiment::colData(multsimdat)$n_cells))
-})
-
 
 
 
