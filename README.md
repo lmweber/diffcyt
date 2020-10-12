@@ -27,7 +27,7 @@ For a tutorial and examples of usage, see the Bioconductor [package vignette](ht
 
 ## Availability and installation
 
-The `diffcyt` package is freely available from [Bioconductor](http://bioconductor.org/packages/diffcyt). The stable release version can be installed using the Bioconductor installer as follows. Note that installation requires R version 3.4.0 or later.
+The `diffcyt` package is freely available from [Bioconductor](http://bioconductor.org/packages/diffcyt). The stable release version can be installed using the Bioconductor installer as follows. Note that installation requires R version 3.6.0 or later.
 
 ```{r}
 # Install Bioconductor installer from CRAN
