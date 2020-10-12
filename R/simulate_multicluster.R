@@ -53,7 +53,10 @@
 #' output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4)
 #' 
 #' # specify which clusters should be differential:
-#' output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4, diff_cluster = list(c(2,9),c(6,7)))
+#' output <- simulate_multicluster(alphas=alphas,
+#'                                 sizes=sizes,
+#'                                 nr_diff = 4, 
+#'                                 diff_cluster = list(c(2,9),c(6,7)))
 #' 
 #' # with second covariate (group):
 #' output <- simulate_multicluster(alphas=alphas,sizes=sizes, group = TRUE)
@@ -300,7 +303,7 @@ simulate_multicluster <-
     diff_clu_betas <- as.integer(colnames(betas))
     row_data_df[diff_clu_betas,c("b0","b1")] <- t(betas)
   }else {
-    row_data_df <- data.frame(cluster_id = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,b2=0,paired=NA)
+    row_data_df <- data.frame(cluster_id = cluster_names, b0 = log(probs_tmp/(1-probs_tmp)),b1=0,b2=0,paired=NA, stringsAsFactors = FALSE)
     diff_clu_betas <- as.integer(colnames(betas))
     row_data_df[diff_clu_betas,c("b0","b1","b2")] <- t(betas)
   }

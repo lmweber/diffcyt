@@ -88,7 +88,10 @@ output <- simulate_multicluster(data)
 output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4)
 
 # specify which clusters should be differential:
-output <- simulate_multicluster(alphas=alphas,sizes=sizes,nr_diff = 4, diff_cluster = list(c(2,9),c(6,7)))
+output <- simulate_multicluster(alphas=alphas,
+                                sizes=sizes,
+                                nr_diff = 4, 
+                                diff_cluster = list(c(2,9),c(6,7)))
 
 # with second covariate (group):
 output <- simulate_multicluster(alphas=alphas,sizes=sizes, group = TRUE)
