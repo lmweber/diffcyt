@@ -15,9 +15,9 @@ The `diffcyt` package implements statistical methods for differential discovery 
 
 ## Details
 
-For details on the statistical methodology and comparisons with existing approaches, see our paper introducing the `diffcyt` framework, available as a preprint from bioRxiv:
+For details on the statistical methodology and comparisons with existing approaches, see our paper introducing the `diffcyt` framework, available as a Article in *Communications Biology*:
 
-- Weber L. M. et al. (2019), *diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering*, bioRxiv. [Available here.](https://www.biorxiv.org/content/10.1101/349738v3)
+- Weber L. M. et al. (2019), *diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering*, Commun Biol 2, 183. [Available here.](https://www.nature.com/articles/s42003-019-0415-5)
 
 
 ## Tutorial and examples
