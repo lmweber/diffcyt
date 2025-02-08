@@ -1,0 +1,19 @@
+citHeader("diffcyt is described in the following publication:")
+
+citEntry(
+  entry  = "Article", 
+  title  = "diffcyt: Differential discovery in high-dimensional cytometry via high-resolution clustering", 
+  author = personList(as.person("Lukas M. Weber"), 
+                      as.person("Malgorzata Nowicka"), 
+                      as.person("Charlotte Soneson"), 
+                      as.person("Mark D. Robinson")), 
+  journal = "Communications Biology", 
+  year    = "2019", 
+  volume  = "2", 
+  number  = "183", 
+  doi     = "https://doi.org/10.1038/s42003-019-0415-5", 
+  textVersion = paste0(
+    "Weber et al. (2019), diffcyt: Differential discovery in high-dimensional ", 
+    "cytometry via high-resolution clustering, Communications Biology, 2, 183."
+  )
+)
