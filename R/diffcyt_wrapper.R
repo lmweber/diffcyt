@@ -415,6 +415,9 @@ diffcyt <- function(d_input, experiment_info = NULL, marker_info = NULL,
   if (verbose) message("calculating features...")
   d_counts <- calcCounts(d_se)
   if (analysis_type == "DS") {
+    if (!("state" %in% colData(d_se)$marker_class)) {
+      stop("no 'state' markers are present in the object")
+    }
     d_medians <- calcMedians(d_se)
     d_medians_by_cluster_marker <- calcMediansByClusterMarker(d_se)
     d_medians_by_sample_marker <- calcMediansBySampleMarker(d_se)
